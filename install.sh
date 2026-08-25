@@ -11,7 +11,9 @@ sed 's/#.*//' packages.txt | grep -v '^\s*s' \
 
 echo "Paquetes no utilizados"
 
-sudo pacman -Rns dolphin # Quito dolphin porque instalo nemo
+# Quito dolphin porque instalo nemo
+# pacman -Qq comprueba si existe; si no está, la parte de la derecha no se ejecuta y el script sigue como si nada.
+sudo pacman -Qq dolphin &>/dev/null && sudo pacman -Rns --noconfirm dolphin || true
 
 echo "Sistema de archivos"
 
