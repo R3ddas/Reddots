@@ -30,7 +30,9 @@ ShellRoot {
             onTriggered: reloj.hora = new Date().toLocaleString(Qt.locale(), "hh:\n:mm")
         }
 
-        Workspaces{}
+        Workspaces{}  // Cambiador de Workspaces
+
+        Battery{}     // Icono de batería
 
     }
 }
