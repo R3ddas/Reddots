@@ -2,4 +2,5 @@ paru            # El descargador de paquetes
 
 quickshell      # El gestor de widgets, barra, etc
 
-nemo            # Un explorador de archivos que me funciona mejor que dolphin
+#nemo            # Un explorador de archivos que me funciona mejor que dolphin
+nemo nemo-fileroller file-roller unzip zip # Un explorador de archivos que me funciona mejor que dolphin
