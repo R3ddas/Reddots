@@ -10,13 +10,13 @@ ShellRoot {
         anchors { top: true; left: true; right: true }
         implicitHeight: 32
         color: "#1e1e2e"
-
         Text {
             anchors.centerIn: parent
             color: "#cdd6f4"
             font.pointSize: 11
             text: reloj.hora
         }
+
         // Reloj ----------------------------------------------------------------------------------------------
         QtObject {
             id: reloj
@@ -29,7 +29,8 @@ ShellRoot {
             triggeredOnStart: true
             onTriggered: reloj.hora = new Date().toLocaleString(Qt.locale(), "ddd d MMM  hh:mm")
         }
-        // Gestión de workspaces--------------------------------------------------
+
+        // Gestión de WorkSpaces--------------------------------------------------
         RowLayout{
             anchors.fill: parent
             anchors.margin = 8
@@ -49,6 +50,7 @@ ShellRoot {
                     }
                 }
             }
+            Item { Layout.fillWidth: true } // Añade espacios entre los WorkSpaces
         }
     }
 }
