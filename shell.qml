@@ -3,7 +3,7 @@
 import Quickshell
 import Quickshell.Hyprland // Para acceder a los WorkSpaces
 import QtQuick
-import QtQuick.layouts // Para usar RowLayout o ColumnLayout
+import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
 
 ShellRoot {
     PanelWindow {
