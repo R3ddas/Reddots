@@ -55,7 +55,7 @@ ShellRoot {
                 }
             }
             //Item { Layout.fillWidth: true } // Añade espacios entre los WorkSpaces
-            Item { Layout.fillheight: true } // Añade espacios entre los WorkSpaces
+            Item { Layout.fillHeight: true } // Añade espacios entre los WorkSpaces
         }
     }
 }
