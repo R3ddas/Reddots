@@ -1,14 +1,16 @@
 // Recursos: https://tonybtw.com/tutorial/quickshell/
 
 import Quickshell
-// import Quickshell.Hyprland // Para acceder a los WorkSpaces
+import Quickshell.Hyprland // Para acceder a los WorkSpaces
 import QtQuick
-//import QtQuick.layouts // Para usar RowLayout
+import QtQuick.layouts // Para usar RowLayout o ColumnLayout
 
 ShellRoot {
     PanelWindow {
-        anchors { top: true; left: true; right: true }
-        implicitHeight: 32
+        //anchors { top: true; left: true; right: true }
+        anchors { top: true; bottom: true; left: true }
+        //implicitHeight: 32
+        implicitWidth: 32
         color: "#1e1e2e"
         Text {
             anchors.centerIn: parent
@@ -31,10 +33,11 @@ ShellRoot {
         }
 
         // Gestión de WorkSpaces--------------------------------------------------
-        RowLayout{
+        //RowLayout{
+        ColumnLayout{
             anchors.fill: parent
-            anchors.margin = 8
-            Repeter{ // Repite algo N veces
+            anchors.margins: 6
+            Repeater{ // Repite algo N veces
                 model:9
                 Text{
                     property var ws: Hyprland.workspaces.values.find(w => w.id === index + 1)
@@ -43,6 +46,7 @@ ShellRoot {
                     //The color logic is straightforward: cyan if it’s the active workspace, blue if it exists but isn’t active, and muted gray if there’s no windows on that workspace.
                     color: isActive ? "#0db9d7" : (ws ? "#7aa2f7" : "#444b6a")
                     font { pixelSize: 14; bold: true }
+                    Layout.alignment: Qt.AlignHCenter // Centro verticalemente los números
     
                     MouseArea {
                         anchors.fill: parent
@@ -50,7 +54,8 @@ ShellRoot {
                     }
                 }
             }
-            Item { Layout.fillWidth: true } // Añade espacios entre los WorkSpaces
+            //Item { Layout.fillWidth: true } // Añade espacios entre los WorkSpaces
+            Item { Layout.fillheight: true } // Añade espacios entre los WorkSpaces
         }
     }
 }
