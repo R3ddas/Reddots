@@ -7,9 +7,7 @@ import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
 
 ShellRoot {
     PanelWindow {
-        //anchors { top: true; left: true; right: true }
         anchors { top: true; bottom: true; left: true }
-        //implicitHeight: 32
         implicitWidth: 32
         color: "#1e1e2e"
         Text {
@@ -29,11 +27,10 @@ ShellRoot {
             running: true
             repeat: true
             triggeredOnStart: true
-            onTriggered: reloj.hora = new Date().toLocaleString(Qt.locale(), "ddd d MMM  hh:mm")
+            onTriggered: reloj.hora = new Date().toLocaleString(Qt.locale(), "hh:\n:mm")
         }
 
         // Gestión de WorkSpaces--------------------------------------------------
-        //RowLayout{
         ColumnLayout{
             anchors.fill: parent
             anchors.margins: 6
@@ -47,14 +44,13 @@ ShellRoot {
                     color: isActive ? "#0db9d7" : (ws ? "#7aa2f7" : "#444b6a")
                     font { pixelSize: 14; bold: true }
                     Layout.alignment: Qt.AlignHCenter // Centro verticalemente los números
-    
+
                     MouseArea {
                         anchors.fill: parent
                         onClicked: Hyprland.dispatch("workspace " + (index + 1))
                     }
                 }
             }
-            //Item { Layout.fillWidth: true } // Añade espacios entre los WorkSpaces
             Item { Layout.fillHeight: true } // Añade espacios entre los WorkSpaces
         }
     }
