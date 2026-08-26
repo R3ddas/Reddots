@@ -29,7 +29,7 @@ echo "Sistema de archivos"
 mkdir -p ~/.config/quickshell
 
 echo "Otras configuraciones"
-
+# No he encontrado una forma mejor de evitar el problema del cambio de hora
 timedatectl set-local-rtc 1 --adjust-system-clock # Para que el reloj no se cambie cada vez que arranca windows
 
 echo "Listo"
