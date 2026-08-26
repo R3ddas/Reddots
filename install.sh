@@ -19,4 +19,8 @@ echo "Sistema de archivos"
 
 mkdir -p ~/.config/quickshell
 
+echo "Otras configuraciones"
+
+timedatectl set-local-rtc 1 --adjust-system-clock # Para que el reloj no se cambie cada vez que arranca windows
+
 echo "Listo"
