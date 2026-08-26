@@ -6,8 +6,17 @@ echo "Instalando"
 
 echo "Paquetes necesarios"
 
-sed 's/#.*//' packages.txt | grep -v '^\s*s' \
+sed 's/#.*//' packages.txt | grep -v '^\s*$' \
 | xargs -r sudo pacman -S --needed  --noconfirm
+
+#Si quisiera separar Steam (o cualquier otro paquete)
+#echo "Steam"
+#sed 's/#.*//' packages.txt | grep -v '^\s*$' | grep -vw 'steam' \
+#| xargs -r sudo pacman -S --needed --noconfirm
+#read -r -p "¿Instalar steam? [s/N] " respuesta
+#if [[ "$respuesta" =~ ^[sS]$ ]]; then
+#    sudo pacman -S --needed steam
+#fi
 
 echo "Paquetes no utilizados"
 
