@@ -17,8 +17,11 @@ ShellRoot {
             Workspaces{}        // Cambiador de Workspaces
             Clock{}             // Reloj
             Item { Layout.fillHeight: true } // Añade espacios entre los WorkSpaces
-            Network{}           // Wifi
-            Battery{}           // Icono de batería
+            ColumnLayout{
+                spacing: 5
+                Network{}           // Wifi
+                Battery{}           // Icono de batería
+            }
         }
 
     }
