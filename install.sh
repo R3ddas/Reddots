@@ -5,6 +5,10 @@ DOTS="$PWD" # Guardo la ruta en una variable para no acceder todo el rato
 
 echo "Instalando"
 
+echo "Actualizando el sistema"
+
+sudo pacman -Syu # Actualiza el sistema por completo antes de instalar
+
 echo "Paquetes necesarios"
 
 sed 's/#.*//' packages.txt | grep -v '^\s*$' \
