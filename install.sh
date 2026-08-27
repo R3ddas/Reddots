@@ -37,6 +37,9 @@ ln -sfn "$DOTS"/quickshell/*.qml   ~/.config/quickshell/
 ln -sfn "$DOTS/hypr/hyprland.lua"  ~/.config/hypr/hyprland.lua
 ln -sfn "$DOTS/fish/config.fish"   ~/.config/fish/config.fish
 
+mkdir -p ~/Pictures
+ln -sfn "$DOTS/Wallpapers"   ~/Pictures/Wallpapers
+
 echo "Otras configuraciones"
 # No he encontrado una forma mejor de evitar el problema del cambio de hora
 #timedatectl set-local-rtc 1 --adjust-system-clock # Para que el reloj no se cambie cada vez que arranca windows
