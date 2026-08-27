@@ -6,6 +6,11 @@ import QtQuick
 import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
 
 ShellRoot {
+    Border {
+        thickness: 10
+        rounding: 22
+        frameColor: "#1e1e2e"
+    }
     PanelWindow {
         anchors { top: true; bottom: true; left: true }
         implicitWidth: 32
