@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-#cd "(dirname "$0")"
+cd "$(dirname "$0")"
+DOTS="$PWD" # Guardo la ruta en una variable para no acceder todo el rato
 
 echo "Instalando"
 
@@ -26,7 +27,11 @@ sudo pacman -Qq dolphin &>/dev/null && sudo pacman -Rns --noconfirm dolphin || t
 
 echo "Sistema de archivos"
 
-mkdir -p ~/.config/quickshell
+#mkdir -p ~/.config/quickshell ~/.config/hypr ~/.config/fish # Creo las carpetas si no existen
+
+ln -sfn "$DOTS"/quickshell/*.qml   ~/.config/quickshell/
+ln -sfn "$DOTS/hypr/hyprland.lua"  ~/.config/hypr/hyprland.lua
+ln -sfn "$DOTS/fish/config.fish"   ~/.config/fish/config.fish
 
 echo "Otras configuraciones"
 # No he encontrado una forma mejor de evitar el problema del cambio de hora
