@@ -7,6 +7,7 @@ file-roller     # para poder comprimir/descomprimir
 nemo-fileroller # Extensión para que nemo pueda comprimir/descomprimir
 unzip           # Paquete unzip para que file-roller descomprima zip
 zip             # Paquete zip para que file-roller comprima zip
+hyprpaper       # El gestor de fondos de pantalla de Hyprland
 
 steam           # Para este debería preguntar
 teams-for-linux # Para este debería preguntar
