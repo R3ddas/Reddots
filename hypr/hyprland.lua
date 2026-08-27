@@ -41,7 +41,6 @@ hl.on("hyprland.start", function ()
 --   hl.exec_cmd("waybar & hyprpaper & firefox")
 end)
 
-
 -------------------------------
 ---- ENVIRONMENT VARIABLES ----
 -------------------------------
@@ -210,11 +209,12 @@ hl.config({
 
 hl.config({
     input = {
-        kb_layout  = "es",
+        kb_layout  = "es",              -- Teclado en espannol
         kb_variant = "",
         kb_model   = "",
         kb_options = "",
         kb_rules   = "",
+        numlock_by_default = true,      -- Bloq num activo por defecto
 
         follow_mouse = 1,
 
