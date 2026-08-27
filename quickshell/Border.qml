@@ -8,7 +8,7 @@ import QtQuick.Shapes
 PanelWindow {
     id: root
 
-    property int thickness: 10
+    property int thickness: 5
     property int rounding: 22
     property color frameColor: "#1e1e2e"
 
