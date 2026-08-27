@@ -9,3 +9,4 @@ unzip           # Paquete unzip para que file-roller descomprima zip
 zip             # Paquete zip para que file-roller comprima zip
 
 steam           # Para este debería preguntar
+teams-for-linux # Para este debería preguntar
