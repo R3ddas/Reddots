@@ -21,8 +21,8 @@ ColumnLayout{
         color: "#f5e2c5"
     }
 
-    Text{
-        text: root.level + "%"
-        color: "#f5e2c5"
-    }
+    //Text{
+    //    text: root.level + "%"
+    //    color: "#f5e2c5"
+    //}
 }
