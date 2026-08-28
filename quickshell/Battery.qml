@@ -19,10 +19,7 @@ ColumnLayout{
     Text{
         text: root.icon
         color: "#f5e2c5"
-    }
+        font.pixelSize: 18
 
-    //Text{
-    //    text: root.level + "%"
-    //    color: "#f5e2c5"
-    //}
+    }
 }
