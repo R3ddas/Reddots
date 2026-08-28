@@ -19,13 +19,14 @@ ColumnLayout {
 
     readonly property string icon: {
         if (!powered) return String.fromCodePoint(0xF00B2)  // bluetooth-off
-        if (!active)  return String.fromCodePoint(0xF00AF)  // bluetooth
+        if (!active)  return String.fromCodePoint(0xF00AF)  // bluetooth activo pero sin nada conectado
         return String.fromCodePoint(0xF00B1)                // bluetooth-connect
     }
 
     Text {
         text: root.icon
         color: root.powered ? "#f5e2c5" : "#5a4d3e"
+        font.pixelSize: 18
 
         TapHandler {
             onTapped: if (root.adapter) root.adapter.enabled = !root.adapter.enabled
