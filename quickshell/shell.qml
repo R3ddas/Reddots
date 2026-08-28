@@ -25,6 +25,7 @@ ShellRoot {
             ColumnLayout{
                 spacing: 5
                 Network{}           // Wifi
+                Bluetooth{}         // Bluetooth
                 Battery{}           // Icono de batería
             }
         }
