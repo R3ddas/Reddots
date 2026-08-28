@@ -28,6 +28,7 @@ ColumnLayout{
     Text{
         text: root.icon
         color: Networking.wifiEnabled? "#f5e2c5" : "#5a4d3e"
+        font.pixelSize: 18
     }
 
 }
