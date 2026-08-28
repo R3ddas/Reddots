@@ -9,7 +9,7 @@ echo "Actualizando el sistema"
 
 sudo pacman -Syu # Actualiza el sistema por completo antes de instalar
 
-echo "Paquetes necesarios"
+echo "Instalando paquetes (via pacman)"
 
 sed 's/#.*//' packages.txt | grep -v '^\s*$' \
 | xargs -r sudo pacman -S --needed  --noconfirm
@@ -22,6 +22,11 @@ sed 's/#.*//' packages.txt | grep -v '^\s*$' \
 #if [[ "$respuesta" =~ ^[sS]$ ]]; then
 #    sudo pacman -S --needed steam
 #fi
+
+echo "Instalando paquetes (via paru)"
+
+paru -S visual-studio-code-bin # Visual code
+
 
 echo "Paquetes no utilizados"
 
