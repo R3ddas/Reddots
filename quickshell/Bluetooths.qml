@@ -28,10 +28,8 @@ ColumnLayout {
         color: root.powered ? "#f5e2c5" : "#5a4d3e"
 
         MouseArea {
-            x: -4
-            y: -4
-            width: iconText.width + 8
-            height: iconText.height + 8
+            anchors.fill: parent
+            anchors.margins: -4
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
             onClicked: event => {
