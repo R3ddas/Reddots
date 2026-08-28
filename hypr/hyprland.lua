@@ -35,8 +35,8 @@ local menu        = "hyprlauncher"
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function ()
-    hl.exec_cmd("quickshell")
-    hl.exec_cmd("hyprpaper")
+    hl.exec_cmd("quickshell")       -- El gestor de escritorio, plugings, etc
+    hl.exec_cmd("hyprpaper")        -- El gestor del fondo de pantalla
 end)
 
 -------------------------------
@@ -195,8 +195,9 @@ hl.config({
 
 hl.config({
     misc = {
-        force_default_wallpaper = -1,    -- Set to 0 or 1 to disable the anime mascot wallpapers
-            disable_hyprland_logo   = false, -- If true disables the random hyprland logo / anime girl background. :(
+        force_default_wallpaper = 0,    -- Set to 0 or 1 to disable the anime mascot wallpapers
+        disable_hyprland_logo   = true, -- If true disables the random hyprland logo / anime girl background. :(
+        disable_splash_rendering = true,
     },
 })
 
@@ -243,9 +244,9 @@ hl.device({
 require("keybinds")
 
 
-    --------------------------------
-    ---- WINDOWS AND WORKSPACES ----
-    --------------------------------
+--------------------------------
+---- WINDOWS AND WORKSPACES ----
+--------------------------------
 
     -- See https://wiki.hypr.land/Configuring/Basics/Window-Rules/
     -- and https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
