@@ -39,7 +39,7 @@ echo "Sistema de archivos"
 #mkdir -p ~/.config/quickshell ~/.config/hypr ~/.config/fish # Creo las carpetas si no existen
 
 ln -sfn "$DOTS"/quickshell/*.qml   ~/.config/quickshell/
-ln -sfn "$DOTS/hypr/hyprland.lua"  ~/.config/hypr/hyprland.lua
+ln -sfn "$DOTS"/hypr/*             ~/.config/hypr/
 ln -sfn "$DOTS/fish/config.fish"   ~/.config/fish/config.fish
 
 mkdir -p ~/Pictures
