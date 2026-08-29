@@ -25,7 +25,8 @@ sed 's/#.*//' packages.txt | grep -v '^\s*$' \
 
 echo "Instalando paquetes (via paru)"
 
-paru -S --needed visual-studio-code-bin # Visual code
+paru -S --needed visual-studio-code-bin   # Visual code
+paru -S --needed claude-desktop           # Claude
 
 echo "Paquetes no utilizados"
 
