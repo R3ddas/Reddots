@@ -225,7 +225,7 @@ hl.config({
     },
 })
 
-hl.gesture({
+hl.gesture({                            -- Puedo cambiar entre workspaces con 3 dedos
     fingers = 3,
     direction = "horizontal",
     action = "workspace"
