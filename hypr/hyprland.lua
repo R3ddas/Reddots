@@ -73,6 +73,7 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -----------------------
 
 -- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
+local opacity = 0.9
 hl.config({
     general = {
         gaps_in  = 5,
@@ -99,8 +100,8 @@ hl.config({
         rounding_power = 2,
 
         -- Change transparency of focused and unfocused windows
-        active_opacity   = 0.9, -- Opacidad de la ventana activa
-        inactive_opacity = 0.9, -- Opacidad de las ventanas inactivas
+        active_opacity   = opacity, -- Opacidad de la ventana activa
+        inactive_opacity = opacity, -- Opacidad de las ventanas inactivas
 
         shadow = {
             enabled      = true,
@@ -284,6 +285,12 @@ require("keybinds")
 --     no_anim = true,
 -- })
 -- overlayLayerRule:set_enabled(false)
+
+hl.window_rule({
+    name  = "fullscreen-opacity",
+    match = { fullscreen = true },
+    opacity = opacity .. " override " .. opacity .. " override",
+})
 
 -- Hyprland-run windowrule
 hl.window_rule({
