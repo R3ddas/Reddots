@@ -7,7 +7,8 @@ import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
 
 ColumnLayout{
     Text{
-        //nchors.centerIn: parent
+        //Layout.alignment: Qt.AlignHCenter
+        //horizontalAlignment: Text.AlignHCenter
         text: Qt.formatDateTime(clock.date, "hh\nmm")
         color: "#f5e2c5"
     }
