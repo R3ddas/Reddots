@@ -47,4 +47,5 @@ hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tr
 hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
 
-hl.bind("SUPER + I", hl.dsp.window.set_prop({ prop = "opaque", value = "toggle" }))
+hl.bind("SUPER + I", hl.dsp.window.set_prop({ prop = "opaque", value = "toggle" }))         -- Activo/Desactivo la trasnparencia con Super + I
+hl.bind("SUPER + F", hl.dsp.window.fullscreen({ action = "toggle" }))                       -- Entro/salgo de pantalla completa con Super + F
