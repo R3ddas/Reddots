@@ -102,6 +102,7 @@ hl.config({
         -- Change transparency of focused and unfocused windows
         active_opacity   = opacity, -- Opacidad de la ventana activa
         inactive_opacity = opacity, -- Opacidad de las ventanas inactivas
+        fullscreen_opacity = opacity, -- Opacidad de las ventanas en pantalla completa
 
         shadow = {
             enabled      = true,
@@ -286,12 +287,6 @@ require("keybinds")
 -- })
 -- overlayLayerRule:set_enabled(false)
 
-hl.window_rule({
-    name  = "fullscreen-opacity",
-    match = { fullscreen = true },
-    opacity = opacity .. " override " .. opacity .. " override",
-})
-
 -- Hyprland-run windowrule
 hl.window_rule({
     name  = "move-hyprland-run",
@@ -300,4 +295,3 @@ hl.window_rule({
     move  = "20 monitor_h-120",
     float = true,
 })
-
