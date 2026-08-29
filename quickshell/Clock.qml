@@ -11,6 +11,7 @@ ColumnLayout{
         //horizontalAlignment: Text.AlignHCenter
         text: Qt.formatDateTime(clock.date, "hh\nmm")
         color: "#f5e2c5"
+        font.pixelSize: 14
     }
 
     SystemClock{
