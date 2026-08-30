@@ -19,10 +19,10 @@ ShellRoot {
             anchors.fill: parent
             anchors.margins: 6
 
-            Workspaces{}        // Cambiador de Workspaces
-            Item { Layout.fillHeight: true } // Empuja el reloj hacia el centro
-            Clock{}             // Reloj (centrado verticalmente)
-            Item { Layout.fillHeight: true } // Empuja el grupo inferior hacia abajo
+            Workspaces{}                        // Cambiador de Workspaces
+            Item { Layout.fillHeight: true }    // Empuja el reloj hacia el centro
+            Clock{}                             // Reloj (centrado verticalmente)
+            Item { Layout.fillHeight: true }    // Empuja el grupo inferior hacia abajo
             ColumnLayout{
                 spacing: 5
                 Network{}           // Wifi
