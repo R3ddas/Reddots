@@ -297,3 +297,11 @@ hl.window_rule({
     move  = "20 monitor_h-120",
     float = true,
 })
+
+-- Hago que los diálogos "Open with" aparezcan flotantes y centrado, si no, se cortan y no se puede acceder a los campos
+hl.window_rule({
+    name  = "center-open-with",
+    match = {title = "^Open with.*" },
+    float  = true,
+    center = true,
+})
