@@ -7,7 +7,7 @@ import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
 
 ShellRoot {
     Border {
-        thickness: 5
+        thickness: 6
         rounding: 22
         frameColor: "#1e1e2e"
     }
