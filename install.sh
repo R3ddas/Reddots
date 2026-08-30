@@ -48,8 +48,9 @@ ln -sfn "$DOTS/Wallpapers"   ~/Pictures/Wallpapers
 
 echo "Otras configuraciones"
 
-code --install-extension bbenoist.QML               # Extensión para QML en Visual Studio Code
-code --install-extension James-Yu.latex-workshop    # Extensión para LaTeX en Visual Studio Code
+code --install-extension bbenoist.QML                               # Extensión para QML en Visual Studio Code
+sudo pacman -S texlive-core texlive-latexextra texlive-binextra     # Paquetes necesarios de LaTeX
+code --install-extension James-Yu.latex-workshop                    # Extensión para LaTeX en Visual Studio Code
 
 # No he encontrado una forma mejor de evitar el problema del cambio de hora
 #timedatectl set-local-rtc 1 --adjust-system-clock # Para que el reloj no se cambie cada vez que arranca windows
