@@ -20,7 +20,7 @@ hl.monitor({
 ---- MY PROGRAMS ----
 ---------------------
 
-local terminal    = "kitty"
+local terminal    = "alacritty"
 local fileManager = "nemo"
 local menu        = "hyprlauncher"
 
