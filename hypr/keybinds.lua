@@ -2,9 +2,12 @@
 ---- MY PROGRAMS ----
 ---------------------
 -- Set programs that you use
-local terminal    = "alacritty"
-local fileManager = "nemo"
-local menu        = "hyprlauncher"
+--local terminal    = "alacritty"
+--local fileManager = "nemo"
+--local menu        = "hyprlauncher"
+
+local programs = require("programs")
+local terminal, fileManager, menu = programs.terminal, programs.fileManager, programs.menu
 
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 

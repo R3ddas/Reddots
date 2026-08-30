@@ -19,10 +19,12 @@ hl.monitor({
 ---------------------
 ---- MY PROGRAMS ----
 ---------------------
+--local terminal    = "alacritty"
+--local fileManager = "nemo"
+--local menu        = "hyprlauncher"
 
-local terminal    = "alacritty"
-local fileManager = "nemo"
-local menu        = "hyprlauncher"
+local programs = require("programs")
+local terminal, fileManager, menu = programs.terminal, programs.fileManager, programs.menu
 
 
 -------------------
