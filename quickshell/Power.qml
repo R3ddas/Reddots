@@ -14,7 +14,7 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xF0425)  // power
         font.pixelSize: 18
-        color: Theme.text
+        color: Theme.textActive
         Layout.alignment: Qt.AlignHCenter
 
         MouseArea {
@@ -64,8 +64,8 @@ ColumnLayout {
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
                         spacing: 8
-                        Text { text: String.fromCodePoint(0xF0425); color: Theme.text; font.pixelSize: 15 }  // power
-                        Text { text: "Apagar"; color: Theme.text }
+                        Text { text: String.fromCodePoint(0xF0425); color: Theme.textActive; font.pixelSize: 15 }  // power
+                        Text { text: "Apagar"; color: Theme.textActive }
                     }
 
                     MouseArea {
@@ -90,8 +90,8 @@ ColumnLayout {
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
                         spacing: 8
-                        Text { text: String.fromCodePoint(0xF0709); color: Theme.text; font.pixelSize: 15 }  // restart
-                        Text { text: "Reiniciar"; color: Theme.text }
+                        Text { text: String.fromCodePoint(0xF0709); color: Theme.textActive; font.pixelSize: 15 }  // restart
+                        Text { text: "Reiniciar"; color: Theme.textActive }
                     }
 
                     MouseArea {
@@ -116,8 +116,8 @@ ColumnLayout {
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
                         spacing: 8
-                        Text { text: String.fromCodePoint(0xF0904); color: Theme.text; font.pixelSize: 15 }  // power-sleep
-                        Text { text: "Suspender"; color: Theme.text }
+                        Text { text: String.fromCodePoint(0xF0904); color: Theme.textActive; font.pixelSize: 15 }  // power-sleep
+                        Text { text: "Suspender"; color: Theme.textActive }
                     }
 
                     MouseArea {
@@ -142,8 +142,8 @@ ColumnLayout {
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
                         spacing: 8
-                        Text { text: String.fromCodePoint(0xF0379); color: Theme.text; font.pixelSize: 15 }  // monitor
-                        Text { text: "Salvapantallas"; color: Theme.text }
+                        Text { text: String.fromCodePoint(0xF0379); color: Theme.textActive; font.pixelSize: 15 }  // monitor
+                        Text { text: "Salvapantallas"; color: Theme.textActive }
                     }
 
                     MouseArea {
