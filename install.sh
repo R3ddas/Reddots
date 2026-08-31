@@ -30,10 +30,10 @@ paru -S --needed claude-desktop           # Claude
 
 echo "Paquetes no utilizados"
 
-# Quito dolphin porque instalo nemo
 # pacman -Qq comprueba si existe; si no está, la parte de la derecha no se ejecuta y el script sigue como si nada.
-sudo pacman -Qq dolphin &>/dev/null && sudo pacman -Rns --noconfirm dolphin || true
-sudo pacman -Qq kitty &>/dev/null && sudo pacman -Rns --noconfirm kitty || true
+sudo pacman -Qq dolphin &>/dev/null && sudo pacman -Rns --noconfirm dolphin || true     # Quito Dolphin porque instalo Nemo como explorador de archivos
+sudo pacman -Qq kitty &>/dev/null && sudo pacman -Rns --noconfirm kitty || true         # Quito Kitty porque uso Alacritty como terminal
+sudo pacman -Qq meld &>/dev/null && sudo pacman -Rns --noconfirm meld || true           # Quito Meld porque no lo uso
 
 echo "Sistema de archivos"
 
