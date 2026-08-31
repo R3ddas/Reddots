@@ -130,6 +130,32 @@ ColumnLayout {
                         }
                     }
                 }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: 28
+                    radius: 4
+                    color: screensaverMouse.containsMouse ? Theme.surfaceHover : "transparent"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 8
+                        anchors.rightMargin: 8
+                        spacing: 8
+                        Text { text: String.fromCodePoint(0xF0379); color: Theme.text; font.pixelSize: 15 }  // monitor
+                        Text { text: "Salvapantallas"; color: Theme.text }
+                    }
+
+                    MouseArea {
+                        id: screensaverMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: {
+                            menu.visible = false
+                            screensaverProc.startDetached()
+                        }
+                    }
+                }
             }
         }
     }
@@ -137,6 +163,10 @@ ColumnLayout {
     Process { id: shutdownProc; command: ["systemctl", "poweroff"] }
     Process { id: restartProc; command: ["systemctl", "reboot"] }
     Process { id: suspendProc; command: ["systemctl", "suspend"] }
+    Process {                                                                  // Cambia aquí el comando si en el futuro quieres otro salvapantallas
+        id: screensaverProc
+        command: ["alacritty", "-o", "window.startup_mode=\"Fullscreen\"", "-e", "cmatrix", "-bsu", "8"]
+    }
 
     HyprlandFocusGrab {
         id: grab
