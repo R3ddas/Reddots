@@ -38,7 +38,7 @@ ShellRoot {
                     Layout.alignment: Qt.AlignHCenter
                 }
             }
-            Power{Layout.alignment: Qt.AlignHCenter}            // Apagar / Suspender 
+            Power{Layout.alignment: Qt.AlignHCenter}            // Apagar / Suspender
         }
 
     }
