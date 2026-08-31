@@ -35,9 +35,7 @@ local terminal, fileManager, menu = programs.terminal, programs.fileManager, pro
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function ()
-    -- Quickshell puede caerse si el monitor se desconecta/reconecta (reinicio del monitor);
-    -- este bucle lo relanza solo. El log queda en ~/.cache/quickshell/quickshell.log por si vuelve a pasar.
-    hl.exec_cmd("sh -c 'while true; do quickshell > ~/.cache/quickshell/quickshell.log 2>&1; sleep 1; done'")
+    hl.exec_cmd("quickshell")
     hl.exec_cmd("hyprpaper")        -- El gestor del fondo de pantalla
 end)
 
