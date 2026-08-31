@@ -44,7 +44,7 @@ ColumnLayout{
         visible: root.showLevel
         text: root.level + "%"
         color: Theme.text
-        font.pixelSize: 12
+        font.pixelSize: 10                              // Si es muy grande no cabe en la barra y descentra los textos
         Layout.alignment: Qt.AlignHCenter
     }
 }
