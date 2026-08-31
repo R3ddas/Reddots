@@ -31,6 +31,7 @@ ColumnLayout{
         text: root.icon
         color: "#f5e2c5"
         font.pixelSize: 18
+        Layout.alignment: Qt.AlignHCenter
         MouseArea {
             anchors.fill: parent
             anchors.margins: -4
@@ -44,6 +45,6 @@ ColumnLayout{
         text: root.level + "%"
         color: "#f5e2c5"
         font.pixelSize: 12
-        //Layout.alignment: Qt.AlignHCenter
+        Layout.alignment: Qt.AlignHCenter
     }
 }
