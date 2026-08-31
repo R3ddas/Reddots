@@ -1,7 +1,9 @@
+pragma Singleton
 import Quickshell
+import QtQuick
 
 Singleton {
-    readonly property color background: "#1e1e2e"
+    readonly property color background: "#17173a"
 
     readonly property color text: "#f5e2c5"
     readonly property color textMuted: "#5a4d3e"
