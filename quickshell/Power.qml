@@ -13,7 +13,7 @@ ColumnLayout {
     Text {
         id: iconText
         text: String.fromCodePoint(0xF0425)  // power
-        font.pixelSize: 18
+        font.pixelSize: 20
         color: Theme.textActive
         Layout.alignment: Qt.AlignHCenter
 

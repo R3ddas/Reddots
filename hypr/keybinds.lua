@@ -53,6 +53,9 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = tr
 hl.bind("SUPER + I", hl.dsp.window.set_prop({ prop = "opaque", value = "toggle" }))         -- Activo/Desactivo la trasnparencia con Super + I
 hl.bind("SUPER + F", hl.dsp.window.fullscreen({ action = "toggle" }))                       -- Entro/salgo de pantalla completa con Super + F
 
+-- Al pulsar y soltar solo la tecla Super (sin combinar con otra), muestro/oculto el widget inferior
+hl.bind("SUPER + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { release = true })
+
 -- No hay un dispatcher (.dsp) para el mirror de los monitores, así que hay que crear una variable y una función
 local mirrorEnabled = true
 hl.bind("SUPER + M", function()
