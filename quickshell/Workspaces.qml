@@ -3,10 +3,7 @@ import Quickshell.Hyprland // Para acceder a los WorkSpaces
 import QtQuick
 import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
 
-// Gestión de WorkSpaces--------------------------------------------------
 ColumnLayout{
-    //anchors.fill: parent
-    //anchors.margins: 6
     Repeater{ // Repite algo N veces
         model:5
         Text{
@@ -24,5 +21,4 @@ ColumnLayout{
             }
         }
     }
-    //Item { Layout.fillHeight: true } // Añade espacios entre los WorkSpaces
 }

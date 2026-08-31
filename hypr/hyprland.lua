@@ -13,7 +13,7 @@ hl.monitor({
     mode     = "preferred",
     position = "auto",
     scale    = "1",
-    --mirror   = "eDP-1"
+    --mirror   = "eDP-1" Esto igual se puede guardar como variable de entorno
 })
 
 
@@ -21,10 +21,6 @@ hl.monitor({
 ---------------------
 ---- MY PROGRAMS ----
 ---------------------
---local terminal    = "alacritty"
---local fileManager = "nemo"
---local menu        = "hyprlauncher"
-
 local programs = require("programs")
 local terminal, fileManager, menu = programs.terminal, programs.fileManager, programs.menu
 
