@@ -19,15 +19,15 @@ ShellRoot {
             anchors.fill: parent
             anchors.margins: 6
 
-            Workspaces{}                        // Cambiador de Workspaces
-            Item { Layout.fillHeight: true }    // Empuja el reloj hacia el centro
-            Clock{}                             // Reloj (centrado verticalmente)
-            Item { Layout.fillHeight: true }    // Empuja el grupo inferior hacia abajo
+            Workspaces{Layout.alignment: Qt.AlignHCenter}       // Cambiador de Workspaces
+            Item { Layout.fillHeight: true }                    // Empuja el reloj hacia el centro
+            Clock{Layout.alignment: Qt.AlignHCenter}            // Reloj (centrado verticalmente)
+            Item { Layout.fillHeight: true }                    // Empuja el grupo inferior hacia abajo
             ColumnLayout{
                 spacing: 5
-                Network{}           // Wifi
-                Bluetooths{}        // Bluetooth
-                Battery{}           // Icono de batería
+                Network{Layout.alignment: Qt.AlignHCenter}      // Wifi
+                Bluetooths{Layout.alignment: Qt.AlignHCenter}   // Bluetooth
+                Battery{Layout.alignment: Qt.AlignHCenter}      // Icono de batería
             }
         }
 
