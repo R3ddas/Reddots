@@ -59,13 +59,25 @@ ColumnLayout {
                     radius: 4
                     color: shutdownMouse.containsMouse ? Theme.surfaceHover : "transparent"
 
-                    RowLayout {
+                    Item {
                         anchors.fill: parent
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
-                        spacing: 8
-                        Text { text: String.fromCodePoint(0xF0425); color: Theme.textActive; font.pixelSize: 15 }  // power
-                        Text { text: "Apagar"; color: Theme.textActive }
+
+                        Text {
+                            text: String.fromCodePoint(0xF0425)          // power
+                            color: Theme.textActive
+                            font.pixelSize: 15
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        Text {
+                            text: "Apagar"
+                            color: Theme.textActive
+                            anchors.left: parent.left
+                            anchors.leftMargin: 28
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
 
                     MouseArea {
@@ -85,13 +97,25 @@ ColumnLayout {
                     radius: 4
                     color: restartMouse.containsMouse ? Theme.surfaceHover : "transparent"
 
-                    RowLayout {
+                    Item {
                         anchors.fill: parent
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
-                        spacing: 8
-                        Text { text: String.fromCodePoint(0xF0709); color: Theme.textActive; font.pixelSize: 15 }  // restart
-                        Text { text: "Reiniciar"; color: Theme.textActive }
+
+                        Text {
+                            text: String.fromCodePoint(0xF0709)          // restart
+                            color: Theme.textActive
+                            font.pixelSize: 15
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        Text {
+                            text: "Reiniciar"
+                            color: Theme.textActive
+                            anchors.left: parent.left
+                            anchors.leftMargin: 28
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
 
                     MouseArea {
@@ -99,7 +123,7 @@ ColumnLayout {
                         anchors.fill: parent
                         hoverEnabled: true
                         onClicked: {
-                            menu.visible = false
+                            menu.visible = false 
                             restartProc.startDetached()
                         }
                     }
@@ -111,13 +135,25 @@ ColumnLayout {
                     radius: 4
                     color: suspendMouse.containsMouse ? Theme.surfaceHover : "transparent"
 
-                    RowLayout {
+                    Item {
                         anchors.fill: parent
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
-                        spacing: 8
-                        Text { text: String.fromCodePoint(0xF0904); color: Theme.textActive; font.pixelSize: 15 }  // power-sleep
-                        Text { text: "Suspender"; color: Theme.textActive }
+
+                        Text {
+                            text: String.fromCodePoint(0xF0904)          // power-sleep
+                            color: Theme.textActive
+                            font.pixelSize: 15
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        Text {
+                            text: "Suspender"
+                            color: Theme.textActive
+                            anchors.left: parent.left
+                            anchors.leftMargin: 28
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
 
                     MouseArea {
@@ -137,13 +173,25 @@ ColumnLayout {
                     radius: 4
                     color: screensaverMouse.containsMouse ? Theme.surfaceHover : "transparent"
 
-                    RowLayout {
+                    Item {
                         anchors.fill: parent
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
-                        spacing: 8
-                        Text { text: String.fromCodePoint(0xF0379); color: Theme.textActive; font.pixelSize: 15 }  // monitor
-                        Text { text: "Salvapantallas"; color: Theme.textActive }
+
+                        Text {
+                            text: String.fromCodePoint(0xF0379)          // monitor
+                            color: Theme.textActive
+                            font.pixelSize: 15
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        Text {
+                            text: "Salvapantallas"
+                            color: Theme.textActive
+                            anchors.left: parent.left
+                            anchors.leftMargin: 28
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
 
                     MouseArea {
