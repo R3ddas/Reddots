@@ -17,7 +17,10 @@ ShellRoot {
         color: "#1e1e2e"
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 6
+            anchors.topMargin: 6
+            anchors.bottomMargin: 6
+            anchors.leftMargin: 9       // Le sumo la mitad del borde que añade "Border"
+            anchors.rightMargin: 3      // Le resto la mitad del borde que añade "Border"
 
             Workspaces{Layout.alignment: Qt.AlignHCenter}       // Cambiador de Workspaces
             Item { Layout.fillHeight: true }                    // Empuja el reloj hacia el centro

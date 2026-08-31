@@ -44,6 +44,6 @@ ColumnLayout{
         text: root.level + "%"
         color: "#f5e2c5"
         font.pixelSize: 12
-        Layout.alignment: Qt.AlignHCenter
+        //Layout.alignment: Qt.AlignHCenter
     }
 }
