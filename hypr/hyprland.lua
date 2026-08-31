@@ -76,25 +76,25 @@ hl.env("HYPRCURSOR_SIZE", "24")
 local opacity = 0.9
 hl.config({
     general = {
-        gaps_in  = 5,
-        gaps_out = 12,
-
-        border_size = 2,
+        gaps_in  = 5,       -- Distancia entre ventanas
+        gaps_out = 12,      -- Distancia entre ventana y borde de pantalla
+        border_size = 2,    -- Grosor del borde de ada ventana
 
         col = {
-            active_border   = { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 },
-          inactive_border = "rgba(595959aa)",
+            active_border   = { colors = {0xeedb911a, 0xeef5e2c5}, angle = 45 },
+            inactive_border = 0xaa5a4d3e,
         },
 
-        -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
-        resize_on_border = false,
+        resize_on_border = false, -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
+        allow_tearing = false,    -- Please see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/ before you turn this on
 
-        -- Please see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/ before you turn this on
-        allow_tearing = false,
-
+        -- Colocación automática de ventanas
+        -- dwindle: cada vez que abrís una ventana nueva, divide el espacio de la última ventana enfocada en dos (alternando entre división horizontal y vertical)
+        -- master: mantiene una ventana "maestra" grande a un lado y apila el resto en una columna secundaria.
         layout = "dwindle",
     },
 
+    
     decoration = {
         rounding       = 16,
         rounding_power = 2,
@@ -152,23 +152,6 @@ hl.animation({ leaf = "workspacesIn",  enabled = true,  speed = 1.21, bezier = "
 hl.animation({ leaf = "workspacesOut", enabled = true,  speed = 1.94, bezier = "almostLinear", style = "fade" })
 hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 7,    bezier = "quick" })
 
--- Ref https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
--- "Smart gaps" / "No gaps when only"
--- uncomment all if you wish to use that.
--- hl.workspace_rule({ workspace = "w[tv1]", gaps_out = 0, gaps_in = 0 })
--- hl.workspace_rule({ workspace = "f[1]",   gaps_out = 0, gaps_in = 0 })
--- hl.window_rule({
---     name  = "no-gaps-wtv1",
---     match = { float = false, workspace = "w[tv1]" },
---     border_size = 0,
---     rounding    = 0,
--- })
--- hl.window_rule({
---     name  = "no-gaps-f1",
---     match = { float = false, workspace = "f[1]" },
---     border_size = 0,
---     rounding    = 0,
--- })
 
 -- See https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/ for more
 hl.config({
@@ -218,9 +201,7 @@ hl.config({
         numlock_by_default = true,      -- Bloq num activo por defecto
 
         follow_mouse = 1,
-
         sensitivity = 0, -- -1.0 - 1.0, 0 means no modification.
-
         touchpad = {
             natural_scroll = true,
         },
