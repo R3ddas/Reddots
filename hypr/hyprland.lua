@@ -13,7 +13,9 @@ hl.monitor({
     mode     = "preferred",
     position = "auto",
     scale    = "1",
+    --mirror   = "eDP-1"
 })
+
 
 
 ---------------------

@@ -52,3 +52,13 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = tr
 
 hl.bind("SUPER + I", hl.dsp.window.set_prop({ prop = "opaque", value = "toggle" }))         -- Activo/Desactivo la trasnparencia con Super + I
 hl.bind("SUPER + F", hl.dsp.window.fullscreen({ action = "toggle" }))                       -- Entro/salgo de pantalla completa con Super + F
+
+-- No hay un dispatcher (.dsp) para el mirror de los monitores, así que hay que crear una variable y una función
+local mirrorEnabled = true
+hl.bind("SUPER + M", function()
+    mirrorEnabled = not mirrorEnabled
+    hl.monitor({
+        output   = "",                                  -- A todos los monitores
+        mirror   = mirrorEnabled and "eDP-1" or "",     -- O copian eDP-1 o quedan vacíos (igual eDP-1 no funciona en todos los ordenadores)
+    })
+end)
