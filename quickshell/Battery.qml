@@ -29,7 +29,7 @@ ColumnLayout{
 
     Text{
         text: root.icon
-        color: "#f5e2c5"
+        color: Theme.text
         font.pixelSize: 18
         Layout.alignment: Qt.AlignHCenter
         MouseArea {
@@ -43,7 +43,7 @@ ColumnLayout{
     Text {                                              // Texto con el valor de carga, se cambia la visibilidad con botón derecho
         visible: root.showLevel
         text: root.level + "%"
-        color: "#f5e2c5"
+        color: Theme.text
         font.pixelSize: 12
         Layout.alignment: Qt.AlignHCenter
     }

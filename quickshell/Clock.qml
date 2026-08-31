@@ -8,7 +8,7 @@ import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
 ColumnLayout{
     Text{
         text: Qt.formatDateTime(clock.date, "hh\nmm")
-        color: "#f5e2c5"
+        color: Theme.text
         font.pixelSize: 15
         font.bold: true
     }

@@ -25,7 +25,7 @@ ColumnLayout {
         id: iconText
         text: root.icon
         font.pixelSize: 18
-        color: root.powered ? "#f5e2c5" : "#5a4d3e"
+        color: root.powered ? Theme.text : Theme.textMuted
 
         MouseArea {
             anchors.fill: parent
@@ -61,9 +61,9 @@ ColumnLayout {
 
         Rectangle {
             anchors.fill: parent
-            color: "#1c1714"
+            color: Theme.surface
             radius: 8
-            border.color: "#5a4d3e"
+            border.color: Theme.border
 
             ColumnLayout {
                 id: listCol
@@ -75,7 +75,7 @@ ColumnLayout {
                     Layout.fillWidth: true
                     visible: (root.adapter?.devices.values.length ?? 0) === 0
                     text: root.powered ? "Sin dispositivos" : "Bluetooth apagado"
-                    color: "#a8957c"
+                    color: Theme.textDisabled
                 }
 
                 Repeater {
@@ -87,7 +87,7 @@ ColumnLayout {
                         Layout.fillWidth: true
                         implicitHeight: 26
                         radius: 4
-                        color: deviceMouse.containsMouse ? "#2b2320" : "transparent"
+                        color: deviceMouse.containsMouse ? Theme.surfaceHover : "transparent"
 
                         Text {
                             id: deviceLabel
@@ -95,7 +95,7 @@ ColumnLayout {
                             anchors.verticalCenter: parent.verticalCenter
                             width: parent.width - 12
                             text: (modelData.connected ? "󰂱  " : "󰂯  ") + modelData.name
-                            color: modelData.connected ? "#f5e2c5" : "#a8957c"
+                            color: modelData.connected ? Theme.text : Theme.textDisabled
                             elide: Text.ElideRight
                         }
 

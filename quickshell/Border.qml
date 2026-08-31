@@ -10,7 +10,7 @@ PanelWindow {
 
     property int thickness: 5
     property int rounding: 22
-    property color frameColor: "#1e1e2e"
+    property color frameColor: Theme.background
 
     anchors { top: true; bottom: true; left: true; right: true }
     margins { left: 32 }   // el ancho de tu barra

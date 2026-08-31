@@ -9,12 +9,12 @@ ShellRoot {
     Border {
         thickness: 6
         rounding: 22
-        frameColor: "#1e1e2e"
+        frameColor: Theme.background
     }
     PanelWindow {
         anchors { top: true; bottom: true; left: true }
         implicitWidth: 32
-        color: "#1e1e2e"
+        color: Theme.background
         ColumnLayout {
             anchors.fill: parent
             anchors.topMargin: 6
