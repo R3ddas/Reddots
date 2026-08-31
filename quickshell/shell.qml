@@ -1,9 +1,10 @@
 // Recursos: https://tonybtw.com/tutorial/quickshell/
 
 import Quickshell
-import Quickshell.Hyprland // Para acceder a los WorkSpaces
+import Quickshell.Hyprland          // Para acceder a los WorkSpaces
 import QtQuick
-import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
+import QtQuick.Layouts              // Para usar RowLayout o ColumnLayout
+import Quickshell.Services.UPower   // Para detectar si hay bateria o no (y no mostrar el icono en un PC de mesa)
 
 ShellRoot {
     Border {
@@ -30,7 +31,11 @@ ShellRoot {
                 spacing: 5
                 Network{Layout.alignment: Qt.AlignHCenter}      // Wifi
                 Bluetooths{Layout.alignment: Qt.AlignHCenter}   // Bluetooth
-                Battery{Layout.alignment: Qt.AlignHCenter}      // Icono de batería
+                Loader{
+                    active: UPower.displayDevice.isPresent      // Solo se instancia si hay una batería real (en un PC no se crea el widget)
+                    sourceComponent: Battery{}
+                    Layout.alignment: Qt.AlignHCenter
+                }
             }
         }
 
