@@ -37,11 +37,12 @@ sudo pacman -Qq kitty &>/dev/null && sudo pacman -Rns --noconfirm kitty || true
 
 echo "Sistema de archivos"
 
-mkdir -p ~/.config/quickshell ~/.config/hypr ~/.config/fish # Creo las carpetas si no existen
+mkdir -p ~/.config/quickshell ~/.config/hypr ~/.config/fish ~/.config/alacritty # Creo las carpetas si no existen
 
-ln -sfn "$DOTS"/quickshell/*.qml   ~/.config/quickshell/
-ln -sfn "$DOTS"/hypr/*             ~/.config/hypr/
-ln -sfn "$DOTS/fish/config.fish"   ~/.config/fish/config.fish
+ln -sfn "$DOTS"/quickshell/*.qml           ~/.config/quickshell/
+ln -sfn "$DOTS"/hypr/*                     ~/.config/hypr/
+ln -sfn "$DOTS/fish/config.fish"           ~/.config/fish/config.fish
+ln -sfn "$DOTS/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
 
 mkdir -p ~/Pictures
 ln -sfn "$DOTS/Wallpapers"   ~/Pictures/Wallpapers

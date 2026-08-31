@@ -1,0 +1,35 @@
+# Colores sincronizados a mano con quickshell/Theme.qml
+# Los acentos (red/green/yellow/...) no existen en Theme.qml, así que se usan
+# los clásicos de Gruvbox Dark para mantener la misma familia cálida.
+
+[colors.primary]
+background = "#454138"    # Theme.background
+foreground = "#f5e2c5"    # Theme.textActive
+
+[colors.cursor]
+text   = "#454138"
+cursor = "#f5e2c5"
+
+[colors.selection]
+text       = "#454138"
+background = "#a8957c"    # Theme.textSelected
+
+[colors.normal]
+black   = "#454138"
+red     = "#cc241d"
+green   = "#98971a"
+yellow  = "#d79921"
+blue    = "#458588"
+magenta = "#b16286"
+cyan    = "#689d6a"
+white   = "#a8957c"
+
+[colors.bright]
+black   = "#5a4d3e"       # Theme.textDisabled
+red     = "#fb4934"
+green   = "#b8bb26"
+yellow  = "#fabd2f"
+blue    = "#83a598"
+magenta = "#d3869b"
+cyan    = "#8ec07c"
+white   = "#f5e2c5"
