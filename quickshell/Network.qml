@@ -27,7 +27,7 @@ ColumnLayout{
 
     Text{
         text: root.icon
-        color: Networking.wifiEnabled? Theme.textActive : Theme.textMuted
+        color: Networking.wifiEnabled? Theme.textActive : Theme.textDisabled
         font.pixelSize: 18
     }
 

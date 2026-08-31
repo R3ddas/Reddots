@@ -25,7 +25,7 @@ ColumnLayout {
         id: iconText
         text: root.icon
         font.pixelSize: 18
-        color: root.powered ? Theme.textActive : Theme.textActiveMuted
+        color: root.powered ? Theme.textActive : Theme.textDisabled
 
         MouseArea {
             anchors.fill: parent
@@ -75,7 +75,7 @@ ColumnLayout {
                     Layout.fillWidth: true
                     visible: (root.adapter?.devices.values.length ?? 0) === 0
                     text: root.powered ? "Sin dispositivos" : "Bluetooth apagado"
-                    color: Theme.textActiveDisabled
+                    color: Theme.textDisabled
                 }
 
                 Repeater {
@@ -95,7 +95,7 @@ ColumnLayout {
                             anchors.verticalCenter: parent.verticalCenter
                             width: parent.width - 12
                             text: (modelData.connected ? "󰂱  " : "󰂯  ") + modelData.name
-                            color: modelData.connected ? Theme.textActive : Theme.textActiveDisabled
+                            color: modelData.connected ? Theme.textActive : Theme.textDisabled
                             elide: Text.ElideRight
                         }
 
