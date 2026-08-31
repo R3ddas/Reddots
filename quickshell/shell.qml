@@ -12,7 +12,7 @@ ShellRoot {
         rounding: 22
         frameColor: Theme.background
     }
-    Launcher{}    // Widget que se abre/cierra con Super, abajo-centro
+    Launcher{}    // Widget que se abre/cierra con Super, abajo-derecha
     PanelWindow {
         anchors { top: true; bottom: true; left: true }
         implicitWidth: 32

@@ -4,6 +4,7 @@
 
 import Quickshell
 import Quickshell.Io      // Para el IpcHandler
+import Quickshell.Hyprland // Para el HyprlandFocusGrab
 import Quickshell.Wayland
 import QtQuick
 
@@ -21,6 +22,11 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "reddots:launcher"
 
+    onVisibleChanged: {
+        if (visible) grabTimer.restart()
+        else { grabTimer.stop(); grab.active = false }
+    }
+
     Rectangle {
         anchors.fill: parent
         topLeftRadius: 24        // Solo la esquina superior izquierda es redondeada, el resto llega al borde de la pantalla
@@ -34,5 +40,18 @@ PanelWindow {
         function toggle(): void {
             root.visible = !root.visible
         }
+    }
+
+    HyprlandFocusGrab {
+        id: grab
+        windows: [root]
+        active: false
+        onCleared: root.visible = false   // Se cierra al hacer click fuera
+    }
+
+    Timer {
+        id: grabTimer
+        interval: 5
+        onTriggered: grab.active = true
     }
 }

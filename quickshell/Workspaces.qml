@@ -12,7 +12,7 @@ ColumnLayout{
             text: index + 1
             //The color logic is straightforward: cyan if it’s the active workspace, blue if it exists but isn’t active, and muted gray if there’s no windows on that workspace.
             color: isActive ? Theme.textSelected : (ws ? Theme.textActive : Theme.textDisabled)
-            font { pixelSize: 14; bold: true }
+            font { pixelSize: 15; bold: true }
             Layout.alignment: Qt.AlignHCenter // Centro verticalemente los números
 
             MouseArea {
