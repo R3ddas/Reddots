@@ -1,0 +1,5 @@
+# Aplicaciones a esconder del launcher (nombre del .desktop en /usr/share/applications, sin la extensión)
+# Se buscan en /usr/share/applications/<nombre>.desktop y se copian a ~/.local/share/applications
+# con NoDisplay=true para que no salgan en el launcher, sin tocar el paquete del sistema.
+
+org.kde.kwrite # Uso kate directamente, no necesito el editor simple aparte

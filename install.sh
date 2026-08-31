@@ -47,6 +47,23 @@ ln -sfn "$DOTS/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
 mkdir -p ~/Pictures
 ln -sfn "$DOTS/Wallpapers"   ~/Pictures/Wallpapers
 
+echo "Escondiendo aplicaciones del launcher"
+
+mkdir -p ~/.local/share/applications
+
+sed 's/#.*//' hidden_apps.txt | grep -v '^\s*$' | while read -r app; do
+    src="/usr/share/applications/$app.desktop"
+    dest="$HOME/.local/share/applications/$app.desktop"
+    if [[ -f "$src" ]]; then
+        cp -f "$src" "$dest"
+        grep -q '^NoDisplay=' "$dest" \
+            && sed -i 's/^NoDisplay=.*/NoDisplay=true/' "$dest" \
+            || echo "NoDisplay=true" >> "$dest"
+    else
+        echo "Aviso: no se encontró $src, se omite $app"
+    fi
+done
+
 echo "Otras configuraciones"
 
 code --install-extension bbenoist.QML                                       # Extensión para QML en Visual Studio Code
