@@ -2,6 +2,7 @@ paru            # El descargador de paquetes
 
 quickshell      # El gestor de widgets, barra, etc
 
+kate            # Editor de texto estilo notepad
 nemo            # Un explorador de archivos que me funciona mejor que dolphin
 file-roller     # para poder comprimir/descomprimir
 nemo-fileroller # Extensión para que nemo pueda comprimir/descomprimir
