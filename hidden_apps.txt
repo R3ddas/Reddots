@@ -2,9 +2,9 @@
 # Se buscan en /usr/share/applications/<nombre>.desktop y se copian a ~/.local/share/applications
 # con NoDisplay=true para que no salgan en el launcher, sin tocar el paquete del sistema.
 
-#El launcher muestra el campo Name del .desktop (o su traducción Name[es] si existe), no el nombre del archivo. Para encontrar el archivo a partir de ese nombre, busca por ese campo:
-#grep -rliE "^Name(\[.*\])?=NOMBRE" /usr/share/applications/*.desktop
-#Por ejemplo, para kwrite:
+# El launcher muestra el campo Name del .desktop (o su traducción Name[es] si existe), no el nombre del archivo. Para encontrar el archivo a partir de ese nombre, busca por ese campo:
+# grep -rliE "^Name(\[.*\])?=NOMBRE" /usr/share/applications/*.desktop
+# Por ejemplo, para kwrite:
 # grep -rliE "^Name(\[.*\])?=kwrite" /usr/share/applications/*.desktop
 
 org.kde.kwrite              # Uso kate directamente, no necesito el editor simple aparte
