@@ -5,9 +5,14 @@ DOTS="$PWD" # Guardo la ruta en una variable para no acceder todo el rato
 
 echo "Instalando"
 
+#sudo cachyos-rate-mirrors                   # Actualizo la lista de servidores
+sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes
+
 echo "Actualizando el sistema"
 
-sudo pacman -Syu # Actualiza el sistema por completo antes de instalar
+sudo pacman -Syu    # Actualiza el sistema por completo antes de instalar
+sudo paru -Syu      # Actualiza el sistema por completo antes de instalar
+
 
 echo "Instalando paquetes (via pacman)"
 
@@ -27,6 +32,8 @@ echo "Instalando paquetes (via paru)"
 
 paru -S --needed visual-studio-code-bin   # Visual code
 paru -S --needed claude-desktop           # Claude
+paru -S --needed google-chrome            # Chrome
+paru -S --needed zen-browser-bin          # Zen
 
 echo "Paquetes no utilizados"
 
@@ -34,6 +41,8 @@ echo "Paquetes no utilizados"
 sudo pacman -Qq dolphin &>/dev/null && sudo pacman -Rns --noconfirm dolphin || true     # Quito Dolphin porque instalo Nemo como explorador de archivos
 sudo pacman -Qq kitty &>/dev/null && sudo pacman -Rns --noconfirm kitty || true         # Quito Kitty porque uso Alacritty como terminal
 sudo pacman -Qq meld &>/dev/null && sudo pacman -Rns --noconfirm meld || true           # Quito Meld porque no lo uso
+sudo pacman -Qq firefox &>/dev/null && sudo pacman -Rns --noconfirm firefox || true     # Quito firefox porque instalo chrome y zen
+
 
 echo "Sistema de archivos"
 
