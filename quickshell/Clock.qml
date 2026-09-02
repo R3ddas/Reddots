@@ -1,9 +1,9 @@
 // Recursos: https://www.youtube.com/watch?v=Vlpyz4c4Xdw
 
 import Quickshell
-import Quickshell.Hyprland // Para acceder a los WorkSpaces
+import Quickshell.Hyprland  // Para acceder a los WorkSpaces
 import QtQuick
-import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
+import QtQuick.Layouts      // Para usar RowLayout o ColumnLayout
 
 ColumnLayout{
     Text{
@@ -15,7 +15,7 @@ ColumnLayout{
 
     SystemClock{
         id:clock
-        precision: SystemClock.Minutes
+        precision: SystemClock.Minutes      // Sólo lo actualizo cada minuto porque no me interesan los segundos
     }
 
 }
