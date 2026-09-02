@@ -214,7 +214,7 @@ ColumnLayout {
     Process {                                                                  // Cambia aquí el comando si en el futuro quieres otro salvapantallas
         id: screensaverProc
         // El "sleep" evita que cmatrix mida el tamaño del terminal antes de que Alacritty termine de pasar a pantalla completa (si no, se queda dibujando solo en el área pequeña inicial)
-        command: ["alacritty", "-o", "window.startup_mode=\"Fullscreen\"", "-e", "sh", "-c", "sleep 0.5 && exec cmatrix -bsu 8"]
+        command: ["alacritty", "-o", "window.startup_mode=\"Fullscreen\"", "-e", "sh", "-c", "sleep 0.5 && exec cmatrix -bsu 9"]
     }
 
     HyprlandFocusGrab {
