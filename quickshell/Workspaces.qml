@@ -18,7 +18,7 @@ ColumnLayout{
             MouseArea {
                 anchors.fill: parent
                 anchors.margins: -5             // Doy un poco de margen para que sea más fácil hacer click en el número
-                onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + (index + 1) + " })")
+                onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + (index + 1) + " })") 
             }
         }
     }
