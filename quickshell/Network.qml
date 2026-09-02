@@ -4,7 +4,7 @@ import Quickshell
 import Quickshell.Networking  // Para la información de las conexiones
 import Quickshell.Hyprland    // Para el HyprlandFocusGrab
 import QtQuick
-import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
+import QtQuick.Layouts          // Para usar RowLayout o ColumnLayout
 
 ColumnLayout{
     id: root
@@ -56,7 +56,6 @@ ColumnLayout{
         id: menu
         visible: false
         color: "transparent"
-        grabFocus: true                          // Necesario para poder escribir en el campo de contraseña
 
         property var expandedNetwork: null      // Red a la espera de que se introduzca la contraseña
 
