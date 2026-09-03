@@ -30,10 +30,10 @@ sed 's/#.*//' packages.txt | grep -v '^\s*$' \
 
 echo "Instalando paquetes (via paru)"
 
-paru -S --needed visual-studio-code-bin   # Visual code
-paru -S --needed claude-desktop           # Claude
-paru -S --needed google-chrome            # Chrome
-paru -S --needed zen-browser-bin          # Zen
+paru -S --needed --noconfirm visual-studio-code-bin   # Visual code
+paru -S --needed --noconfirm claude-desktop           # Claude
+paru -S --needed --noconfirm google-chrome            # Chrome
+paru -S --needed --noconfirm zen-browser-bin          # Zen
 
 echo "Paquetes no utilizados"
 
