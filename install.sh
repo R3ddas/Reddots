@@ -11,7 +11,7 @@ sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes
 echo "Actualizando el sistema"
 
 sudo pacman -Syu    # Actualiza el sistema por completo antes de instalar
-sudo paru -Syu      # Actualiza el sistema por completo antes de instalar
+paru -Syu           # Actualiza el sistema por completo antes de instalar
 
 
 echo "Instalando paquetes (via pacman)"
