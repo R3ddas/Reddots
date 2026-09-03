@@ -33,7 +33,7 @@ ColumnLayout {
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
             onClicked: event => {
-                if (event.button === Qt.RightButton) {
+                if (event.button === Qt.LeftButton) {
                     menu.visible = !menu.visible
                 } else if (root.adapter) {
                     root.adapter.enabled = !root.adapter.enabled
@@ -55,8 +55,14 @@ ColumnLayout {
         implicitHeight: Math.max(40, listCol.implicitHeight + 16)
 
         onVisibleChanged: {
-            if (visible) grabTimer.restart()
-                else { grabTimer.stop(); grab.active = false }
+            // Escanea mientras el menú está abierto; se detiene al cerrarlo para no gastar batería
+            if (visible) {
+                grabTimer.restart()
+                if (root.adapter) root.adapter.discovering = true
+            } else {
+                grabTimer.stop(); grab.active = false
+                if (root.adapter) root.adapter.discovering = false
+            }
         }
 
         Rectangle {
@@ -74,7 +80,7 @@ ColumnLayout {
                 Text {
                     Layout.fillWidth: true
                     visible: (root.adapter?.devices.values.length ?? 0) === 0
-                    text: root.powered ? "Sin dispositivos" : "Bluetooth apagado"
+                    text: root.powered ? (root.adapter?.discovering ? "Buscando…" : "Sin dispositivos") : "Bluetooth apagado"
                     color: Theme.textDisabled
                 }
 
@@ -94,7 +100,14 @@ ColumnLayout {
                             x: 6
                             anchors.verticalCenter: parent.verticalCenter
                             width: parent.width - 12
-                            text: (modelData.connected ? "󰂱  " : "󰂯  ") + modelData.name
+                            text: {
+                                const icon = modelData.connected ? "󰂱  "
+                                    : modelData.pairing ? "⏳  "
+                                    : modelData.paired ? "󰂯  "
+                                    : "󰂲  "
+                                const suffix = modelData.paired ? "" : "  (nuevo)"
+                                return icon + modelData.name + suffix
+                            }
                             color: modelData.connected ? Theme.textActive : Theme.textDisabled
                             elide: Text.ElideRight
                         }
@@ -107,8 +120,10 @@ ColumnLayout {
                             height: parent.height
                             hoverEnabled: true
                             onClicked: {
-                                if (modelData.connected) modelData.disconnect()
-                                    else modelData.connect()
+                                if (modelData.pairing) modelData.cancelPair()
+                                    else if (modelData.connected) modelData.disconnect()
+                                    else if (modelData.paired) modelData.connect()
+                                    else modelData.pair()
                             }
                         }
                     }
