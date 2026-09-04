@@ -30,6 +30,7 @@ ShellRoot {
             Item { Layout.fillHeight: true }                    // Empuja el grupo inferior hacia abajo
             ColumnLayout{
                 spacing: 5
+                Volume{Layout.alignment: Qt.AlignHCenter}       // Volumen
                 Network{Layout.alignment: Qt.AlignHCenter}      // Wifi
                 Bluetooths{Layout.alignment: Qt.AlignHCenter}   // Bluetooth
                 Loader{
