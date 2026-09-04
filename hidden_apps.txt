@@ -7,15 +7,18 @@
 # Por ejemplo, para kwrite:
 # grep -rliE "^Name(\[.*\])?=kwrite" /usr/share/applications/*.desktop
 
-org.kde.kwrite              # Uso kate directamente, no necesito el editor simple aparte
-vim                         # No puedo desinstalarlo porque Cachy lo pide
-cachyos-hello               # No lo uso nunca
-cachyos-pi                  # No lo uso nunca (Instalador de paquetes de Cachy)
-org.cachyos.KernelManager   # No lo uso nunca
-micro                       # No puedo desinstalarlo porque Cachy lo pide
-xdvi                        # Se usa para previsualizar LaTeX, nunca lo uso sólo
-avahi-discover              # Un servicio de redes, nunca lo uso sólo
-qv4l2                       # No puedo desinstalarlo porque otros paquetes lo piden
-qvidcap                     # No puedo desinstalarlo porque otros paquetes lo piden
-com.shellyorg.shelly        # No puedo desinstalarlo porque Cachy lo pide
-btop                        # Un monitor de recursos que no uso
+org.kde.kwrite                      # Uso kate directamente, no necesito el editor simple aparte
+Alacritty                           # La terminal siempre la lanzo por keybind (Super + T)
+vim                                 # No puedo desinstalarlo porque Cachy lo pide
+cachyos-hello                       # No lo uso nunca
+cachyos-pi                          # No lo uso nunca (Instalador de paquetes de Cachy)
+org.cachyos.KernelManager           # No lo uso nunca
+org.cachyos.scx-manager             # No lo uso nunca
+micro                               # No puedo desinstalarlo porque Cachy lo pide
+xdvi                                # Se usa para previsualizar LaTeX, nunca lo uso sólo
+avahi-discover                      # Un servicio de redes, nunca lo uso sólo
+qv4l2                               # No puedo desinstalarlo porque otros paquetes lo piden
+qvidcap                             # No puedo desinstalarlo porque otros paquetes lo piden
+com.shellyorg.shelly                # Shelly. No puedo desinstalarlo porque Cachy lo pide
+com.shellyorg.shelly-notifications  # Shelly. No puedo desinstalarlo porque Cachy lo pide
+btop                                # Un monitor de recursos que no uso
