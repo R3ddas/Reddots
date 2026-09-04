@@ -10,6 +10,9 @@ sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes
 
 echo "Actualizando el sistema"
 
+# Si la actuialización falla por alguna dependencia de toolkit, puede arreglarse consudo pacman -Syu extra/hyprtoolkit
+# Esto fuerza a que tanto hyprland como hyprtoolkit se saquen del repositorio "extra"
+
 sudo pacman -Syu    # Actualiza el sistema por completo antes de instalar
 paru -Syu           # Actualiza el sistema por completo antes de instalar
 
