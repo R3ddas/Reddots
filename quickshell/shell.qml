@@ -13,6 +13,7 @@ ShellRoot {
         frameColor: Theme.background
     }
     Launcher{}    // Widget que se abre/cierra con Super, abajo-derecha
+    Notifications{}
     PanelWindow {
         anchors { top: true; bottom: true; left: true }
         implicitWidth: 32
