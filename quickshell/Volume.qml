@@ -147,7 +147,7 @@ ColumnLayout{
                             x: 6
                             anchors.verticalCenter: parent.verticalCenter
                             width: parent.width - 12
-                            text: (modelData === root.sink ? "✓ " : "") + (modelData.description || modelData.name)
+                            text: (modelData === root.sink ? "✓ " : "") + (modelData.nickname || modelData.description || modelData.name)
                             color: modelData === root.sink ? Theme.textSelected : Theme.textActive
                             elide: Text.ElideRight
                         }
