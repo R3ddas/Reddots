@@ -11,11 +11,14 @@ ColumnLayout{
     spacing: 6
 
     property var wifiDevice: Networking.devices.values.find(d => d.type === DeviceType.Wifi)
+    property var wiredDevice: Networking.devices.values.find(d => d.type === DeviceType.Wired)
     property var active: wifiDevice ? wifiDevice.networks.values.find(n => n.connected) : null
 
+    readonly property bool wiredConnected: wiredDevice ? wiredDevice.connected : false
     readonly property real signal: active? active.signalStrength : 0
 
     readonly property string icon: {
+        if (wiredConnected) return String.fromCodePoint(0xF0200)  // ethernet
         if (!Networking.wifiEnabled) return String.fromCodePoint (0xF05AA)
         if (!active) return String.fromCodePoint(0xF092D)
 
@@ -34,7 +37,7 @@ ColumnLayout{
     Text{
         id: iconText
         text: root.icon
-        color: Networking.wifiEnabled? Theme.textActive : Theme.textDisabled
+        color: (root.wiredConnected || Networking.wifiEnabled) ? Theme.textActive : Theme.textDisabled
         font.pixelSize: 18
 
         MouseArea {
