@@ -1,4 +1,5 @@
 // Recursos: https://www.youtube.com/watch?v=Vlpyz4c4Xdw
+// https://www.nerdfonts.com/
 
 import Quickshell
 import Quickshell.Networking  // Para la información de las conexiones
@@ -18,7 +19,7 @@ ColumnLayout{
     readonly property real signal: active? active.signalStrength : 0
 
     readonly property string icon: {
-        if (wiredConnected) return String.fromCodePoint(0xF0200)  // ethernet
+        if (wiredConnected) return String.fromCodePoint(0xf0317)  // ethernet
         if (!Networking.wifiEnabled) return String.fromCodePoint (0xF05AA)
         if (!active) return String.fromCodePoint(0xF092D)
 
