@@ -37,7 +37,7 @@ local terminal, fileManager, menu = programs.terminal, programs.fileManager, pro
 hl.on("hyprland.start", function ()
     hl.exec_cmd("quickshell")
     hl.exec_cmd("hyprpaper")         -- El gestor del fondo de pantalla
-    hl.exec_cmd("hyprpolkitagent")   -- Necesario para autorizar montar discos, etc.
+    hl.exec_cmd("hyprpolkitagent")   -- Necesario para autorizar montar discos, etc. (No me gusta mucho)
 end)
 
 -------------------------------
