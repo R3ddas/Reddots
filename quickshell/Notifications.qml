@@ -65,18 +65,18 @@ Scope{
                             spacing: 2
 
                             Text{                           // Título de la notificación
+                                Layout.fillWidth: true
                                 visible: text !== ""        // Visible si no está vacío
                                 text: card.modelData.summary
                                 color: Theme.textSelected
-                                elide: Text.ElideRight
                                 font.bold: true
                                 wrapMode: Text.WordWrap
                             }
                             Text{                           // Mensaje de la notificación
+                                Layout.fillWidth: true
                                 visible: text !== ""        // Visible si no está vacío
                                 text: card.modelData.body
                                 color: Theme.textActive
-                                elide: Text.ElideRight
                                 wrapMode: Text.WordWrap
                             }
                         }
