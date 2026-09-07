@@ -82,7 +82,12 @@ code --install-extension bbenoist.QML                                       # Ex
 sudo pacman -S --needed texlive-core texlive-latexextra texlive-binextra    # Paquetes necesarios de LaTeX
 code --install-extension James-Yu.latex-workshop                            # Extensión para LaTeX en Visual Studio Code
 
-# No he encontrado una forma mejor de evitar el problema del cambio de hora
-#timedatectl set-local-rtc 1 --adjust-system-clock # Para que el reloj no se cambie cada vez que arranca windows
+echo "Reloj (dual boot con Windows)"
+
+# Windows guarda el RTC en hora local; Linux por defecto lo asume en UTC.
+# Si no está ya puesto en local, lo activamos para que no se descuadre la hora al alternar entre los dos.
+if [[ "$(timedatectl show -p LocalRTC --value)" != "yes" ]]; then
+    sudo timedatectl set-local-rtc 1 --adjust-system-clock
+fi
 
 echo "Listo"
