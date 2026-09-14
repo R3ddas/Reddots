@@ -7,14 +7,26 @@ import QtQuick.Layouts              // Para usar RowLayout o ColumnLayout
 import Quickshell.Services.UPower   // Para detectar si hay bateria o no (y no mostrar el icono en un PC de mesa)
 
 ShellRoot {
+    // Pantalla del portátil si está presente (con la tapa abierta), si no la primera disponible.
+    // Así la barra siempre vive en el portátil en vez de en el monitor que Quickshell elija por defecto.
+    readonly property var laptopScreen: {
+        // Los paneles internos casi siempre usan el prefijo "eDP" (a veces "LVDS" en hardware más antiguo)
+        for (let i = 0; i < Quickshell.screens.length; i++) {
+            if (Quickshell.screens[i].name.startsWith("eDP") || Quickshell.screens[i].name.startsWith("LVDS")) return Quickshell.screens[i]
+        }
+        return Quickshell.screens[0]
+    }
+
     Border {
+        screen: laptopScreen
         thickness: 6
         rounding: 22
         frameColor: Theme.background
     }
-    Launcher{}    // Widget que se abre/cierra con Super, abajo-derecha
-    Notifications{}
+    Launcher{screen: laptopScreen}    // Widget que se abre/cierra con Super, abajo-derecha
+    Notifications{screen: laptopScreen}
     PanelWindow {
+        screen: laptopScreen
         anchors { top: true; bottom: true; left: true }
         implicitWidth: 32
         color: Theme.background

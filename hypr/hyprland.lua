@@ -7,13 +7,33 @@
 ---- MONITORS ----
 ------------------
 
--- See https://wiki.hypr.land/Configuring/Basics/Monitors/ 
+-- See https://wiki.hypr.land/Configuring/Basics/Monitors/
+-- Regla genérica primero, como red de seguridad para cualquier monitor que
+-- no tenga una regla específica más abajo (otra máquina, otro monitor externo, etc).
+-- Las reglas posteriores para un mismo monitor sustituyen a esta.
 hl.monitor({
     output   = "",
     mode     = "preferred",
     position = "auto",
     scale    = "1",
+})
+
+-- Reglas explícitas para este portátil: así el externo mantiene siempre su
+-- resolución nativa a máximo refresco, incluso cuando
+-- hypr/scripts/lid-watcher.sh reaplica la config al abrir/cerrar la tapa.
+hl.monitor({
+    output   = "eDP-1",
+    mode     = "preferred",
+    position = "0x0",
+    scale    = "1",
     --mirror   = "eDP-1" Esto igual se puede guardar como variable de entorno
+})
+
+hl.monitor({
+    output   = "HDMI-A-1",
+    mode     = "2560x1440@143.85",  -- Resolución nativa a máximo refresco (soporta hasta 143.85Hz)
+    position = "1920x0",
+    scale    = "1",
 })
 
 
@@ -38,6 +58,7 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("quickshell")
     hl.exec_cmd("hyprpaper")         -- El gestor del fondo de pantalla
     hl.exec_cmd("hyprpolkitagent")   -- Necesario para autorizar montar discos, etc. (No me gusta mucho)
+    hl.exec_cmd("bash ~/.config/hypr/scripts/lid-watcher.sh")  -- Apaga el panel del portátil al cerrar la tapa
 end)
 
 -------------------------------

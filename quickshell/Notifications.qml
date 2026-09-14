@@ -11,6 +11,7 @@ import QtQuick.Layouts                  // Para usar RowLayout o ColumnLayout
 
 Scope{
     id: root
+    property alias screen: panel.screen
     NotificationServer{
         id:server
         actionsSupported: true
@@ -22,6 +23,7 @@ Scope{
         }
     }
     PanelWindow{
+        id: panel
         anchors{top:true; right:true}
         margins{top:12; right:12}
         implicitWidth: 380
