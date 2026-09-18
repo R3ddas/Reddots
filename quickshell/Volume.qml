@@ -151,6 +151,7 @@ ColumnLayout{
         color: "transparent"
 
         anchor.item: iconText
+        anchor.rect.x: Geometry.sidebarWidth - iconText.mapToItem(null, 0, 0).x  // Que el menú no tape la barra, aparece a partir de su borde derecho
         anchor.rect.y: iconText.height + 8
         anchor.gravity: Edges.Bottom
 

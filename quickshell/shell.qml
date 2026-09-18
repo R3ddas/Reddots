@@ -7,6 +7,7 @@ import QtQuick.Layouts              // Para usar RowLayout o ColumnLayout
 import Quickshell.Services.UPower   // Para detectar si hay bateria o no (y no mostrar el icono en un PC de mesa)
 
 ShellRoot {
+
     // Pantalla del portátil si está presente (con la tapa abierta), si no la primera disponible.
     // Así la barra siempre vive en el portátil en vez de en el monitor que Quickshell elija por defecto.
     readonly property var laptopScreen: {
