@@ -46,5 +46,11 @@ ColumnLayout{
         color: Theme.textActive
         font.pixelSize: 10                              // Si es muy grande no cabe en la barra y descentra los textos
         Layout.alignment: Qt.AlignHCenter
+        MouseArea {
+            anchors.fill: parent
+            anchors.margins: -4
+            acceptedButtons: Qt.RightButton
+            onClicked: root.showLevel = !root.showLevel
+        }
     }
 }
