@@ -50,6 +50,7 @@ ShellRoot {
                     Layout.alignment: Qt.AlignHCenter
                 }
                 GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
+                ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
             }
             Power{Layout.alignment: Qt.AlignHCenter}            // Apagar / Suspender
         }

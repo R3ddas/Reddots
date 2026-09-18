@@ -1,5 +1,6 @@
 pragma Singleton
 import Quickshell
+import Quickshell.Io
 import QtQuick
 
 // Fuentes de las paletas:
@@ -30,8 +31,10 @@ import QtQuick
 // alguno de los tres se ha elegido a mano a juego con el resto, no viene de
 // ninguna fuente online.
 Singleton {
-    // Elige el tema activo escribiendo su nombre aquí (debe coincidir con
-    // el "name" de una de las entradas de themes, más abajo):
+    // Tema activo: se elige desde el icono de la paleta en la barra
+    // (ThemeSettings.qml) y se guarda solo, gracias al FileView de más abajo.
+    // También puedes escribir aquí el valor por defecto a mano si quieres
+    // (debe coincidir con el "name" de una de las entradas de themes):
     //   "Original", "Gruvbox Claro", "Gruvbox Oscuro",
     //   "Everforest Claro", "Everforest Oscuro",
     //   "Rosé Pine Claro", "Rosé Pine Oscuro",
@@ -48,7 +51,19 @@ Singleton {
     //   "Oxocarbon Claro", "Oxocarbon Oscuro",
     //   "GitHub Claro", "GitHub Oscuro",
     //   "Zenburn Oscuro", "Sonokai Oscuro", "Horizon Oscuro"
-    readonly property string activeTheme: "Gruvbox Claro"
+    property alias activeTheme: adapter.activeTheme
+
+    FileView {
+        path: Quickshell.statePath("theme.json")
+        watchChanges: true
+        onFileChanged: reload()
+        onAdapterUpdated: writeAdapter()
+
+        JsonAdapter {
+            id: adapter
+            property string activeTheme: "Gruvbox Claro"
+        }
+    }
 
     function themeByName(themeName) {
         for (var i = 0; i < themes.length; i++) {
