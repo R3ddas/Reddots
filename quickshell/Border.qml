@@ -8,12 +8,12 @@ import QtQuick.Shapes
 PanelWindow {
     id: root
 
-    property int thickness: 5
-    property int rounding: 22
+    property int thickness: Geometry.borderThickness
+    property int rounding: Geometry.borderRounding
     property color frameColor: Theme.background
 
     anchors { top: true; bottom: true; left: true; right: true }
-    margins { left: 32 }   // el ancho de tu barra
+    margins { left: Geometry.sidebarWidth }   // el ancho de tu barra
 
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore

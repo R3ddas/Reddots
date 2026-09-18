@@ -19,8 +19,6 @@ ShellRoot {
 
     Border {
         screen: laptopScreen
-        thickness: 6
-        rounding: 22
         frameColor: Theme.background
     }
     Launcher{screen: laptopScreen}    // Widget que se abre/cierra con Super, abajo-derecha
@@ -28,14 +26,14 @@ ShellRoot {
     PanelWindow {
         screen: laptopScreen
         anchors { top: true; bottom: true; left: true }
-        implicitWidth: 32
+        implicitWidth: Geometry.sidebarWidth
         color: Theme.background
         ColumnLayout {
             anchors.fill: parent
             anchors.topMargin: 6
             anchors.bottomMargin: 6
-            anchors.leftMargin: 9       // Le sumo la mitad del borde que añade "Border"
-            anchors.rightMargin: 3      // Le resto la mitad del borde que añade "Border"
+            anchors.leftMargin: 6 + Geometry.borderThickness / 2   // Le sumo la mitad del borde que añade "Border"
+            anchors.rightMargin: 6 - Geometry.borderThickness / 2  // Le resto la mitad del borde que añade "Border"
 
             Workspaces{Layout.alignment: Qt.AlignHCenter}       // Cambiador de Workspaces
             Item { Layout.fillHeight: true }                    // Empuja el reloj hacia el centro
