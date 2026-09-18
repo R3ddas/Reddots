@@ -1,0 +1,147 @@
+// Icono en la barra + popup para editar en caliente las medidas de Geometry.qml
+// (ancho de la barra lateral, grosor y redondeo del borde). Los cambios se
+// aplican al momento (Border.qml y shell.qml están enlazados a Geometry) y
+// se guardan solos en disco gracias al FileView de Geometry.qml.
+import Quickshell
+import Quickshell.Hyprland   // Para el HyprlandFocusGrab
+import QtQuick
+import QtQuick.Layouts
+
+ColumnLayout {
+    id: root
+    spacing: 6
+
+    Text {
+        id: iconText
+        text: String.fromCodePoint(0xF0CC2)  // ruler-square
+        color: Theme.textActive
+        font.pixelSize: 18
+        Layout.alignment: Qt.AlignHCenter
+
+        MouseArea {
+            anchors.fill: parent
+            anchors.margins: -4
+            onClicked: menu.visible = !menu.visible
+        }
+    }
+
+    PopupWindow {
+        id: menu
+        visible: false
+        color: "transparent"
+
+        anchor.item: iconText
+        anchor.rect.y: iconText.height + 8
+        anchor.gravity: Edges.Bottom
+
+        implicitWidth: 220
+        implicitHeight: listCol.implicitHeight + 16
+
+        onVisibleChanged: {
+            if (visible) grabTimer.restart()
+            else { grabTimer.stop(); grab.active = false }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: Theme.surface
+            radius: 8
+            border.color: Theme.border
+
+            ColumnLayout {
+                id: listCol
+                anchors.fill: parent
+                anchors.margins: 8
+                spacing: 10
+
+                // Una fila por cada entrada de Geometry.editable: etiqueta +
+                // stepper (-/valor/+) que lee y escribe la propiedad por
+                // nombre (Geometry[modelData.key]).
+                Repeater {
+                    model: Geometry.editable
+
+                    delegate: ColumnLayout {
+                        id: row
+                        required property var modelData
+
+                        Layout.fillWidth: true
+                        spacing: 2
+
+                        Text {
+                            text: row.modelData.label
+                            color: Theme.textActive
+                            font.pixelSize: 11
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 6
+
+                            Rectangle {
+                                implicitWidth: 22
+                                implicitHeight: 22
+                                radius: 4
+                                color: minusMouse.containsMouse ? Theme.surfaceHover : "transparent"
+                                border.color: Theme.border
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "−"
+                                    color: Theme.textActive
+                                }
+
+                                MouseArea {
+                                    id: minusMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: Geometry[row.modelData.key] = Math.max(row.modelData.min, Geometry[row.modelData.key] - row.modelData.step)
+                                }
+                            }
+
+                            Text {
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                                text: Geometry[row.modelData.key] + "px"
+                                color: Theme.textActive
+                            }
+
+                            Rectangle {
+                                implicitWidth: 22
+                                implicitHeight: 22
+                                radius: 4
+                                color: plusMouse.containsMouse ? Theme.surfaceHover : "transparent"
+                                border.color: Theme.border
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "+"
+                                    color: Theme.textActive
+                                }
+
+                                MouseArea {
+                                    id: plusMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: Geometry[row.modelData.key] = Math.min(row.modelData.max, Geometry[row.modelData.key] + row.modelData.step)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    HyprlandFocusGrab {
+        id: grab
+        windows: [menu]
+        active: false
+        onCleared: menu.visible = false
+    }
+
+    Timer {
+        id: grabTimer
+        interval: 5
+        onTriggered: grab.active = true
+    }
+}

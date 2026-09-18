@@ -49,6 +49,7 @@ ShellRoot {
                     sourceComponent: Battery{}
                     Layout.alignment: Qt.AlignHCenter
                 }
+                GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
             }
             Power{Layout.alignment: Qt.AlignHCenter}            // Apagar / Suspender
         }
