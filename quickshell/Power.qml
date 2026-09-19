@@ -30,9 +30,9 @@ ColumnLayout {
         color: "transparent"
 
         anchor.item: iconText
-        anchor.rect.x: Geometry.sidebarWidth - iconText.mapToItem(null, 0, 0).x  // Que el menú no tape la barra, aparece a partir de su borde derecho
+        anchor.rect.x: Geometry.sidebarWidth // Que el menú no tape la barra, aparece a partir de su borde derecho
         anchor.rect.y: -8               // El widget está al final de la barra, así que el menú se abre hacia arriba
-        anchor.gravity: Edges.Top
+        anchor.gravity: Edges.Top | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
 
         implicitWidth: 170
         implicitHeight: listCol.implicitHeight + 16
