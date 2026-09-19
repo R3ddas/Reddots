@@ -4,7 +4,7 @@ quickshell      # El gestor de widgets, barra, etc
 
 kate            # Editor de texto estilo notepad
 nemo            # Un explorador de archivos que me funciona mejor que dolphin
-file-roller     # para poder comprimir/descomprimir
+file-roller     # Para poder comprimir/descomprimir
 nemo-fileroller # Extensión para que nemo pueda comprimir/descomprimir
 unzip           # Paquete unzip para que file-roller descomprima zip
 zip             # Paquete zip para que file-roller comprima zip
