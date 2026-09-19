@@ -1,12 +1,12 @@
-{
-    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
-    "logo": null,
-    "display": {
-        "separator": "  ",
-        "color": "white",
-        "constants": ["\u001b[37m", "\u001b[38;5;16m", "\u001b[38;5;17m", "\u001b[38;5;18m"]
-    },
-    "modules": [
+{ // Inicio del objeto de configuración
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json", // Esquema JSON para autocompletado y validación en el editor
+    "logo": null, // Desactiva el logo/ASCII art (no se muestra ninguno)
+    "display": { // Opciones generales de presentación de la salida
+        "separator": "  ", // Texto que separa la clave del valor en cada módulo
+        "color": "white", // Color por defecto del texto
+        "constants": ["\u001b[37m", "\u001b[38;5;16m", "\u001b[38;5;17m", "\u001b[38;5;18m"] // Códigos ANSI reutilizables (referenciados como $1, $2... en otros valores)
+    }, // Cierra "display"
+    "modules": [ // Lista ordenada de módulos que se mostrarán
         "break",
         {
             "type": "custom",
