@@ -13,7 +13,7 @@ ColumnLayout {
 
     Text {
         id: iconText
-        text: String.fromCodePoint(0xF08B5)  // palette-swatch
+        text: String.fromCodePoint(0xf195A)
         color: Theme.textActive
         font.pixelSize: 18
         Layout.alignment: Qt.AlignHCenter

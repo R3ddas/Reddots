@@ -13,7 +13,7 @@ ColumnLayout {
 
     Text {
         id: iconText
-        text: String.fromCodePoint(0xF0CC2)  // ruler-square
+        text: String.fromCodePoint(0xEEB0)
         color: Theme.textActive
         font.pixelSize: 18
         Layout.alignment: Qt.AlignHCenter
