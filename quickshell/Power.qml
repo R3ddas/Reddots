@@ -201,7 +201,7 @@ ColumnLayout {
                         hoverEnabled: true
                         onClicked: {
                             menu.visible = false
-                            screensaverProc.startDetached()
+                            launchScreensaver()
                         }
                     }
                 }
@@ -212,10 +212,18 @@ ColumnLayout {
     Process { id: shutdownProc; command: ["systemctl", "poweroff"] }
     Process { id: restartProc; command: ["systemctl", "reboot"] }
     Process { id: suspendProc; command: ["systemctl", "suspend"] }
-    Process {                                                                  // Cambia aquí el comando si en el futuro quieres otro salvapantallas
-        id: screensaverProc
+
+    // Cambia aquí el comando si en el futuro quieres otro salvapantallas.
+    // Lanza un Alacritty a pantalla completa por cada monitor conectado, usando el
+    // dispatcher exec_cmd de Hyprland con la regla "monitor" para fijar cada uno a su pantalla
+    // (Hyprland.dispatch() envía expresiones Lua porque este Hyprland usa hyprland.lua como config).
+    function launchScreensaver() {
         // El "sleep" evita que cmatrix mida el tamaño del terminal antes de que Alacritty termine de pasar a pantalla completa (si no, se queda dibujando solo en el área pequeña inicial)
-        command: ["alacritty", "-o", "window.startup_mode=\"Fullscreen\"", "-e", "sh", "-c", "sleep 0.5 && exec cmatrix -bsu 9"]
+        const cmd = `alacritty -o 'window.startup_mode="Fullscreen"' -e sh -c 'sleep 0.5 && exec cmatrix -bsu 9'`
+        const escapedCmd = cmd.replace(/"/g, "\\\"")
+        for (const mon of Hyprland.monitors.values) {
+            Hyprland.dispatch(`hl.dsp.exec_cmd("${escapedCmd}", { monitor = "${mon.name}" })`)
+        }
     }
 
     HyprlandFocusGrab {
