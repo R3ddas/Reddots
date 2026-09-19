@@ -577,4 +577,26 @@ Singleton {
     readonly property color extra1:       current.extra1
     readonly property color extra2:       current.extra2
     readonly property color extra3:       current.extra3
+
+    // Alacritty es un proceso aparte y no puede leer este QML directamente,
+    // así que le regeneramos su colors.toml (ver alacritty/alacritty.toml,
+    // que lo importa) cada vez que cambia el tema. Alacritty recarga solo
+    // porque tiene live_config_reload activado por defecto.
+    Process {
+        id: alacrittySync
+        command: [
+            Quickshell.env("HOME") + "/.config/quickshell/scripts/gen-alacritty-colors.py",
+            background.toString(), textActive.toString(), textSelected.toString(),
+            textDisabled.toString(), surface.toString(), surfaceHover.toString(),
+            border.toString(), extra1.toString(), extra2.toString(), extra3.toString(),
+        ]
+    }
+
+    function syncAlacritty() {
+        alacrittySync.running = false
+        alacrittySync.running = true
+    }
+
+    Component.onCompleted: syncAlacritty()
+    onActiveThemeChanged: syncAlacritty()
 }

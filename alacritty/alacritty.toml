@@ -1,35 +1,40 @@
-# Colores sincronizados a mano con quickshell/Theme.qml
-# Los acentos (red/green/yellow/...) no existen en Theme.qml, así que se usan
-# los clásicos de Gruvbox Dark para mantener la misma familia cálida.
+# Los colores ya no van aquí: se generan en ~/.config/alacritty/colors.toml
+# a partir del tema activo en quickshell/Theme.qml (ver Theme.qml, sección
+# alacrittySync). Cambia de tema desde el icono de la paleta en la barra y
+# Alacritty recarga solo (live_config_reload está activado por defecto).
+general.import = ["~/.config/alacritty/colors.toml"]
 
-[colors.primary]
-background = "#454138"    # Theme.background
-foreground = "#f5e2c5"    # Theme.textActive
-
-[colors.cursor]
-text   = "#454138"
-cursor = "#f5e2c5"
-
-[colors.selection]
-text       = "#454138"
-background = "#a8957c"    # Theme.textSelected
-
-[colors.normal]
-black   = "#454138"
-red     = "#cc241d"
-green   = "#98971a"
-yellow  = "#d79921"
-blue    = "#458588"
-magenta = "#b16286"
-cyan    = "#689d6a"
-white   = "#a8957c"
-
-[colors.bright]
-black   = "#5a4d3e"       # Theme.textDisabled
-red     = "#fb4934"
-green   = "#b8bb26"
-yellow  = "#fabd2f"
-blue    = "#83a598"
-magenta = "#d3869b"
-cyan    = "#8ec07c"
-white   = "#f5e2c5"
+# Colores fijos que había antes, sincronizados a mano con quickshell/Theme.qml
+# (tema "Original"), sustituidos por el colors.toml generado de arriba:
+#
+# [colors.primary]
+# background = "#454138"    # Theme.background
+# foreground = "#f5e2c5"    # Theme.textActive
+#
+# [colors.cursor]
+# text   = "#454138"
+# cursor = "#f5e2c5"
+#
+# [colors.selection]
+# text       = "#454138"
+# background = "#a8957c"    # Theme.textSelected
+#
+# [colors.normal]
+# black   = "#454138"
+# red     = "#cc241d"
+# green   = "#98971a"
+# yellow  = "#d79921"
+# blue    = "#458588"
+# magenta = "#b16286"
+# cyan    = "#689d6a"
+# white   = "#a8957c"
+#
+# [colors.bright]
+# black   = "#5a4d3e"       # Theme.textDisabled
+# red     = "#fb4934"
+# green   = "#b8bb26"
+# yellow  = "#fabd2f"
+# blue    = "#83a598"
+# magenta = "#d3869b"
+# cyan    = "#8ec07c"
+# white   = "#f5e2c5"

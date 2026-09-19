@@ -49,12 +49,13 @@ sudo pacman -Qq firefox &>/dev/null && sudo pacman -Rns --noconfirm firefox || t
 
 echo "Sistema de archivos"
 
-mkdir -p ~/.config/quickshell ~/.config/hypr ~/.config/fish ~/.config/alacritty # Creo las carpetas si no existen
+mkdir -p ~/.config/quickshell ~/.config/hypr ~/.config/fish ~/.config/alacritty ~/.config/fastfetch # Creo las carpetas si no existen
 
-ln -sfn "$DOTS"/quickshell/*.qml           ~/.config/quickshell/
+ln -sfn "$DOTS"/quickshell/*                ~/.config/quickshell/  # Incluye scripts/ (usado por Theme.qml para sincronizar Alacritty)
 ln -sfn "$DOTS"/hypr/*                     ~/.config/hypr/
 ln -sfn "$DOTS/fish/config.fish"           ~/.config/fish/config.fish
 ln -sfn "$DOTS/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
+ln -sfn "$DOTS/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
 
 mkdir -p ~/Pictures
 ln -sfn "$DOTS/Wallpapers"   ~/Pictures/Wallpapers
@@ -78,9 +79,11 @@ done
 
 echo "Otras configuraciones"
 
-code --install-extension bbenoist.QML                                       # Extensión para QML en Visual Studio Code
+code --list-extensions | grep -qi '^bbenoist.QML$' \
+    || code --install-extension bbenoist.QML                                # Extensión para QML en Visual Studio Code
 sudo pacman -S --needed texlive-core texlive-latexextra texlive-binextra    # Paquetes necesarios de LaTeX
-code --install-extension James-Yu.latex-workshop                            # Extensión para LaTeX en Visual Studio Code
+code --list-extensions | grep -qi '^James-Yu.latex-workshop$' \
+    || code --install-extension James-Yu.latex-workshop                     # Extensión para LaTeX en Visual Studio Code
 
 echo "Reloj (dual boot con Windows)"
 
