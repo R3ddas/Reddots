@@ -8,18 +8,27 @@ import QtQuick
 // desincronizarse entre sí. Editable en caliente desde GeometrySettings.qml
 // y persistida en disco (fuera del repo, en el directorio de estado de
 // Quickshell) para que los ajustes sobrevivan a un reinicio.
+//
+// Solo cubre propiedades que vive Quickshell (bindings QML normales, efecto
+// inmediato). Las que vive Hyprland (gaps, borde/redondeo de ventana) están
+// en el singleton paralelo HyprGeometry.qml, que persiste igual pero aplica
+// los cambios de otra forma porque no hay binding posible con el compositor.
 Singleton {
+    id: root
+
     property alias sidebarWidth: adapter.sidebarWidth
     property alias borderThickness: adapter.borderThickness
     property alias borderRounding: adapter.borderRounding
 
     // Registro de propiedades editables: GeometrySettings.qml construye su
-    // panel iterando esta lista, así que añadir aquí una entrada es lo único
-    // que hace falta para que aparezca un nuevo control en el panel.
+    // panel iterando esta lista (concatenada con la de HyprGeometry.qml), así
+    // que añadir aquí una entrada es lo único que hace falta para que
+    // aparezca un nuevo control en el panel. "target" indica en qué singleton
+    // vive de verdad la propiedad (aquí o en HyprGeometry).
     readonly property var editable: [
-        { key: "sidebarWidth",    label: "Ancho barra lateral",  min: 16, max: 80, step: 1 },
-        { key: "borderThickness", label: "Grosor del borde",     min: 0,  max: 20, step: 1 },
-        { key: "borderRounding",  label: "Redondeo de esquinas", min: 0,  max: 40, step: 1 }
+        { target: root, key: "sidebarWidth",    label: "Ancho barra lateral",  min: 16, max: 80, step: 1 },
+        { target: root, key: "borderThickness", label: "Grosor del borde",     min: 0,  max: 20, step: 1 },
+        { target: root, key: "borderRounding",  label: "Redondeo de esquinas", min: 0,  max: 40, step: 1 }
     ]
 
     FileView {

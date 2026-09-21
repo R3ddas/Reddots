@@ -78,9 +78,16 @@ hl.env("HYPRCURSOR_SIZE", "24")
 local opacity = 0.9
 hl.config({
     general = {
+        -- gaps_in, gaps_out y border_size de aquí son solo el valor de
+        -- ARRANQUE (para una instalación nueva, antes de tocar nada).
+        -- En cuanto se cambia algo en el panel GeometrySettings.qml de
+        -- Quickshell, HyprGeometry.qml los sobrescribe en caliente vía
+        -- hypr/shellOverrides.lua (ver el require() al final de este
+        -- hl.config, más abajo), que gana siempre a estos valores. Editar
+        -- estas líneas a mano no tiene efecto una vez que existe ese archivo.
         gaps_in  = 5,       -- Distancia entre ventanas
         gaps_out = 12,      -- Distancia entre ventana y borde de pantalla
-        border_size = 2,    -- Grosor del borde de ada ventana
+        border_size = 2,    -- Grosor del borde de cada ventana
 
         col = {
             active_border   = { colors = {0xeedb911a, 0xeef5e2c5}, angle = 45 },
@@ -98,7 +105,7 @@ hl.config({
 
     
     decoration = {
-        rounding       = 16,
+        rounding       = 16, -- Igual que gaps_in/gaps_out/border_size arriba: solo el valor de arranque, sobrescrito por el panel/shellOverrides.lua
         rounding_power = 2,
 
         -- Change transparency of focused and unfocused windows
@@ -125,6 +132,18 @@ hl.config({
         enabled = true,
     },
 })
+
+-- Sobrescribe exactamente gaps_in/gaps_out/border_size (general, arriba) y
+-- rounding (decoration, arriba) con el último valor guardado desde el panel
+-- GeometrySettings.qml, vía quickshell/HyprGeometry.qml. El archivo no
+-- existe hasta que se toca algo desde el panel; en cuanto se crea, Hyprland
+-- lo deja bajo watch (por el require) y lo recarga solo en cambios
+-- sucesivos, sin que haga falta este chequeo otra vez.
+local shellOverridesFile = io.open(os.getenv("HOME") .. "/.config/hypr/shellOverrides.lua", "r")
+if shellOverridesFile then
+    shellOverridesFile:close()
+    require("shellOverrides")
+end
 
 -- Default curves and animations, see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
 hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })

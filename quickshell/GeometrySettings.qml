@@ -1,7 +1,9 @@
 // Icono en la barra + popup para editar en caliente las medidas de Geometry.qml
-// (ancho de la barra lateral, grosor y redondeo del borde). Los cambios se
-// aplican al momento (Border.qml y shell.qml están enlazados a Geometry) y
-// se guardan solos en disco gracias al FileView de Geometry.qml.
+// (ancho de la barra lateral, grosor y redondeo del borde) y las de
+// HyprGeometry.qml (gaps y borde/redondeo de ventana, que vive en Hyprland).
+// Los cambios de Geometry se aplican al momento (Border.qml y shell.qml están
+// enlazados a Geometry); los de HyprGeometry se aplican con "hyprctl reload".
+// Ambos se guardan solos en disco gracias a sus respectivos FileView.
 import Quickshell
 import Quickshell.Hyprland   // Para el HyprlandFocusGrab
 import QtQuick
@@ -55,11 +57,12 @@ ColumnLayout {
                 anchors.margins: 8
                 spacing: 10
 
-                // Una fila por cada entrada de Geometry.editable: etiqueta +
-                // stepper (-/valor/+) que lee y escribe la propiedad por
-                // nombre (Geometry[modelData.key]).
+                // Una fila por cada entrada de Geometry.editable +
+                // HyprGeometry.editable: etiqueta + stepper (-/valor/+) que
+                // lee y escribe la propiedad por nombre en su singleton
+                // (modelData.target[modelData.key]).
                 Repeater {
-                    model: Geometry.editable
+                    model: Geometry.editable.concat(HyprGeometry.editable)
 
                     delegate: ColumnLayout {
                         id: row
@@ -95,14 +98,14 @@ ColumnLayout {
                                     id: minusMouse
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    onClicked: Geometry[row.modelData.key] = Math.max(row.modelData.min, Geometry[row.modelData.key] - row.modelData.step)
+                                    onClicked: row.modelData.target[row.modelData.key] = Math.max(row.modelData.min, row.modelData.target[row.modelData.key] - row.modelData.step)
                                 }
                             }
 
                             Text {
                                 Layout.fillWidth: true
                                 horizontalAlignment: Text.AlignHCenter
-                                text: Geometry[row.modelData.key] + "px"
+                                text: row.modelData.target[row.modelData.key] + "px"
                                 color: Theme.textActive
                             }
 
@@ -123,7 +126,7 @@ ColumnLayout {
                                     id: plusMouse
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    onClicked: Geometry[row.modelData.key] = Math.min(row.modelData.max, Geometry[row.modelData.key] + row.modelData.step)
+                                    onClicked: row.modelData.target[row.modelData.key] = Math.min(row.modelData.max, row.modelData.target[row.modelData.key] + row.modelData.step)
                                 }
                             }
                         }
