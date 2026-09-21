@@ -26,7 +26,7 @@ PanelWindow {
     property color shadowColor: "#000000"     // color de la sombra
     property real shadowOpacity: 0.8         // opacidad máxima de la sombra (0 invisible, 1 totalmente opaca)
     property real shadowBlur: 1.0             // cuánto de "shadowBlurMax" se usa realmente (0 nada, 1 el máximo)
-    property real shadowBlurMax: 40           // difuminado: cuántos píxeles hacia adentro se desvanece la sombra
+    property real shadowBlurMax: 5           // difuminado: cuántos píxeles hacia adentro se desvanece la sombra
 
     anchors { top: true; bottom: true; left: true; right: true }
     margins { left: Geometry.sidebarWidth }   // el ancho de tu barra
