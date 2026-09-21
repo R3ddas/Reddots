@@ -13,8 +13,7 @@ echo "Actualizando el sistema"
 # Si la actuialización falla por alguna dependencia de toolkit, puede arreglarse consudo pacman -Syu extra/hyprtoolkit
 # Esto fuerza a que tanto hyprland como hyprtoolkit se saquen del repositorio "extra"
 
-sudo pacman -Syu    # Actualiza el sistema por completo antes de instalar
-paru -Syu           # Actualiza el sistema por completo antes de instalar
+paru -Syu           # Actualiza el sistema por completo antes de instalar (repos oficiales + AUR)
 
 
 echo "Instalando paquetes (via pacman)"
@@ -41,10 +40,10 @@ paru -S --needed --noconfirm zen-browser-bin          # Zen
 echo "Paquetes no utilizados"
 
 # pacman -Qq comprueba si existe; si no está, la parte de la derecha no se ejecuta y el script sigue como si nada.
-sudo pacman -Qq dolphin &>/dev/null && sudo pacman -Rns --noconfirm dolphin || true     # Quito Dolphin porque instalo Nemo como explorador de archivos
-sudo pacman -Qq kitty &>/dev/null && sudo pacman -Rns --noconfirm kitty || true         # Quito Kitty porque uso Alacritty como terminal
-sudo pacman -Qq meld &>/dev/null && sudo pacman -Rns --noconfirm meld || true           # Quito Meld porque no lo uso
-sudo pacman -Qq firefox &>/dev/null && sudo pacman -Rns --noconfirm firefox || true     # Quito firefox porque instalo chrome y zen
+pacman -Qq dolphin &>/dev/null && sudo pacman -Rns --noconfirm dolphin || true     # Quito Dolphin porque instalo Nemo como explorador de archivos
+pacman -Qq kitty &>/dev/null && sudo pacman -Rns --noconfirm kitty || true         # Quito Kitty porque uso Alacritty como terminal
+pacman -Qq meld &>/dev/null && sudo pacman -Rns --noconfirm meld || true           # Quito Meld porque no lo uso
+pacman -Qq firefox &>/dev/null && sudo pacman -Rns --noconfirm firefox || true     # Quito firefox porque instalo chrome y zen
 
 
 echo "Sistema de archivos"
