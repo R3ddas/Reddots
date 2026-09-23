@@ -13,6 +13,11 @@ hyprpolkitagent # Para poder montar discos
 cmatrix         # Para poder poner la terminal en estilo "Matrix", con caracteres cayendo
 imv             # Visor de imagenes minimalista
 
+# Usados por los atajos de teclado (hypr/keybinds.lua)
+wireplumber     # Trae wpctl, para las teclas de volumen y silenciar
+brightnessctl   # Para las teclas de brillo de la pantalla
+playerctl       # Para las teclas multimedia (siguiente, anterior, pausa)
+
 # Por esto igual debería preguntar independientemente
 steam           # Para este debería preguntar
 teams-for-linux # Para este debería preguntar
