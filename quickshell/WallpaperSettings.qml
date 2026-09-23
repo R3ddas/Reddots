@@ -1,0 +1,171 @@
+// Icono en la barra + popup para elegir el fondo de pantalla (Wallpaper.qml).
+// Muestra una miniatura de cada imagen de ~/Pictures/Wallpapers; al pulsar
+// una se aplica al momento y queda guardada (Wallpaper.qml persiste la ruta
+// sola, igual que Theme.qml con el tema). Las imágenes que se añadan o
+// borren de la carpeta aparecen/desaparecen solas, sin reiniciar Quickshell.
+import Quickshell
+import Quickshell.Hyprland          // Para el HyprlandFocusGrab
+import Quickshell.Widgets           // Para el ClippingRectangle (miniaturas con esquinas redondeadas)
+import QtQuick
+import QtQuick.Layouts              // Para ColumnLayout y GridLayout
+import Qt.labs.folderlistmodel      // Para listar (y vigilar) la carpeta de fondos
+
+ColumnLayout {
+    id: root
+    spacing: 6
+
+    readonly property int thumbWidth: 140   // Ancho de cada miniatura
+    readonly property int thumbHeight: 79   // Alto: 140 * 9/16, proporción 16:9 como la mayoría de monitores
+
+    FolderListModel {
+        id: folderModel
+        folder: "file://" + Wallpaper.folder                            // Pide una URL, no una ruta
+        nameFilters: ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"]    // Solo imágenes que hyprpaper sabe abrir
+        caseSensitive: false                                            // Para que también entren .PNG, .JPG...
+        showDirs: false                                                 // Sin subcarpetas
+    }
+
+    Text {
+        id: iconText
+        text: String.fromCodePoint(0xF0E09)  // wallpaper
+        color: Theme.textActive
+        font.pixelSize: 18
+        Layout.alignment: Qt.AlignHCenter
+
+        MouseArea {
+            anchors.fill: parent
+            anchors.margins: -4                         // Zona de clic algo más grande que el icono
+            onClicked: menu.visible = !menu.visible     // Abre/cierra el popup
+        }
+    }
+
+    PopupWindow {
+        id: menu
+        visible: false
+        color: "transparent"
+
+        anchor.item: iconText
+        anchor.rect.x: Geometry.sidebarWidth // Que el menú no tape la barra, aparece a partir de su borde derecho
+        anchor.rect.y: iconText.height + 8   // Justo debajo del icono
+        anchor.gravity: Edges.Bottom | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
+
+        implicitWidth: 2 * (root.thumbWidth + 8) + grid.columnSpacing + 16  // Fijo a 2 columnas, aunque haya un solo fondo
+        implicitHeight: Math.min(420, listCol.implicitHeight + 16)          // Como mucho 420px; si hay más fondos se hace scroll
+
+        onVisibleChanged: {
+            if (visible) grabTimer.restart()                    // Al abrir, activa el grab (con un pequeño retraso, ver grabTimer)
+            else { grabTimer.stop(); grab.active = false }      // Al cerrar, lo suelta
+        }
+
+        Rectangle {                                             // Fondo del popup
+            anchors.fill: parent
+            color: Theme.surface
+            radius: 8
+            border.color: Theme.border
+
+            Flickable {                                         // Con muchos fondos no caben todos: se recorta y se hace scroll con la rueda (como en ThemeSettings.qml)
+                id: flick
+                anchors.fill: parent
+                anchors.margins: 8
+                clip: true                                      // Oculta las miniaturas que quedan fuera
+                contentWidth: width
+                contentHeight: listCol.implicitHeight
+                boundsBehavior: Flickable.StopAtBounds          // Sin rebote al llegar arriba/abajo
+
+                ColumnLayout {
+                    id: listCol
+                    width: flick.width
+                    spacing: 4
+
+                    Text {
+                        Layout.fillWidth: true
+                        visible: folderModel.status === FolderListModel.Ready && folderModel.count === 0  // Solo si la carpeta ya se ha leído y está vacía
+                        text: "No hay imágenes en\n~/Pictures/Wallpapers"
+                        color: Theme.textDisabled
+                        font.pixelSize: 11
+                    }
+
+                    GridLayout {
+                        id: grid
+                        columns: 2                              // Dos miniaturas por fila
+                        columnSpacing: 6
+                        rowSpacing: 6
+
+                        Repeater {
+                            model: folderModel                  // Una celda por imagen de la carpeta
+
+                            delegate: Rectangle {
+                                id: cell
+                                required property string filePath       // Ruta absoluta (la que se guarda en Wallpaper.path)
+                                required property url fileUrl           // La misma ruta como URL, para el Image
+                                required property string fileBaseName   // Nombre sin extensión, para el texto de debajo
+
+                                readonly property bool selected: filePath === Wallpaper.path   // Es el fondo activo
+
+                                implicitWidth: root.thumbWidth + 8
+                                implicitHeight: cellCol.implicitHeight + 8
+                                radius: 6
+                                color: cellMouse.containsMouse ? Theme.surfaceHover : "transparent"   // Resalta la celda bajo el ratón
+
+                                ColumnLayout {
+                                    id: cellCol
+                                    anchors.fill: parent
+                                    anchors.margins: 4
+                                    spacing: 3
+
+                                    ClippingRectangle {                // Un Rectangle normal no recorta la imagen con sus esquinas redondeadas
+                                        implicitWidth: root.thumbWidth
+                                        implicitHeight: root.thumbHeight
+                                        radius: 4
+                                        color: Theme.background        // Se ve mientras la miniatura carga
+                                        contentUnderBorder: true       // El borde se pinta encima: la imagen no encoge al seleccionarla
+                                        border.width: cell.selected ? 2 : 1                                 // Más grueso en el fondo activo...
+                                        border.color: cell.selected ? Theme.textSelected : Theme.border     // ...y con el color de acento
+
+                                        Image {
+                                            anchors.fill: parent
+                                            source: cell.fileUrl
+                                            fillMode: Image.PreserveAspectCrop         // Rellena la miniatura recortando lo que sobre (como fit_mode = cover)
+                                            sourceSize.width: root.thumbWidth * 2      // Se decodifica ya reducida (al doble, para que se vea nítida):
+                                            sourceSize.height: root.thumbHeight * 2    // así un fondo 4K no ocupa ~30MB de RAM solo para la miniatura
+                                            asynchronous: true                         // No bloquea la barra mientras decodifica
+                                        }
+                                    }
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: cell.fileBaseName
+                                        color: cell.selected ? Theme.textSelected : Theme.textActive
+                                        font.pixelSize: 10
+                                        elide: Text.ElideRight                         // Los nombres largos se cortan con "…"
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: cellMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true                                 // Para el resaltado de la celda
+                                    onClicked: Wallpaper.path = cell.filePath          // Wallpaper.qml lo aplica y lo guarda solo
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    HyprlandFocusGrab {                     // Cierra el popup al hacer clic fuera de él
+        id: grab
+        windows: [menu]
+        active: false
+        onCleared: menu.visible = false
+    }
+
+    Timer {
+        id: grabTimer
+        interval: 5                         // Deja que el popup termine de abrirse antes de activar el grab
+        onTriggered: grab.active = true
+    }
+}
