@@ -101,9 +101,12 @@ hl.config({
         gaps_out = 12,      -- Distancia entre ventana y borde de pantalla
         border_size = 2,    -- Grosor del borde de cada ventana
 
+        -- Igual que lo de arriba, solo el valor de ARRANQUE: en cuanto Quickshell
+        -- arranca, Theme.qml los sobrescribe con los del tema elegido vía
+        -- hypr/shellTheme.lua (ver el require() más abajo). Son los del tema "Original".
         col = {
-            active_border   = { colors = {0xeedb911a, 0xeef5e2c5}, angle = 45 },
-            inactive_border = 0xaa5a4d3e,
+            active_border   = { colors = {0xeedb911a, 0xeef5e2c5}, angle = 45 },   -- Degradado textSelected -> textActive
+            inactive_border = 0xaa5a4d3e,                                          -- border
         },
 
         resize_on_border = false, -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
@@ -145,17 +148,21 @@ hl.config({
     },
 })
 
--- Sobrescribe exactamente gaps_in/gaps_out/border_size (general, arriba) y
--- rounding (decoration, arriba) con el último valor guardado desde el panel
--- GeometrySettings.qml, vía quickshell/HyprGeometry.qml. El archivo no
--- existe hasta que se toca algo desde el panel; en cuanto se crea, Hyprland
--- lo deja bajo watch (por el require) y lo recarga solo en cambios
--- sucesivos, sin que haga falta este chequeo otra vez.
-local shellOverridesFile = io.open(os.getenv("HOME") .. "/.config/hypr/shellOverrides.lua", "r")
-if shellOverridesFile then
-    shellOverridesFile:close()
-    require("shellOverrides")
+-- Archivos que genera Quickshell en ~/.config/hypr (fuera del repo) para
+-- sobrescribir en caliente parte de lo de arriba. No existen hasta que
+-- Quickshell los escribe por primera vez; en cuanto se crean, Hyprland los
+-- deja bajo watch (por el require) y los recarga solo en cambios sucesivos,
+-- sin que haga falta este chequeo otra vez.
+local function requireIfExists(name)
+    local file = io.open(os.getenv("HOME") .. "/.config/hypr/" .. name .. ".lua", "r")  -- Lua no tiene un "exists": se intenta abrir para saber si existe
+    if file then
+        file:close()
+        require(name)
+    end
 end
+
+requireIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding (decoration), desde el panel GeometrySettings.qml (quickshell/HyprGeometry.qml)
+requireIfExists("shellTheme")       -- col.active_border/inactive_border (general), según el tema elegido (quickshell/Theme.qml)
 
 -- Default curves and animations, see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
 hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })

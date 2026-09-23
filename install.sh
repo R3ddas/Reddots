@@ -48,9 +48,24 @@ pacman -Qq firefox &>/dev/null && sudo pacman -Rns --noconfirm firefox || true  
 
 echo "Sistema de archivos"
 
-mkdir -p ~/.config/quickshell ~/.config/hypr ~/.config/fish ~/.config/alacritty ~/.config/fastfetch ~/.config/Code/User # Creo las carpetas si no existen
+mkdir -p ~/.config/hypr ~/.config/fish ~/.config/alacritty ~/.config/fastfetch ~/.config/Code/User # Creo las carpetas si no existen
 
-ln -sfn "$DOTS"/quickshell/*               ~/.config/quickshell/  # Incluye scripts/ (usado por Theme.qml para sincronizar Alacritty)
+# Quickshell se enlaza como carpeta entera (no archivo a archivo) para que los
+# widgets nuevos que se añadan al repo aparezcan solos, sin volver a ejecutar esto.
+# Si ya existe como carpeta de verdad (instalaciones anteriores enlazaban archivo
+# a archivo), se quita antes: si solo tiene enlaces se borra, y si tiene algo más
+# se aparta a una copia por si acaso. Lo que guarda Quickshell (tema, fondo,
+# medidas...) no vive aquí sino en ~/.local/state/quickshell, así que no se pierde.
+if [[ -d ~/.config/quickshell && ! -L ~/.config/quickshell ]]; then
+    if [[ -z "$(find ~/.config/quickshell -mindepth 1 -maxdepth 1 ! -type l)" ]]; then   # Solo contiene enlaces
+        rm -r ~/.config/quickshell
+    else
+        backup=~/.config/quickshell.bak-$(date +%Y%m%d-%H%M%S)
+        mv ~/.config/quickshell "$backup"
+        echo "Aviso: ~/.config/quickshell tenía archivos propios, movidos a $backup"
+    fi
+fi
+ln -sfn "$DOTS/quickshell"                 ~/.config/quickshell   # Incluye scripts/ (usado por Theme.qml para sincronizar Alacritty)
 ln -sfn "$DOTS"/hypr/*                     ~/.config/hypr/
 ln -sfn "$DOTS/fish/config.fish"           ~/.config/fish/config.fish
 ln -sfn "$DOTS/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml

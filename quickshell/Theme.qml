@@ -58,6 +58,8 @@ Singleton {
         watchChanges: true
         onFileChanged: reload()
         onAdapterUpdated: writeAdapter()
+        onLoaded: syncHyprland()        // Al arrancar, cuando ya se sabe el tema guardado (antes activeTheme aún vale el de por defecto)
+        onLoadFailed: syncHyprland()    // Si theme.json aún no existe (instalación nueva), con el tema por defecto
 
         JsonAdapter {
             id: adapter
@@ -597,6 +599,41 @@ Singleton {
         alacrittySync.running = true
     }
 
+    // Lo mismo para los bordes de las ventanas, que los pinta Hyprland: igual
+    // que HyprGeometry.qml con las medidas, se regenera entero
+    // ~/.config/hypr/shellTheme.lua (fuera del repo) y se aplica con
+    // "hyprctl reload". hyprland.lua hace require() de ese archivo si existe.
+    function hyprColor(c, alpha) {
+        return "0x" + alpha + c.toString().slice(1)     // "#rrggbb" -> 0xAARRGGBB, el formato de hyprland.lua
+    }
+
+    function hyprThemeText() {
+        const t = themeByName(activeTheme)              // Directo del tema, no de las propiedades derivadas: puede que aún no se hayan actualizado al saltar onActiveThemeChanged
+        return "-- Generado por Theme.qml (quickshell). No editar a mano: se sobrescribe.\n"
+             + "hl.config({\n"
+             + "    general = {\n"
+             + "        col = {\n"
+             + "            active_border   = { colors = {" + hyprColor(t.textSelected, "ee") + ", " + hyprColor(t.textActive, "ee") + "}, angle = 45 },\n"  // Degradado, como el que había fijo en hyprland.lua
+             + "            inactive_border = " + hyprColor(t.border, "aa") + ",\n"
+             + "        },\n"
+             + "    },\n"
+             + "})\n"
+    }
+
+    FileView {
+        id: hyprThemeFile
+        path: Quickshell.env("HOME") + "/.config/hypr/shellTheme.lua"
+        atomicWrites: true
+        blockLoading: true                                  // Para que text() devuelva ya el contenido actual al arrancar
+        onSaved: Quickshell.execDetached(["hyprctl", "reload"])  // Solo cuando ya está escrito en disco (ver HyprGeometry.qml)
+    }
+
+    function syncHyprland() {
+        const text = hyprThemeText()
+        if (hyprThemeFile.text() !== text)                  // Si no ha cambiado nada no se escribe, y así no hay un "hyprctl reload" en cada arranque de Quickshell
+            hyprThemeFile.setText(text)
+    }
+
     Component.onCompleted: syncAlacritty()
-    onActiveThemeChanged: syncAlacritty()
+    onActiveThemeChanged: { syncAlacritty(); syncHyprland() }
 }
