@@ -221,7 +221,8 @@ ColumnLayout {
         // El "sleep" evita que cmatrix mida el tamaño del terminal antes de que Alacritty termine de pasar a pantalla completa (si no, se queda dibujando solo en el área pequeña inicial)
         // cmatrix -s se cierra solo al pulsar una tecla en SU terminal; en cuanto Alacritty termina (por eso, o por cierre manual)
         // el "pkill" mata los cmatrix de los demás monitores, lo que a su vez hace que sus Alacritty también se cierren
-        const cmd = `alacritty -o 'window.startup_mode="Fullscreen"' -e sh -c 'sleep 0.5 && exec cmatrix -bsu 10'; pkill -f 'cmatrix -bsu 9'`
+        const matrix = "cmatrix -bsu 10"    // Una sola vez: el pkill tiene que buscar exactamente lo mismo que se lanza (el -u es la velocidad)
+        const cmd = `alacritty -o 'window.startup_mode="Fullscreen"' -e sh -c 'sleep 0.5 && exec ${matrix}'; pkill -f '${matrix}'`
         const escapedCmd = cmd.replace(/"/g, "\\\"")
         for (const mon of Hyprland.monitors.values) {
             Hyprland.dispatch(`hl.dsp.exec_cmd("${escapedCmd}", { monitor = "${mon.name}" })`)

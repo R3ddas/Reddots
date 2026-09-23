@@ -49,12 +49,19 @@ hl.bind("SUPER + F", hl.dsp.window.fullscreen({ action = "toggle" }))           
 -- Al pulsar y soltar solo la tecla Super (sin combinar con otra), muestro/oculto el widget inferior
 hl.bind("SUPER + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { release = true })
 
--- No hay un dispatcher (.dsp) para el mirror de los monitores, así que hay que crear una variable y una función
-local mirrorEnabled = true
+-- No hay un dispatcher (.dsp) para el mirror de los monitores, así que hay que crear una función.
+-- En vez de llevar la cuenta en una variable, se mira el estado real cada vez: así acierta
+-- aunque el mirror se haya activado desde hyprland.lua o desde otro sitio.
+local function isMirroring()
+    for _, mon in ipairs(hl.get_monitors()) do
+        if mon.is_mirror or #mon.mirrors > 0 then return true end  -- Vale tanto el que copia como el copiado (por si get_monitors() no lista al que copia)
+    end
+    return false
+end
+
 hl.bind("SUPER + M", function()
-    mirrorEnabled = not mirrorEnabled
     hl.monitor({
         output   = "",                                  -- A todos los monitores
-        mirror   = mirrorEnabled and "eDP-1" or "",     -- O copian eDP-1 o quedan vacíos (igual eDP-1 no funciona en todos los ordenadores)
+        mirror   = isMirroring() and "" or "eDP-1",     -- Si ya hay mirror lo quita; si no, todos copian eDP-1 (igual eDP-1 no funciona en todos los ordenadores)
     })
 end)
