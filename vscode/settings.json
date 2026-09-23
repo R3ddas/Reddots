@@ -1,0 +1,6 @@
+{
+    "diffEditor.ignoreTrimWhitespace": false,   // En las comparaciones (diff) muestra también los cambios de espacios al inicio/final de línea
+    "git.enableSmartCommit": true,              // Si no hay nada en el stage, al hacer commit incluye todos los cambios automáticamente
+    "git.confirmSync": false,                   // No pide confirmación al sincronizar (pull + push) con el remoto
+    "claudeCode.preferredLocation": "panel"     // Abre Claude Code en el panel inferior en vez de en la barra lateral
+}
