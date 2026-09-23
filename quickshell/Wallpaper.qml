@@ -49,7 +49,7 @@ Singleton {
 
         JsonAdapter {
             id: adapter
-            property string path: root.folder + "/Wallpo.png"   // Solo si aún no existe wallpaper.json: el mismo de hypr/hyprpaper.conf, para que el selector lo marque
+            property string path: root.folder + "/Wallpo1.png"   // Solo si aún no existe wallpaper.json: el mismo de hypr/hyprpaper.conf, para que el selector lo marque
         }
     }
 

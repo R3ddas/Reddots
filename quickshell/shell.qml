@@ -50,9 +50,15 @@ ShellRoot {
                     sourceComponent: Battery{}
                     Layout.alignment: Qt.AlignHCenter
                 }
-                GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
-                ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
-                WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)
+                SettingsToggle{id: settingsToggle; Layout.alignment: Qt.AlignHCenter}  // Muestra/oculta el grupo de configuración de debajo
+                ColumnLayout{
+                    visible: settingsToggle.expanded                     // Oculto, el layout no le reserva hueco
+                    spacing: 5
+                    Layout.alignment: Qt.AlignHCenter
+                    GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
+                    ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
+                    WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)
+                }
             }
             Power{Layout.alignment: Qt.AlignHCenter}            // Apagar / Suspender
         }
