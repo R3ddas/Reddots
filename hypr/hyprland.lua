@@ -57,7 +57,7 @@ local terminal, fileManager, menu = programs.terminal, programs.fileManager, pro
 hl.on("hyprland.start", function ()
     hl.exec_cmd("quickshell")
     hl.exec_cmd("hyprpaper")         -- El gestor del fondo de pantalla
-    hl.exec_cmd("hyprpolkitagent")   -- Necesario para autorizar montar discos, etc. (No me gusta mucho)
+    hl.exec_cmd("systemctl --user start hyprpolkitagent")   -- Necesario para autorizar montar discos, etc. (No me gusta mucho)
     hl.exec_cmd("bash ~/.config/hypr/scripts/lid-watcher.sh")  -- Apaga el panel del portátil al cerrar la tapa
 end)
 
