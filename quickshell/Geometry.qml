@@ -20,6 +20,7 @@ Singleton {
     property alias borderThickness: adapter.borderThickness
     property alias borderRounding: adapter.borderRounding
     property alias popupRounding: adapter.popupRounding
+    property alias popupBorderWidth: adapter.popupBorderWidth
 
     // Registro de propiedades editables: GeometrySettings.qml construye su
     // panel iterando esta lista (concatenada con la de HyprGeometry.qml), así
@@ -30,7 +31,8 @@ Singleton {
         { target: root, key: "sidebarWidth",    label: "Ancho barra lateral",  min: 16, max: 80, step: 1 },
         { target: root, key: "borderThickness", label: "Grosor del borde",     min: 0,  max: 20, step: 1 },
         { target: root, key: "borderRounding",  label: "Redondeo de esquinas", min: 0,  max: 40, step: 1 },
-        { target: root, key: "popupRounding",   label: "Redondeo desplegables", min: 0, max: 40, step: 1 }
+        { target: root, key: "popupRounding",   label: "Redondeo desplegables", min: 0, max: 40, step: 1 },
+        { target: root, key: "popupBorderWidth", label: "Borde desplegables",   min: 0, max: 10, step: 1 }
     ]
 
     // "anchor.rect.y" (relativo a "item") para un popup de altura "popupHeight"
@@ -60,6 +62,7 @@ Singleton {
             property int borderThickness: 6    // Grosor del marco que dibuja Border
             property int borderRounding: 22    // Radio de las esquinas redondeadas de Border
             property int popupRounding: 16     // Radio de las esquinas de los desplegables de la barra
+            property int popupBorderWidth: 2   // Grosor del borde de color de los desplegables y del lanzador (0 = sin borde)
         }
     }
 }

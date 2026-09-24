@@ -48,7 +48,8 @@ ColumnLayout {
             anchors.fill: parent
             color: Theme.surface
             radius: Geometry.popupRounding                  // Redondeo propio de los desplegables (editable en GeometrySettings)
-            border.color: Theme.border
+            border.color: Theme.textSelected                // Borde con el color de acento del tema
+            border.width: Geometry.popupBorderWidth         // Grosor editable en GeometrySettings
 
             // Flickable en vez de Repeater suelto porque hay ~30 temas: con
             // todos desplegados no cabrían en pantalla, así que se recorta a

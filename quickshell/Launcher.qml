@@ -39,9 +39,12 @@ PanelWindow {
     Rectangle {
         id: background
         anchors.fill: parent
+        anchors.rightMargin: -border.width      // Los bordes derecho e inferior quedan fuera de la ventana: solo se ve el borde
+        anchors.bottomMargin: -border.width     // de arriba y el de la izquierda, no una línea pegada al filo de la pantalla
         topLeftRadius: 24        // Solo la esquina superior izquierda es redondeada, el resto llega al borde de la pantalla
         color: Theme.surface
-        border.color: Theme.border
+        border.color: Theme.textSelected        // Borde con el color de acento del tema, como los desplegables de la barra
+        border.width: Geometry.popupBorderWidth // Grosor editable en GeometrySettings
         clip: true
 
         ListView {
