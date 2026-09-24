@@ -1,6 +1,7 @@
 paru            # El descargador de paquetes
 
 quickshell      # El gestor de widgets, barra, etc
+alacritty       # La terminal (install.sh quita kitty, así que tiene que estar sí o sí)
 
 kate            # Editor de texto estilo notepad
 nemo            # Un explorador de archivos que me funciona mejor que dolphin
@@ -16,6 +17,7 @@ imv             # Visor de imagenes minimalista
 # Usados por los atajos de teclado (hypr/keybinds.lua)
 wireplumber     # Trae wpctl, para las teclas de volumen y silenciar
 brightnessctl   # Para las teclas de brillo de la pantalla
+ddcutil         # Brillo de los monitores externos por DDC/CI (widget Brightness.qml)
 playerctl       # Para las teclas multimedia (siguiente, anterior, pausa)
 
 # Por esto igual debería preguntar independientemente

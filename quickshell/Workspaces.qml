@@ -5,7 +5,7 @@ import QtQuick.Layouts      // Para usar RowLayout o ColumnLayout
 
 ColumnLayout{
     Repeater{               // Repite algo N veces
-        model:5
+        model:6
         Text{
             property var ws: Hyprland.workspaces.values.find(w => w.id === index + 1)
             property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)

@@ -24,6 +24,7 @@ ShellRoot {
     }
     Launcher{screen: laptopScreen}    // Widget que se abre/cierra con Super, abajo-derecha
     Notifications{screen: laptopScreen}
+    Osd{screen: laptopScreen}         // Indicador de volumen/brillo al usar las teclas multimedia
     PanelWindow {
         screen: laptopScreen
         anchors { top: true; bottom: true; left: true }
@@ -55,6 +56,7 @@ ShellRoot {
                     visible: settingsToggle.expanded                     // Oculto, el layout no le reserva hueco
                     spacing: 5
                     Layout.alignment: Qt.AlignHCenter
+                    Brightness{Layout.alignment: Qt.AlignHCenter}        // Brillo del portátil y de los monitores externos (DDC)
                     GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
                     ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
                     WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)

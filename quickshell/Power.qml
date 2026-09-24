@@ -31,8 +31,8 @@ ColumnLayout {
 
         anchor.item: iconText
         anchor.rect.x: Geometry.sidebarWidth // Que el menú no tape la barra, aparece a partir de su borde derecho
-        anchor.rect.y: -8               // El widget está al final de la barra, así que el menú se abre hacia arriba
-        anchor.gravity: Edges.Top | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
+        anchor.gravity: Edges.Bottom | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
+        anchor.onAnchoring: anchor.rect.y = Geometry.popupY(iconText, anchor.rect.x, implicitHeight)  // A la altura del icono; como está al final de la barra, en la práctica queda pegado abajo
 
         implicitWidth: 170
         implicitHeight: listCol.implicitHeight + 16

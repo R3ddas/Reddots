@@ -46,9 +46,8 @@ ColumnLayout {
 
         anchor.item: iconText
         anchor.rect.x: Geometry.sidebarWidth // Que el menú no tape la barra, aparece a partir de su borde derecho
-        anchor.rect.y: iconText.height + 8   // Justo debajo del icono
         anchor.gravity: Edges.Bottom | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
-        anchor.onAnchoring: anchor.rect.y = Geometry.popupY(iconText, anchor.rect.x, implicitHeight, iconText.height + 8)  // Si no cabe debajo, lo sube para dejar abajo el mismo hueco que a la izquierda
+        anchor.onAnchoring: anchor.rect.y = Geometry.popupY(iconText, anchor.rect.x, implicitHeight)  // A la altura del icono; si no cabe, se mueve lo justo para dejar el mismo hueco que a la izquierda
 
         implicitWidth: 2 * (root.thumbWidth + 8) + grid.columnSpacing + 16  // Fijo a 2 columnas, aunque haya un solo fondo
         implicitHeight: Math.min(420, listCol.implicitHeight) + popupCol.spacing + openFolder.implicitHeight + 16  // La lista, como mucho 420px (si hay más fondos se hace scroll), más el botón de abajo

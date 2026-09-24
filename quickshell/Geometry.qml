@@ -36,18 +36,21 @@ Singleton {
     ]
 
     // "anchor.rect.y" (relativo a "item") para un popup de altura "popupHeight"
-    // que se abre hacia abajo desde "item": el que pide ("wantedY") salvo que
-    // se saliese por abajo, en cuyo caso lo sube lo justo para que quede tan
-    // separado del borde inferior como lo está del marco por la izquierda.
-    // Se llama desde el "anchoring" de cada PopupWindow (justo antes de
-    // colocarlo), porque mapToItem no avisa cuando el icono cambia de sitio.
-    function popupY(item, popupX, popupHeight, wantedY) {
+    // que se abre a la derecha de "item": centrado en vertical con el icono,
+    // salvo que se saliese por abajo o por arriba, en cuyo caso se mueve lo
+    // justo para que quede tan separado de ese borde como lo está del marco
+    // por la izquierda. Se llama desde el "anchoring" de cada PopupWindow
+    // (justo antes de colocarlo), porque mapToItem no avisa cuando el icono
+    // cambia de sitio.
+    function popupY(item, popupX, popupHeight) {
         const pos = item.mapToItem(null, 0, 0)                                     // Posición del icono dentro de la barra
         let win = item
         while (win.parent) win = win.parent                                        // contentItem de la barra: mide lo que la pantalla
         const leftGap = Math.max(0, pos.x + popupX - root.sidebarWidth - root.borderThickness)  // Hueco entre el marco izquierdo y el popup
         const maxY = win.height - root.borderThickness - leftGap - pos.y - popupHeight          // Lo más abajo que puede empezar
-        return Math.min(wantedY, maxY)
+        const minY = root.borderThickness + leftGap - pos.y                                     // Lo más arriba que puede empezar
+        const centered = (item.height - popupHeight) / 2                                        // Centrado con el icono
+        return Math.max(minY, Math.min(centered, maxY))
     }
 
     FileView {

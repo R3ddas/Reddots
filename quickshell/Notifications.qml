@@ -41,6 +41,24 @@ Scope{
                     id: card
                     required property var modelData
 
+                    // appIcon puede venir como nombre de icono del tema ("firefox"), como ruta
+                    // ("/usr/share/...") o como URL ("file:///..."). Solo el nombre hay que
+                    // buscarlo en el tema de iconos; con "true" devuelve "" si no existe.
+                    function iconSource(appIcon) {
+                        if (!appIcon) return ""
+                        if (appIcon.startsWith("/")) return "file://" + appIcon
+                        if (appIcon.includes("://")) return appIcon
+                        return Quickshell.iconPath(appIcon, true)
+                    }
+
+                    // "notify-send -i" llega por image como "image://icon/<nombre o ruta>", y si
+                    // ese icono no existe se pinta un damero magenta. Se comprueba igual que appIcon.
+                    function imageSource(image) {
+                        if (!image) return ""
+                        if (image.startsWith("image://icon/")) return iconSource(image.slice(13).split("?")[0])
+                        return image
+                    }
+
                     Layout.fillWidth: true
                     Layout.preferredHeight: layout.implicitHeight +20
 
@@ -59,8 +77,8 @@ Scope{
                             Layout.preferredHeight: 36
                             Layout.alignment: Qt.AlignTop
                             fillMode: Image.PreserveAspectFit
-                            visible: source.toString() !== ""
-                            source: card.modelData.image || card.modelData.icon || ""
+                            visible: source.toString() !== "" && status !== Image.Error   // Sin hueco si no hay icono o la ruta no se puede abrir
+                            source: card.imageSource(card.modelData.image) || card.iconSource(card.modelData.appIcon)
                         }
                         ColumnLayout{
                             Layout.fillWidth: true

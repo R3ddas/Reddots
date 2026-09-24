@@ -42,7 +42,7 @@ hl.monitor({
 ---- MY PROGRAMS ----
 ---------------------
 local programs = require("programs")
-local terminal, fileManager, menu = programs.terminal, programs.fileManager, programs.menu
+local terminal, fileManager = programs.terminal, programs.fileManager
 
 
 -------------------

@@ -96,7 +96,7 @@ echo "Otras configuraciones"
 
 code --list-extensions | grep -qi '^bbenoist.QML$' \
     || code --install-extension bbenoist.QML                                # Extensión para QML en Visual Studio Code
-sudo pacman -S --needed texlive-core texlive-latexextra texlive-binextra    # Paquetes necesarios de LaTeX
+sudo pacman -S --needed --noconfirm texlive-core texlive-latexextra texlive-binextra    # Paquetes necesarios de LaTeX
 code --list-extensions | grep -qi '^James-Yu.latex-workshop$' \
     || code --install-extension James-Yu.latex-workshop                     # Extensión para LaTeX en Visual Studio Code
 
