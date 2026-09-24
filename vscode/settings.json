@@ -2,5 +2,13 @@
     "diffEditor.ignoreTrimWhitespace": false,   // En las comparaciones (diff) muestra también los cambios de espacios al inicio/final de línea
     "git.enableSmartCommit": true,              // Si no hay nada en el stage, al hacer commit incluye todos los cambios automáticamente
     "git.confirmSync": false,                   // No pide confirmación al sincronizar (pull + push) con el remoto
-    "claudeCode.preferredLocation": "panel"     // Abre Claude Code en el panel inferior en vez de en la barra lateral
+    "claudeCode.preferredLocation": "panel",    // Abre Claude Code en el panel inferior en vez de en la barra lateral
+
+    "editor.autoClosingBrackets": "never",      // no cierra las llaves automáticamente
+    "editor.autoClosingQuotes": "never",        // no cierra comillas automáticamente
+    "editor.autoSurround": "never",             // no envuelve la selección al escribir ( o "
+    "editor.autoClosingOvertype": "never",      // no "salta" sobre el ) de cierre al teclearlo
+    "editor.wordWrap": "on"                     // activo el word wrap por defecto (se activa/desactiva con alt+z)
+    //"[markdown]": { "editor.wordWrap": "on" },    // Puedo ahcer las cosas por lenguaje si quisiera
+    //"[latex]": { "editor.wordWrap": "on" }
 }
