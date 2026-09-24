@@ -14,7 +14,7 @@ ColumnLayout {
     property bool expanded: false       // true = widgets de configuración visibles (siempre arranca plegado)
 
     Text {
-        text: String.fromCodePoint(root.expanded ? 0xF0493 : 0xF08BB)      // cog (desplegado) / cog-outline (plegado)
+        text: String.fromCodePoint(root.expanded ? 0xf01d8 : 0xf01d8)      // cog (desplegado) / cog-outline (plegado)
         color: root.expanded ? Theme.textSelected : Theme.textActive       // Con el color de acento mientras está desplegado
         font.pixelSize: 18
         Layout.alignment: Qt.AlignHCenter

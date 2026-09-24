@@ -67,6 +67,7 @@ ColumnLayout{
         anchor.rect.x: Geometry.sidebarWidth  // Que el menú no tape la barra, aparece a partir de su borde derecho
         anchor.rect.y: iconText.height + 8
         anchor.gravity: Edges.Bottom | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
+        anchor.onAnchoring: anchor.rect.y = Geometry.popupY(iconText, anchor.rect.x, implicitHeight, iconText.height + 8)  // Si no cabe debajo, lo sube para dejar abajo el mismo hueco que a la izquierda
 
         implicitWidth: 260
         implicitHeight: Math.max(40, listCol.implicitHeight + 16)
@@ -86,7 +87,7 @@ ColumnLayout{
         Rectangle {
             anchors.fill: parent
             color: Theme.surface
-            radius: 8
+            radius: Geometry.popupRounding                  // Redondeo propio de los desplegables (editable en GeometrySettings)
             border.color: Theme.border
 
             ColumnLayout {

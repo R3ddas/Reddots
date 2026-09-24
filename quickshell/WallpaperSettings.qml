@@ -48,6 +48,7 @@ ColumnLayout {
         anchor.rect.x: Geometry.sidebarWidth // Que el menú no tape la barra, aparece a partir de su borde derecho
         anchor.rect.y: iconText.height + 8   // Justo debajo del icono
         anchor.gravity: Edges.Bottom | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
+        anchor.onAnchoring: anchor.rect.y = Geometry.popupY(iconText, anchor.rect.x, implicitHeight, iconText.height + 8)  // Si no cabe debajo, lo sube para dejar abajo el mismo hueco que a la izquierda
 
         implicitWidth: 2 * (root.thumbWidth + 8) + grid.columnSpacing + 16  // Fijo a 2 columnas, aunque haya un solo fondo
         implicitHeight: Math.min(420, listCol.implicitHeight) + popupCol.spacing + openFolder.implicitHeight + 16  // La lista, como mucho 420px (si hay más fondos se hace scroll), más el botón de abajo
@@ -60,7 +61,7 @@ ColumnLayout {
         Rectangle {                                             // Fondo del popup
             anchors.fill: parent
             color: Theme.surface
-            radius: 8
+            radius: Geometry.popupRounding                  // Redondeo propio de los desplegables (editable en GeometrySettings)
             border.color: Theme.border
 
             ColumnLayout {                                      // Lista de fondos arriba y botón "Abrir carpeta" abajo

@@ -45,7 +45,7 @@ ColumnLayout {
         Rectangle {
             anchors.fill: parent
             color: Theme.surface
-            radius: 8
+            radius: Geometry.popupRounding                  // Redondeo propio de los desplegables (editable en GeometrySettings)
             border.color: Theme.border
 
             ColumnLayout {
