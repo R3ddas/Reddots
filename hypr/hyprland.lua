@@ -212,6 +212,9 @@ hl.config({
         force_default_wallpaper = 0,    -- 0 o 1 quita los fondos por defecto de la mascota anime
         disable_hyprland_logo   = true, -- Quita el logo de Hyprland / la chica anime del fondo
         disable_splash_rendering = true,
+        -- Si se nota parpadeo en juegos o vídeos, cambiar el 2 por un 3: solo se activa
+        -- cuando la aplicación indica que lo que muestra es un juego o un vídeo.
+        vrr = 2,                       -- VRR (FreeSync) solo con una ventana en pantalla completa: juegos y vídeos sin tirones, el escritorio a frecuencia fija
     },
 })
 
