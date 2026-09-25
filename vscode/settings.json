@@ -8,7 +8,8 @@
     "editor.autoClosingQuotes": "never",        // no cierra comillas automáticamente
     "editor.autoSurround": "never",             // no envuelve la selección al escribir ( o "
     "editor.autoClosingOvertype": "never",      // no "salta" sobre el ) de cierre al teclearlo
-    "editor.wordWrap": "on"                     // activo el word wrap por defecto (se activa/desactiva con alt+z)
+    "editor.wordWrap": "on",                    // activo el word wrap por defecto (se activa/desactiva con alt+z)
+    "editor.minimap.enabled": false             // Quito el minimapa
     //"[markdown]": { "editor.wordWrap": "on" },    // Puedo ahcer las cosas por lenguaje si quisiera
     //"[latex]": { "editor.wordWrap": "on" }
 }

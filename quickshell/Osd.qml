@@ -33,7 +33,7 @@ PanelWindow {
     }
 
     anchors.bottom: true
-    margins.bottom: 80
+    margins.bottom: 10
     implicitWidth: 260
     implicitHeight: 48
 
