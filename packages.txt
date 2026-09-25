@@ -18,6 +18,27 @@ brightnessctl   # Para las teclas de brillo de la pantalla
 ddcutil         # Brillo de los monitores externos por DDC/CI (widget Brightness.qml)
 playerctl       # Para las teclas multimedia (siguiente, anterior, pausa)
 
+# Usados por la barra (quickshell/). CachyOS ya los trae, pero así no dependo de eso
+ttf-cascadia-code-nerd  # Fuente de la que salen los iconos de la barra (Nerd Font)
+libnotify       # Trae notify-send, para los avisos de batería baja y de Bluetooth
+libpulse        # Trae pactl, para saber qué salidas de audio tienen algo enchufado (Volume.qml)
+xdg-utils       # Trae xdg-open, para el botón "Abrir carpeta" de los fondos de pantalla
+python          # Para generar los colores de Alacritty según el tema (scripts/gen-alacritty-colors.py)
+git             # Para el botón de actualizar Reddots (scripts/update-reddots.sh)
+
+# Capturas de pantalla (Screenshot.qml y scripts/screenshot.sh)
+grim            # Hace la captura
+slurp           # Para elegir con el ratón la región o la ventana a capturar
+hyprpicker      # Congela la pantalla mientras se elige, para poder capturar menús
+wl-clipboard    # Trae wl-copy, para copiar la captura al portapapeles
+jq              # Para leer las ventanas y monitores que da hyprctl en JSON
+xdg-user-dirs   # Trae xdg-user-dir, para guardar en la carpeta de imágenes (~/Imágenes)
+
+# LaTeX (con la extensión LaTeX Workshop de Visual Studio Code, ver install.sh)
+texlive-basic       # Lo básico de LaTeX (antes se llamaba texlive-core)
+texlive-latexextra  # Paquetes de LaTeX adicionales
+texlive-binextra    # Programas auxiliares (latexmk, que usa LaTeX Workshop para compilar)
+
 # Por esto igual debería preguntar independientemente
 steam           # Para este debería preguntar
 teams-for-linux # Para este debería preguntar

@@ -35,7 +35,7 @@ apply_state() {
     if [ "$lid" = "true" ]; then
         hyprctl eval "hl.monitor({ output = \"$output\", disabled = true })" >/dev/null 2>&1
     else
-        hyprctl eval "hl.monitor({ output = \"$output\", disabled = false, mode = \"preferred\", position = \"0x0\", scale = \"1\" })" >/dev/null 2>&1
+        hyprctl eval "hl.monitor({ output = \"$output\", disabled = false, mode = \"highres\", position = \"0x0\", scale = \"1\" })" >/dev/null 2>&1   # Los mismos valores que la regla del panel en hypr/hyprland.lua
     fi
 
     restart_quickshell

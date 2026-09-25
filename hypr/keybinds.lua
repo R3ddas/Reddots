@@ -1,4 +1,5 @@
 local programs = require("programs")
+local monitors = require("monitors")
 local terminal = programs.terminal
 
 local mainMod = "SUPER" -- La tecla "Windows" como modificador principal
@@ -62,9 +63,22 @@ local function isMirroring()
     return false
 end
 
+-- Monitor que copian los demás: el panel del portátil si lo hay; si no (sobremesa
+-- con varios monitores), el que tiene el foco.
+local internalPanel = monitors.internalPanel()      -- Una sola vez: el portátil no cambia de panel
+
+local function mirrorSource()
+    if internalPanel then return internalPanel end
+    for _, mon in ipairs(hl.get_monitors()) do
+        if mon.focused then return mon.name end
+    end
+    return ""
+end
+
 hl.bind("SUPER + M", function()
+    if not isMirroring() and #hl.get_monitors() < 2 then return end   -- Con un solo monitor no hay nada que copiar (se copiaría a sí mismo)
     hl.monitor({
-        output   = "",                                  -- A todos los monitores
-        mirror   = isMirroring() and "" or "eDP-1",     -- Si ya hay mirror lo quita; si no, todos copian eDP-1 (igual eDP-1 no funciona en todos los ordenadores)
+        output   = "",                                          -- A todos los monitores
+        mirror   = isMirroring() and "" or mirrorSource(),      -- Si ya hay mirror lo quita; si no, todos copian el de mirrorSource()
     })
 end)

@@ -8,33 +8,32 @@
 -------------------
 
 -- Ver https://wiki.hypr.land/Configuring/Basics/Monitors/
--- Regla genérica primero, como red de seguridad para cualquier monitor que
--- no tenga una regla específica más abajo (otra máquina, otro monitor externo, etc).
--- Las reglas posteriores para un mismo monitor sustituyen a esta.
+-- Nada de nombres de máquina ni de conector: valen igual en el portátil y en el sobremesa.
+local monitors = require("monitors")
+
+-- Cualquier monitor: su resolución más alta y, dentro de esa, la mayor frecuencia
+-- ("highres"). Así cada monitor va a su resolución nativa a máximo refresco sin
+-- escribir su modo a mano ("preferred" dejaba el MSI del sobremesa a 60Hz en vez
+-- de a 165Hz). "auto" coloca cada monitor a la derecha de los que ya hay.
 hl.monitor({
     output   = "",
-    mode     = "preferred",
+    mode     = "highres",
     position = "auto",
     scale    = "1",
 })
 
--- Reglas explícitas para este portátil: así el externo mantiene siempre su
--- resolución nativa a máximo refresco, incluso cuando
--- hypr/scripts/lid-watcher.sh reaplica la config al abrir/cerrar la tapa.
-hl.monitor({
-    output   = "eDP-1",
-    mode     = "preferred",
-    position = "0x0",
-    scale    = "1",
-    --mirror   = "eDP-1" Esto igual se puede guardar como variable de entorno
-})
-
-hl.monitor({
-    output   = "HDMI-A-1",
-    mode     = "2560x1440@143.85",  -- Resolución nativa a máximo refresco (soporta hasta 143.85Hz)
-    position = "1920x0",
-    scale    = "1",
-})
+-- El panel del portátil, si lo hay, siempre a la izquierda (0x0), con los externos a
+-- su derecha. También cuando hypr/scripts/lid-watcher.sh lo apaga y lo vuelve a
+-- encender al cerrar/abrir la tapa (allí se reactiva con estos mismos valores).
+local internalPanel = monitors.internalPanel()
+if internalPanel then
+    hl.monitor({
+        output   = internalPanel,
+        mode     = "highres",
+        position = "0x0",
+        scale    = "1",
+    })
+end
 
 
 ----------------------

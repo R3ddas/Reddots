@@ -68,6 +68,7 @@ ShellRoot {
                             visible: settingsToggle.expanded                     // Oculto, el layout no le reserva hueco
                             spacing: 5
                             Layout.alignment: Qt.AlignHCenter
+                            Screenshot{Layout.alignment: Qt.AlignHCenter}        // Capturas de pantalla
                             Brightness{Layout.alignment: Qt.AlignHCenter}        // Brillo del portátil y de los monitores externos (DDC)
                             GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
                             ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
