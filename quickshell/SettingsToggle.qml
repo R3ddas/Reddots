@@ -27,13 +27,4 @@ ColumnLayout {
                  + (SystemMonitor.overheating ? "\nTemperatura alta: " + SystemMonitor.warning : "")
         onClicked: root.owner.expanded = !root.owner.expanded               // Muestra/oculta el grupo
     }
-
-    Text {                  // Actualizaciones pendientes: con el grupo plegado no se ve el icono de Reddots, así que el número sale aquí
-        visible: root.controls === null && !root.expanded && Updates.count > 0
-        text: Updates.count > 99 ? "99+" : Updates.count
-        color: Theme.textSelected
-        font.pixelSize: 10
-        font.bold: true
-        Layout.alignment: Qt.AlignHCenter
-    }
 }
