@@ -45,16 +45,20 @@ pacman -Qq kitty &>/dev/null && sudo pacman -Rns --noconfirm kitty || true      
 pacman -Qq meld &>/dev/null && sudo pacman -Rns --noconfirm meld || true           # Quito Meld porque no lo uso
 pacman -Qq firefox &>/dev/null && sudo pacman -Rns --noconfirm firefox || true     # Quito firefox porque instalo chrome y zen
 pacman -Qq hyprpaper &>/dev/null && sudo pacman -Rns --noconfirm hyprpaper || true # Quito hyprpaper porque el fondo lo pinta Quickshell (quickshell/Background.qml)
+pacman -Qq polkit-gnome &>/dev/null && sudo pacman -Rns --noconfirm polkit-gnome || true # Quito polkit-gnome: otro agente de polkit, y el que se usa es el de Quickshell (quickshell/PolkitDialog.qml)
 
 
 echo "Servicios"
 
 # El agente de polkit (la ventana que pide la contraseña al montar un disco, etc.) es
 # ahora quickshell/PolkitDialog.qml. Solo puede haber uno por sesión, y hyprpolkitagent
-# viene activado de serie: arrancaría antes que Quickshell y le quitaría el sitio.
-if systemctl --user list-unit-files hyprpolkitagent.service &>/dev/null; then
+# viene instalado y activado de serie: arrancaría antes que Quickshell y le quitaría el
+# sitio. Se para y se desactiva antes de desinstalarlo, porque quitar el paquete no
+# detiene el que ya está en marcha en esta sesión.
+if pacman -Qq hyprpolkitagent &>/dev/null; then
     systemctl --user disable --now hyprpolkitagent.service &>/dev/null || true
     systemctl --user reset-failed hyprpolkitagent.service &>/dev/null || true
+    sudo pacman -Rns --noconfirm hyprpolkitagent
 fi
 
 echo "Sistema de archivos"

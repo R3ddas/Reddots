@@ -10,24 +10,18 @@
 
 import Quickshell
 import Quickshell.Io        // Para el IpcHandler y lanzar cliphist
-import Quickshell.Hyprland  // Para el HyprlandFocusGrab
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 
-PanelWindow {
+OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.qml)
     id: root
-    visible: false
 
     // Sin anchors: el compositor la coloca en el centro de la pantalla
     implicitWidth: 520
     implicitHeight: 560
 
-    color: "transparent"
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "reddots:clipboard"
-    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None   // Igual que el Launcher: OnDemand para que el grab se entere del clic fuera
 
     // Miniaturas de las imágenes: se sacan de cliphist a esta carpeta la primera vez que
     // se ven. En XDG_RUNTIME_DIR (memoria), así se borran solas al apagar.
@@ -41,10 +35,8 @@ PanelWindow {
             list.currentIndex = 0
             reload()
             searchInput.forceActiveFocus()
-            grabTimer.restart()
         } else {
             searchInput.focus = false                   // Nada con foco mientras está cerrada (ver Keybinds.qml)
-            grabTimer.stop(); grab.active = false
         }
     }
 
@@ -232,18 +224,5 @@ PanelWindow {
         function toggle(): void {
             root.visible = !root.visible
         }
-    }
-
-    HyprlandFocusGrab {
-        id: grab
-        windows: [root]
-        active: false
-        onCleared: root.visible = false             // Se cierra al hacer clic fuera
-    }
-
-    Timer {
-        id: grabTimer
-        interval: 5
-        onTriggered: grab.active = true
     }
 }

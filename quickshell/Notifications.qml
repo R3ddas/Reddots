@@ -27,6 +27,7 @@ Scope{
         id:server
         actionsSupported: true
         bodySupported: true
+        imageSupported: true    // Sin esto, algunas apps (Teams, Chrome...) no mandan la imagen (avatar, foto) aunque la tengan
 
         onNotification: n => {
             n.tracked = true        }

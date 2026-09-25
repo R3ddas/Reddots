@@ -5,38 +5,26 @@
 
 import Quickshell
 import Quickshell.Io       // Para el IpcHandler
-import Quickshell.Hyprland // Para el HyprlandFocusGrab
 import Quickshell.Wayland
 import Quickshell.Widgets  // Para el IconImage
 import QtQuick
 import QtQuick.Layouts     // Para RowLayout
 
-PanelWindow {
+OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.qml)
     id: root
-    visible: false
 
     anchors { bottom: true; right: true }
 
     implicitWidth: 320
     implicitHeight: 480
 
-    color: "transparent"
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "reddots:launcher"
-    // OnDemand y no Exclusive: con Exclusive Hyprland no deja salir el clic y el
-    // HyprlandFocusGrab nunca se entera de que se ha pulsado fuera (no se cerraba).
-    // El teclado le llega igual al abrirse, porque se lo da el propio grab.
-    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     onVisibleChanged: {
         if (visible) {
             searchInput.text = ""                       // Cada vez que se abre empieza sin filtro
             list.currentIndex = 0
             searchInput.forceActiveFocus()
-            grabTimer.restart()
-        } else {
-            grabTimer.stop(); grab.active = false
         }
     }
 
@@ -176,18 +164,5 @@ PanelWindow {
         function toggle(): void {
             root.visible = !root.visible
         }
-    }
-
-    HyprlandFocusGrab {
-        id: grab
-        windows: [root]
-        active: false
-        onCleared: root.visible = false   // Se cierra al hacer click fuera
-    }
-
-    Timer {
-        id: grabTimer
-        interval: 5
-        onTriggered: grab.active = true
     }
 }

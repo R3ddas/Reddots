@@ -9,15 +9,16 @@
 local M = {}
 
 -- Nombre del panel interno del portátil ("eDP-1", o "LVDS-1" en hardware más antiguo),
--- o nil si no hay (PC de sobremesa). Se saca de los conectores de /sys/class/drm
--- ("card1-eDP-1"...), que ya existen al cargar la config: hl.get_monitors() todavía
--- estaría vacío, porque Hyprland crea los monitores después de leer las reglas.
+-- o nil si no hay (PC de sobremesa). Lo averigua scripts/internal-panel.sh, el mismo
+-- que usan lid-watcher.sh y la barra (quickshell/shell.qml). No vale hl.get_monitors():
+-- al cargar la config todavía está vacío, porque Hyprland crea los monitores después
+-- de leer las reglas.
 function M.internalPanel()
-    local list = io.popen("ls /sys/class/drm")
-    if not list then return nil end
-    local connectors = list:read("a")
-    list:close()
-    return connectors:match("card%d+%-(eDP%-[%w%-]+)") or connectors:match("card%d+%-(LVDS%-[%w%-]+)")
+    local out = io.popen("bash " .. os.getenv("HOME") .. "/.config/hypr/scripts/internal-panel.sh")
+    if not out then return nil end
+    local name = out:read("l")      -- nil si no ha escrito nada
+    out:close()
+    return name
 end
 
 return M

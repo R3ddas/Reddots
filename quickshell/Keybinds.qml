@@ -9,24 +9,18 @@
 
 import Quickshell
 import Quickshell.Io        // Para lanzar hyprctl
-import Quickshell.Hyprland  // Para el HyprlandFocusGrab
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 
-PanelWindow {
+OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.qml)
     id: root
-    visible: false
 
     // Sin anchors: el compositor la coloca en el centro de la pantalla
     implicitWidth: 560
     implicitHeight: Math.min(content.implicitHeight + 32, (screen ? screen.height : 1080) * 0.85)   // Si no cabe, se hace scroll
 
-    color: "transparent"
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "reddots:keybinds"
-    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None   // Igual que el Launcher: OnDemand para que el grab se entere del clic fuera
 
     property var sections: []       // [{ name, rows: [{ keys, text }] }], en el orden de hypr/keybinds.lua
 
@@ -36,10 +30,8 @@ PanelWindow {
             bindsProc.running = true            // Siempre los atajos actuales (por si se ha tocado keybinds.lua)
             flick.contentY = 0
             flick.forceActiveFocus()            // Para recibir el Esc
-            grabTimer.restart()
         } else {
             flick.focus = false                 // Nada con foco mientras está cerrada (ver el comentario de Keys, más abajo)
-            grabTimer.stop(); grab.active = false
         }
     }
 
@@ -213,18 +205,5 @@ PanelWindow {
                 }
             }
         }
-    }
-
-    HyprlandFocusGrab {
-        id: grab
-        windows: [root]
-        active: false
-        onCleared: root.visible = false             // Se cierra al hacer clic fuera
-    }
-
-    Timer {
-        id: grabTimer
-        interval: 5
-        onTriggered: grab.active = true
     }
 }

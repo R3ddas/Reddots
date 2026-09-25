@@ -11,15 +11,35 @@ import QtQuick
 import QtQuick.Layouts              // Para usar RowLayout o ColumnLayout
 import Quickshell.Services.UPower   // Para detectar si hay bateria o no (y no mostrar el icono en un PC de mesa)
 import Quickshell.Services.Polkit   // Agente de polkit: pide la contraseña cuando una app necesita permisos (PolkitDialog.qml)
+import Quickshell.Io                // Para lanzar hypr/scripts/internal-panel.sh
 
 ShellRoot {
+    id: root
+
+    // Nombre del panel interno del portátil ("eDP-1"...), "" en un sobremesa. Lo averigua
+    // hypr/scripts/internal-panel.sh, el mismo que usan monitors.lua y lid-watcher.sh.
+    property string panelName: ""
+    property bool panelKnown: false     // Ya ha respondido el script (hasta entonces no se crea la barra, ver laptopScreen)
+
+    Process {
+        running: true
+        command: ["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/internal-panel.sh"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.panelName = text.trim()
+                root.panelKnown = true
+            }
+        }
+    }
 
     // Pantalla del portátil si está presente (con la tapa abierta), si no la primera disponible.
     // Así la barra siempre vive en el portátil en vez de en el monitor que Quickshell elija por defecto.
+    // null hasta saber cuál es el panel: si no, en el portátil con un monitor externo la barra
+    // podría salir un instante en el externo y luego saltar al portátil.
     readonly property var laptopScreen: {
-        // Los paneles internos casi siempre usan el prefijo "eDP" (a veces "LVDS" en hardware más antiguo)
+        if (!panelKnown) return null
         for (let i = 0; i < Quickshell.screens.length; i++) {
-            if (Quickshell.screens[i].name.startsWith("eDP") || Quickshell.screens[i].name.startsWith("LVDS")) return Quickshell.screens[i]
+            if (Quickshell.screens[i].name === panelName) return Quickshell.screens[i]
         }
         return Quickshell.screens[0]
     }
@@ -28,7 +48,7 @@ ShellRoot {
     // abajo: si se destruyese con la pantalla, se daría de baja en el sistema y una
     // petición que llegase justo entonces se quedaría sin respuesta. Solo puede haber
     // un agente por sesión: si hyprpolkitagent sigue en marcha, este no se registra
-    // (install.sh lo para y lo desactiva).
+    // (install.sh lo para y lo desinstala).
     PolkitAgent { id: polkitAgent }
 
     // Fondo de pantalla (Background.qml): en todos los monitores, no solo en el de la

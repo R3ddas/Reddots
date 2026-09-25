@@ -23,18 +23,12 @@ fi
 # ventanas en un Variants atado a la pantalla del portátil, así que se
 # destruyen y recrean solas cuando esa pantalla desaparece/vuelve.
 
-# El panel interno casi siempre usa el prefijo "eDP" (a veces "LVDS" en hardware
-# más antiguo). Usamos "monitors all" porque un monitor deshabilitado no sale
-# en "monitors" a secas, y necesitamos su nombre para poder reactivarlo luego.
-laptop_output() {
-    hyprctl monitors all 2>/dev/null | awk '/^Monitor (eDP|LVDS)/ {print $2; exit}'
-}
+# Nombre del panel interno ("eDP-1"...), una sola vez: el equipo no cambia de panel.
+# Lo averigua internal-panel.sh, el mismo que usan hypr/monitors.lua y la barra.
+output=$(bash "$(dirname "$0")/internal-panel.sh")
+[ -z "$output" ] && exit 0   # No hay panel interno en esta máquina (sobremesa): nada que vigilar
 
 apply_state() {
-    local output
-    output=$(laptop_output)
-    [ -z "$output" ] && return   # No hay panel interno en esta máquina: nada que hacer
-
     local lid
     lid=$(busctl get-property org.freedesktop.login1 /org/freedesktop/login1 \
         org.freedesktop.login1.Manager LidClosed 2>/dev/null | awk '{print $2}')
