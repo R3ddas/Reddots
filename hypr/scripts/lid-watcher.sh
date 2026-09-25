@@ -4,7 +4,20 @@
 #
 # systemd-logind ya no suspende el equipo al cerrar la tapa mientras haya un
 # monitor externo conectado (queda "Docked", ver HandleLidSwitchDocked=ignore
-# en logind.conf, que es el valor por defecto), así que solo falta esto.
+# en logind.conf, que es el valor por defecto), pero SIN monitor externo sí
+# suspende por defecto (HandleLidSwitch=suspend). Para que este script mande
+# siempre, sin tocar /etc/systemd/logind.conf, nos reejecutamos bajo un
+# inhibitor lock de tipo "handle-lid-switch" en modo "block": eso le dice a
+# logind que no actúe él solo al cerrar la tapa (ni suspenda ni nada), pero
+# la señal LidClosed nos sigue llegando igual más abajo. Los inhibitor locks
+# de este tipo no piden contraseña para un usuario con sesión activa.
+if [ -z "${LID_WATCHER_INHIBITED:-}" ]; then
+    export LID_WATCHER_INHIBITED=1
+    exec systemd-inhibit --what=handle-lid-switch --mode=block \
+        --who="Reddots lid-watcher" \
+        --why="El script apaga el panel a mano, no queremos que logind suspenda" \
+        "$0" "$@"
+fi
 #
 # Reiniciamos quickshell tras cada cambio porque su PanelWindow no se
 # reengancha solo cuando la pantalla a la que está anclado desaparece/vuelve.
