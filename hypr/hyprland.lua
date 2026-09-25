@@ -115,7 +115,7 @@ hl.config({
         -- Transparencia de las ventanas
         active_opacity   = opacity,     -- Opacidad de la ventana activa
         inactive_opacity = opacity,     -- Opacidad de las ventanas inactivas
-        fullscreen_opacity = opacity,   -- Opacidad de las ventanas en pantalla completa
+        fullscreen_opacity = opacity,   -- Opacidad de las ventanas en pantalla completa (las de la regla "opaque-media" van siempre opacas)
 
         shadow = {
             enabled      = true,
@@ -280,6 +280,15 @@ hl.window_rule({
     },
 
     no_focus = true,
+})
+
+-- Imágenes, vídeos y juegos de Steam siempre opacos, con o sin pantalla completa
+-- (el resto de ventanas usa la transparencia de "opacity", ver ASPECTO)
+hl.window_rule({
+    name  = "opaque-media",
+    match = { class = "^(imv|mpv|steam_app_.*)$" },    -- Los juegos de Steam tienen clase "steam_app_<número>"
+
+    opaque = true,
 })
 
 -- La ventanita de hyprland-run, flotante y abajo a la izquierda
