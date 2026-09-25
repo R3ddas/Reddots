@@ -10,7 +10,11 @@ import QtQuick
 //                  02 selección y bordes, 03 comentarios, 04 texto apagado, 05 texto,
 //                  06–07 texto más claro (en los temas claros, más oscuro)
 //   base08–base0F: rojo, naranja, amarillo, verde, cian, azul, morado y marrón
-// Cada tema dice además qué casilla hace de color de acento ("accent").
+// Cada tema dice además qué casilla hace de color de acento ("accent"): casi siempre el
+// azul (base0D), como hacen Omarchy o Stylix, para que el rojo quede para errores y avisos
+// (con un acento rojo todo parecía una alerta). Excepciones: Original (el tema propio, con
+// su naranja), Rosé Pine (Foam, base0C, como en Omarchy), Caelestia y Zenburn (su color
+// principal es un cian, base0C) y Dark Green (el verde es su razón de ser, base0B).
 //
 // La barra no usa las casillas directamente sino los "papeles" de roles(): background,
 // textActive, textSelected (el acento)... Alacritty sí recibe los 16 (ver syncAlacritty()).
@@ -63,31 +67,31 @@ Singleton {
         { name: "Original", accent: "base09",     // hecho a mano: grises y rojo/naranja/verde/azul propios, el resto a juego
           base: ["#454138", "#454138", "#5a4d3e", "#837564", "#a8957c", "#f5e2c5", "#f5e2c5", "#f5e2c5",
                  "#c1502e", "#db911a", "#9e8934", "#7c8b53", "#079e9e", "#6f8fa3", "#a774b2", "#964f2c"] },
-        { name: "Gruvbox Claro", accent: "base09",     // Base16: gruvbox-light
+        { name: "Gruvbox Claro", accent: "base0D",     // Base16: gruvbox-light
           base: ["#fbf1c7", "#ebdbb2", "#d5c4a1", "#bdae93", "#7c6f64", "#3c3836", "#282828", "#1d2021",
                  "#cc241d", "#d65d0e", "#d79921", "#98971a", "#689d6a", "#458588", "#b16286", "#9d0006"] },
-        { name: "Gruvbox Oscuro", accent: "base09",     // Base16: gruvbox-dark
+        { name: "Gruvbox Oscuro", accent: "base0D",     // Base16: gruvbox-dark
           base: ["#282828", "#3c3836", "#504945", "#665c54", "#928374", "#ebdbb2", "#fbf1c7", "#f9f5d7",
                  "#cc241d", "#d65d0e", "#d79921", "#98971a", "#689d6a", "#458588", "#b16286", "#9d0006"] },
-        { name: "Everforest Claro", accent: "base09",     // Base16: everforest-light-medium
+        { name: "Everforest Claro", accent: "base0D",     // Base16: everforest-light-medium
           base: ["#fdf6e3", "#f4f0d9", "#e6e2cc", "#939f91", "#829181", "#5c6a72", "#475258", "#2d353b",
                  "#f85552", "#f57d26", "#dfa000", "#8da101", "#35a77c", "#3a94c5", "#df69ba", "#829181"] },
-        { name: "Everforest Oscuro", accent: "base09",     // Base16: everforest
+        { name: "Everforest Oscuro", accent: "base0D",     // Base16: everforest
           base: ["#2d353b", "#343f44", "#475258", "#859289", "#9da9a0", "#d3c6aa", "#e6e2cc", "#fdf6e3",
                  "#e67e80", "#e69875", "#dbbc7f", "#a7c080", "#83c092", "#7fbbb3", "#d699b6", "#9da9a0"] },
-        { name: "Rosé Pine Claro", accent: "base08",     // Base16: rose-pine-dawn
+        { name: "Rosé Pine Claro", accent: "base0C",     // Base16: rose-pine-dawn
           base: ["#faf4ed", "#fffaf3", "#f2e9de", "#9893a5", "#797593", "#575279", "#575279", "#cecacd",
                  "#b4637a", "#ea9d34", "#d7827e", "#286983", "#56949f", "#907aa9", "#ea9d34", "#cecacd"] },
-        { name: "Rosé Pine Oscuro", accent: "base08",     // Base16: rose-pine
+        { name: "Rosé Pine Oscuro", accent: "base0C",     // Base16: rose-pine
           base: ["#191724", "#1f1d2e", "#26233a", "#6e6a86", "#908caa", "#e0def4", "#e0def4", "#524f67",
                  "#eb6f92", "#f6c177", "#ebbcba", "#31748f", "#9ccfd8", "#c4a7e7", "#f6c177", "#524f67"] },
-        { name: "Catppuccin Claro", accent: "base08",     // Base16: catppuccin-latte
+        { name: "Catppuccin Claro", accent: "base0D",     // Base16: catppuccin-latte
           base: ["#eff1f5", "#e6e9ef", "#ccd0da", "#bcc0cc", "#acb0be", "#4c4f69", "#dc8a78", "#7287fd",
                  "#d20f39", "#fe640b", "#df8e1d", "#40a02b", "#179299", "#1e66f5", "#8839ef", "#dd7878"] },
-        { name: "Catppuccin Oscuro", accent: "base08",     // Base16: catppuccin-mocha
+        { name: "Catppuccin Oscuro", accent: "base0D",     // Base16: catppuccin-mocha
           base: ["#1e1e2e", "#181825", "#313244", "#45475a", "#585b70", "#cdd6f4", "#f5e0dc", "#b4befe",
                  "#f38ba8", "#fab387", "#f9e2af", "#a6e3a1", "#94e2d5", "#89b4fa", "#cba6f7", "#f2cdcd"] },
-        { name: "Nord Oscuro", accent: "base0C",     // Base16: nord
+        { name: "Nord Oscuro", accent: "base0D",     // Base16: nord
           base: ["#2e3440", "#3b4252", "#434c5e", "#4c566a", "#d8dee9", "#e5e9f0", "#eceff4", "#8fbcbb",
                  "#bf616a", "#d08770", "#ebcb8b", "#a3be8c", "#88c0d0", "#81a1c1", "#b48ead", "#5e81ac"] },
         { name: "Dracula Oscuro", accent: "base0D",     // Base16: dracula
@@ -105,7 +109,7 @@ Singleton {
         { name: "One Dark Oscuro", accent: "base0D",     // Base16: onedark
           base: ["#282c34", "#353b45", "#3e4451", "#545862", "#565c64", "#abb2bf", "#b6bdca", "#c8ccd4",
                  "#e06c75", "#d19a66", "#e5c07b", "#98c379", "#56b6c2", "#61afef", "#c678dd", "#be5046"] },
-        { name: "Everblush Oscuro", accent: "base0B",     // everblush (Caelestia)
+        { name: "Everblush Oscuro", accent: "base0D",     // everblush (Caelestia)
           base: ["#141b1e", "#232a2d", "#3a4145", "#8a8f94", "#b3b9be", "#e8e8e8", "#e8e8e8", "#e8e8e8",
                  "#e57474", "#e59a84", "#e5c76b", "#8ccfb0", "#6cbfbf", "#67b0e8", "#c47fd5", "#e5a5c5"] },
         { name: "Old World Oscuro", accent: "base0D",     // oldworld (Caelestia; acentos a juego)
@@ -123,22 +127,22 @@ Singleton {
         { name: "Caelestia Oscuro", accent: "base0C",     // caelestia (Caelestia; acentos a juego)
           base: ["#0a0f0f", "#131b1a", "#3f4a49", "#6d7876", "#a2adac", "#dce8e6", "#dce8e6", "#f6faf9",
                  "#fa746f", "#eaa16e", "#cab35c", "#86c788", "#9bd0cc", "#83b7f9", "#d39ddf", "#bb6e4a"] },
-        { name: "Monokai Oscuro", accent: "base0B",     // Base16: monokai
+        { name: "Monokai Oscuro", accent: "base0D",     // Base16: monokai
           base: ["#272822", "#383830", "#49483e", "#75715e", "#a59f85", "#f8f8f2", "#f5f4f1", "#f9f8f5",
                  "#f92672", "#fd971f", "#f4bf75", "#a6e22e", "#a1efe4", "#66d9ef", "#ae81ff", "#cc6633"] },
         { name: "Kanagawa Oscuro", accent: "base0D",     // Base16: kanagawa
           base: ["#1f1f28", "#16161d", "#223249", "#54546d", "#727169", "#dcd7ba", "#c8c093", "#717c7c",
                  "#c34043", "#ffa066", "#c0a36e", "#76946a", "#6a9589", "#7e9cd8", "#957fb8", "#d27e99"] },
-        { name: "Ayu Claro", accent: "base09",     // Base16: ayu-light
+        { name: "Ayu Claro", accent: "base0D",     // Base16: ayu-light
           base: ["#f8f9fa", "#edeff1", "#d2d4d8", "#a0a6ac", "#8a9199", "#5c6166", "#4e5257", "#404447",
                  "#f07171", "#fa8d3e", "#f2ae49", "#6cbf49", "#4cbf99", "#399ee6", "#a37acc", "#e6ba7e"] },
-        { name: "Ayu Mirage", accent: "base0A",     // Base16: ayu-mirage
+        { name: "Ayu Mirage", accent: "base0D",     // Base16: ayu-mirage
           base: ["#1f2430", "#242936", "#323844", "#4a5059", "#707a8c", "#cccac2", "#d9d7ce", "#f3f4f5",
                  "#f28779", "#ffad66", "#ffd173", "#d5ff80", "#95e6cb", "#73d0ff", "#d4bfff", "#f27983"] },
-        { name: "Ayu Oscuro", accent: "base0F",     // Base16: ayu-dark
+        { name: "Ayu Oscuro", accent: "base0D",     // Base16: ayu-dark
           base: ["#0b0e14", "#131721", "#202229", "#3e4b59", "#bfbdb6", "#e6e1cf", "#ece8db", "#f2f0e7",
                  "#f07178", "#ff8f40", "#ffb454", "#aad94c", "#95e6cb", "#59c2ff", "#d2a6ff", "#e6b450"] },
-        { name: "Nightfox Claro", accent: "base08",     // dayfox (nightfox.nvim)
+        { name: "Nightfox Claro", accent: "base0D",     // dayfox (nightfox.nvim)
           base: ["#f6f2ee", "#e4dcd4", "#dbd1dd", "#837a72", "#643f61", "#3d2b5a", "#302b5d", "#352c24",
                  "#a5222f", "#955f61", "#ac5402", "#396847", "#287980", "#2848a9", "#6e33ce", "#a440b5"] },
         { name: "Nightfox Oscuro", accent: "base0D",     // nightfox (nightfox.nvim)
@@ -159,10 +163,10 @@ Singleton {
         { name: "Zenburn Oscuro", accent: "base0C",     // Base16: zenburn
           base: ["#383838", "#404040", "#606060", "#6f6f6f", "#808080", "#dcdccc", "#c0c0c0", "#ffffff",
                  "#dca3a3", "#dfaf8f", "#e0cf9f", "#5f7f5f", "#93e0e3", "#7cb8bb", "#dc8cc3", "#000000"] },
-        { name: "Sonokai Oscuro", accent: "base08",     // Base16: sonokai
+        { name: "Sonokai Oscuro", accent: "base0D",     // Base16: sonokai
           base: ["#2c2e34", "#33353f", "#414550", "#595f6f", "#7f8490", "#e2e2e3", "#e2e2e3", "#e2e2e3",
                  "#fc5d7c", "#f39660", "#e7c664", "#9ed072", "#76cce0", "#85d3f2", "#b39df3", "#ff6077"] },
-        { name: "Horizon Oscuro", accent: "base08",     // Base16: horizon-terminal-dark
+        { name: "Horizon Oscuro", accent: "base0D",     // Base16: horizon-terminal-dark
           base: ["#1c1e26", "#232530", "#2e303e", "#6f6f70", "#9da0a2", "#cbced0", "#dcdfe4", "#e3e6ee",
                  "#e95678", "#fab795", "#fac29a", "#29d398", "#59e1e3", "#26bbd9", "#ee64ac", "#f09383"] }
     ]

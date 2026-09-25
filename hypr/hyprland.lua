@@ -83,7 +83,7 @@ hl.config({
         -- hypr/shellTheme.lua (ver el require() más abajo). Son los del tema
         -- "Gruvbox Claro", el que usa Theme.qml por defecto.
         col = {
-            active_border   = { colors = {0xeed65d0e, 0xee3c3836}, angle = 45 },   -- Degradado textSelected -> textActive (base09 -> base05)
+            active_border   = { colors = {0xee458588, 0xee3c3836}, angle = 45 },   -- Degradado textSelected -> textActive (base0D -> base05)
             inactive_border = 0xaad5c4a1,                                          -- border (base02)
         },
 
