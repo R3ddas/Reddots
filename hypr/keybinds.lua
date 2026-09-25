@@ -58,6 +58,9 @@ hl.bind("SUPER + F", hl.dsp.window.fullscreen({ action = "toggle" }),           
 -- Al pulsar y soltar solo la tecla Super (sin combinar con otra), muestro/oculto el widget inferior
 hl.bind("SUPER + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { release = true, description = "Aplicaciones: Abrir / cerrar el lanzador" })
 
+-- Historial del portapapeles (quickshell/Clipboard.qml)
+hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("qs ipc call clipboard toggle"), { description = "Aplicaciones: Historial del portapapeles" })
+
 -- No hay un dispatcher (.dsp) para el mirror de los monitores, así que hay que crear una función.
 -- En vez de llevar la cuenta en una variable, se mira el estado real cada vez: así acierta
 -- aunque el mirror se haya activado desde hyprland.lua o desde otro sitio.

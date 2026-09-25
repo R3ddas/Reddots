@@ -59,6 +59,7 @@ hl.on("hyprland.start", function ()
 
     hl.exec_cmd("systemctl --user start hyprpolkitagent")   -- Necesario para autorizar montar discos, etc. (No me gusta mucho)
     hl.exec_cmd("bash ~/.config/hypr/scripts/lid-watcher.sh")  -- Apaga el panel del portátil al cerrar la tapa
+    hl.exec_cmd("wl-paste --watch cliphist store")             -- Guarda en el historial todo lo que se copia (texto e imágenes); se ve con Super + V (quickshell/Clipboard.qml)
 end)
 
 ------------------------------

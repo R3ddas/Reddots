@@ -42,6 +42,7 @@ ShellRoot {
             Notifications{screen: screenScope.modelData}
             Osd{screen: screenScope.modelData}         // Indicador de volumen/brillo al usar las teclas multimedia
             Keybinds{id: keybinds; screen: screenScope.modelData}   // Chuleta de atajos, se abre desde el menú de Reddots
+            Clipboard{screen: screenScope.modelData}   // Historial del portapapeles, se abre con Super + V
             PanelWindow {
                 screen: screenScope.modelData
                 anchors { top: true; bottom: true; left: true }
