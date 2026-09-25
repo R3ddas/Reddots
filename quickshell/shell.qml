@@ -42,6 +42,7 @@ ShellRoot {
                 implicitWidth: Geometry.sidebarWidth
                 color: Theme.background
                 ColumnLayout {
+                    id: barLayout
                     anchors.fill: parent
                     anchors.topMargin: 6
                     anchors.bottomMargin: 6
@@ -49,9 +50,17 @@ ShellRoot {
                     anchors.rightMargin: 6 - Geometry.borderThickness / 2  // Le resto la mitad del borde que añade "Border"
 
                     Workspaces{Layout.alignment: Qt.AlignHCenter}       // Cambiador de Workspaces
-                    Item { Layout.fillHeight: true }                    // Empuja el reloj hacia el centro
-                    Clock{Layout.alignment: Qt.AlignHCenter}            // Reloj (centrado verticalmente)
-                    Item { Layout.fillHeight: true }                    // Empuja el grupo inferior hacia abajo
+                    Item {                                              // Hueco entre los workspaces y el grupo inferior (lo empuja hacia abajo); el reloj va dentro
+                        id: clockSpace
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        Clock{                                          // Reloj
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            // Centrado en la pantalla (el layout tiene el mismo margen arriba y abajo, así que su centro es el de la barra),
+                            // no entre los dos grupos. Sin salirse del hueco: si el grupo inferior crece tanto que lo taparía, sube lo justo
+                            y: Math.round(Math.max(0, Math.min(clockSpace.height - height, barLayout.height / 2 - height / 2 - clockSpace.y)))
+                        }
+                    }
                     ColumnLayout{
                         spacing: 5
                         Layout.alignment: Qt.AlignHCenter                // Sin esto el grupo queda pegado a la izquierda (es más estrecho que la barra) y sus iconos se descentran
