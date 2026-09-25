@@ -1,7 +1,6 @@
 // Icono de apagado, abre un menú para apagar, reiniciar o suspender el equipo
 
-import Quickshell
-import Quickshell.Io       // Para lanzar systemctl
+import Quickshell          // También para lanzar systemctl (execDetached)
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
@@ -55,164 +54,59 @@ ColumnLayout {
                 anchors.margins: 8
                 spacing: 4
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    implicitHeight: 28
-                    radius: 4
-                    color: shutdownMouse.containsMouse ? Theme.surfaceHover : "transparent"
+                // Una fila por opción: icono, texto y qué hace al pulsarla
+                Repeater {
+                    model: [
+                        { icon: 0xF0425, label: "Apagar",         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
+                        { icon: 0xF0709, label: "Reiniciar",      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
+                        { icon: 0xF0904, label: "Suspender",      run: () => Quickshell.execDetached(["systemctl", "suspend"]) },   // power-sleep
+                        { icon: 0xF0379, label: "Salvapantallas", run: () => root.launchScreensaver() }                            // monitor
+                    ]
 
-                    Item {
-                        anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 8
+                    delegate: Rectangle {
+                        id: row
+                        required property var modelData
 
-                        Text {
-                            text: String.fromCodePoint(0xF0425)          // power
-                            color: Theme.textActive
-                            font.pixelSize: 15
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
+                        Layout.fillWidth: true
+                        implicitHeight: 28
+                        radius: 4
+                        color: rowMouse.containsMouse ? Theme.surfaceHover : "transparent"
+
+                        Item {
+                            anchors.fill: parent
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
+
+                            Text {
+                                text: String.fromCodePoint(row.modelData.icon)
+                                color: Theme.textActive
+                                font.pixelSize: 15
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                            Text {
+                                text: row.modelData.label
+                                color: Theme.textActive
+                                anchors.left: parent.left
+                                anchors.leftMargin: 28
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
                         }
-                        Text {
-                            text: "Apagar"
-                            color: Theme.textActive
-                            anchors.left: parent.left
-                            anchors.leftMargin: 28
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
 
-                    MouseArea {
-                        id: shutdownMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: {
-                            menu.visible = false
-                            shutdownProc.startDetached()
-                        }
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    implicitHeight: 28
-                    radius: 4
-                    color: restartMouse.containsMouse ? Theme.surfaceHover : "transparent"
-
-                    Item {
-                        anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 8
-
-                        Text {
-                            text: String.fromCodePoint(0xF0709)          // restart
-                            color: Theme.textActive
-                            font.pixelSize: 15
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                        Text {
-                            text: "Reiniciar"
-                            color: Theme.textActive
-                            anchors.left: parent.left
-                            anchors.leftMargin: 28
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
-
-                    MouseArea {
-                        id: restartMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: {
-                            menu.visible = false 
-                            restartProc.startDetached()
-                        }
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    implicitHeight: 28
-                    radius: 4
-                    color: suspendMouse.containsMouse ? Theme.surfaceHover : "transparent"
-
-                    Item {
-                        anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 8
-
-                        Text {
-                            text: String.fromCodePoint(0xF0904)          // power-sleep
-                            color: Theme.textActive
-                            font.pixelSize: 15
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                        Text {
-                            text: "Suspender"
-                            color: Theme.textActive
-                            anchors.left: parent.left
-                            anchors.leftMargin: 28
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
-
-                    MouseArea {
-                        id: suspendMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: {
-                            menu.visible = false
-                            suspendProc.startDetached()
-                        }
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    implicitHeight: 28
-                    radius: 4
-                    color: screensaverMouse.containsMouse ? Theme.surfaceHover : "transparent"
-
-                    Item {
-                        anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 8
-
-                        Text {
-                            text: String.fromCodePoint(0xF0379)          // monitor
-                            color: Theme.textActive
-                            font.pixelSize: 15
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                        Text {
-                            text: "Salvapantallas"
-                            color: Theme.textActive
-                            anchors.left: parent.left
-                            anchors.leftMargin: 28
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
-
-                    MouseArea {
-                        id: screensaverMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: {
-                            menu.visible = false
-                            launchScreensaver()
+                        MouseArea {
+                            id: rowMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                menu.visible = false
+                                row.modelData.run()
+                            }
                         }
                     }
                 }
             }
         }
     }
-
-    Process { id: shutdownProc; command: ["systemctl", "poweroff"] }
-    Process { id: restartProc; command: ["systemctl", "reboot"] }
-    Process { id: suspendProc; command: ["systemctl", "suspend"] }
 
     // Cambia aquí el comando si en el futuro quieres otro salvapantallas.
     // Lanza un Alacritty a pantalla completa por cada monitor conectado, usando el
