@@ -9,99 +9,41 @@ ColumnLayout {
     id: root
     spacing: 6
 
-    Text {
+    BarIcon {
         id: iconText
         text: String.fromCodePoint(0xF0425)  // power
         font.pixelSize: 20
-        color: Theme.textActive
-        Layout.alignment: Qt.AlignHCenter
-
-        MouseArea {
-            anchors.fill: parent
-            anchors.margins: -4
-            onClicked: menu.visible = !menu.visible
-        }
+        onClicked: menu.toggle()
     }
 
-    PopupWindow {
+    BarPopup {
         id: menu
-        visible: false
-        color: "transparent"
-
-        anchor.item: iconText
-        anchor.rect.x: Geometry.sidebarWidth // Que el menú no tape la barra, aparece a partir de su borde derecho
-        anchor.gravity: Edges.Bottom | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
-        anchor.onAnchoring: anchor.rect.y = Geometry.popupY(iconText, anchor.rect.x, implicitHeight)  // A la altura del icono; como está al final de la barra, en la práctica queda pegado abajo
-
+        anchorItem: iconText                // A la altura del icono; como está al final de la barra, en la práctica queda pegado abajo
         implicitWidth: 170
         implicitHeight: listCol.implicitHeight + 16
 
-        onVisibleChanged: {
-            if (visible) grabTimer.restart()
-            else { grabTimer.stop(); grab.active = false }
-        }
-
-        Rectangle {
+        ColumnLayout {
+            id: listCol
             anchors.fill: parent
-            color: Theme.surface
-            radius: Geometry.popupRounding                  // Redondeo propio de los desplegables (editable en GeometrySettings)
-            border.color: Theme.textSelected                // Borde con el color de acento del tema
-            border.width: Geometry.popupBorderWidth         // Grosor editable en GeometrySettings
+            anchors.margins: 8
+            spacing: 4
 
-            ColumnLayout {
-                id: listCol
-                anchors.fill: parent
-                anchors.margins: 8
-                spacing: 4
+            // Una fila por opción: icono, texto y qué hace al pulsarla
+            Repeater {
+                model: [
+                    { icon: 0xF0425, label: "Apagar",         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
+                    { icon: 0xF0709, label: "Reiniciar",      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
+                    { icon: 0xF0904, label: "Suspender",      run: () => Quickshell.execDetached(["systemctl", "suspend"]) },   // power-sleep
+                    { icon: 0xF0379, label: "Salvapantallas", run: () => root.launchScreensaver() }                            // monitor
+                ]
 
-                // Una fila por opción: icono, texto y qué hace al pulsarla
-                Repeater {
-                    model: [
-                        { icon: 0xF0425, label: "Apagar",         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
-                        { icon: 0xF0709, label: "Reiniciar",      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
-                        { icon: 0xF0904, label: "Suspender",      run: () => Quickshell.execDetached(["systemctl", "suspend"]) },   // power-sleep
-                        { icon: 0xF0379, label: "Salvapantallas", run: () => root.launchScreensaver() }                            // monitor
-                    ]
-
-                    delegate: Rectangle {
-                        id: row
-                        required property var modelData
-
-                        Layout.fillWidth: true
-                        implicitHeight: 28
-                        radius: 4
-                        color: rowMouse.containsMouse ? Theme.surfaceHover : "transparent"
-
-                        Item {
-                            anchors.fill: parent
-                            anchors.leftMargin: 8
-                            anchors.rightMargin: 8
-
-                            Text {
-                                text: String.fromCodePoint(row.modelData.icon)
-                                color: Theme.textActive
-                                font.pixelSize: 15
-                                anchors.left: parent.left
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-                            Text {
-                                text: row.modelData.label
-                                color: Theme.textActive
-                                anchors.left: parent.left
-                                anchors.leftMargin: 28
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-                        }
-
-                        MouseArea {
-                            id: rowMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            onClicked: {
-                                menu.visible = false
-                                row.modelData.run()
-                            }
-                        }
+                delegate: MenuRow {
+                    required property var modelData
+                    icon: String.fromCodePoint(modelData.icon)
+                    text: modelData.label
+                    onClicked: {
+                        menu.visible = false
+                        modelData.run()
                     }
                 }
             }
@@ -122,18 +64,5 @@ ColumnLayout {
         for (const mon of Hyprland.monitors.values) {
             Hyprland.dispatch(`hl.dsp.exec_cmd("${escapedCmd}", { monitor = "${mon.name}" })`)
         }
-    }
-
-    HyprlandFocusGrab {
-        id: grab
-        windows: [menu]
-        active: false
-        onCleared: menu.visible = false
-    }
-
-    Timer {
-        id: grabTimer
-        interval: 5
-        onTriggered: grab.active = true
     }
 }

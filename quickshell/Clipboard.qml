@@ -53,15 +53,10 @@ PanelWindow {
         listProc.running = true
     }
 
-    // Quita mayúsculas y tildes, igual que en el Launcher
-    function normalize(s) {
-        return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
-    }
-
     property var filteredEntries: {
-        const query = normalize(searchInput.text.trim())
+        const query = Search.normalize(searchInput.text.trim())
         if (query === "") return entries
-        return entries.filter(e => normalize(e.image ? "imagen " + e.info : e.text).includes(query))   // Las imágenes se encuentran escribiendo "imagen"
+        return entries.filter(e => Search.normalize(e.image ? "imagen " + e.info : e.text).includes(query))   // Las imágenes se encuentran escribiendo "imagen"
     }
 
     function copy(entry) {

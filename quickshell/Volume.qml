@@ -1,6 +1,5 @@
 import Quickshell
 import Quickshell.Services.Pipewire   // Para el control de volumen (Pipewire)
-import Quickshell.Hyprland            // Para el HyprlandFocusGrab
 import Quickshell.Io                  // Para consultar la disponibilidad real de los puertos (Process/pactl)
 import QtQuick
 import QtQuick.Layouts                // Para usar RowLayout o ColumnLayout
@@ -124,175 +123,98 @@ ColumnLayout{
 
     // Icono en la barra: click izquierdo abre/cierra el menú, click derecho
     // silencia/desilencia directamente sin abrir nada.
-    Text{
+    BarIcon {
         id: iconText
         text: root.icon
         color: root.muted ? Theme.textDisabled : Theme.textActive
-        font.pixelSize: 18
-
-        MouseArea {
-            anchors.fill: parent
-            anchors.margins: -4
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-            onClicked: event => {
-                if (event.button === Qt.RightButton) {
-                    if (root.sink) root.sink.audio.muted = !root.sink.audio.muted
-                } else {
-                    menu.visible = !menu.visible
-                }
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: event => {
+            if (event.button === Qt.RightButton) {
+                if (root.sink) root.sink.audio.muted = !root.sink.audio.muted
+            } else {
+                menu.toggle()
             }
         }
     }
 
     // Popup con el slider de volumen y la lista de salidas de audio.
-    PopupWindow {
+    BarPopup {
         id: menu
-        visible: false
-        color: "transparent"
-
-        anchor.item: iconText
-        anchor.rect.x: Geometry.sidebarWidth  // Que el menú no tape la barra, aparece a partir de su borde derecho
-        anchor.gravity: Edges.Bottom | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
-        anchor.onAnchoring: anchor.rect.y = Geometry.popupY(iconText, anchor.rect.x, implicitHeight)  // A la altura del icono; si no cabe, se mueve lo justo para dejar el mismo hueco que a la izquierda
-
+        anchorItem: iconText
         implicitWidth: 240
         implicitHeight: Math.max(40, listCol.implicitHeight + 16)
 
-        onVisibleChanged: {
-            if (visible) {
-                // Refrescamos la disponibilidad de puertos cada vez que se
-                // abre el menú, por si se ha conectado/desconectado algo
-                // (monitor HDMI, auriculares...) desde la última vez.
-                root.refreshPortAvailability()
-                grabTimer.restart()
-            } else {
-                grabTimer.stop()
-                grab.active = false
-            }
-        }
+        // Refrescamos la disponibilidad de puertos cada vez que se abre el
+        // menú, por si se ha conectado/desconectado algo (monitor HDMI,
+        // auriculares...) desde la última vez.
+        onVisibleChanged: if (visible) root.refreshPortAvailability()
 
-        Rectangle {
+        ColumnLayout {
+            id: listCol
             anchors.fill: parent
-            color: Theme.surface
-            radius: Geometry.popupRounding                  // Redondeo propio de los desplegables (editable en GeometrySettings)
-            border.color: Theme.textSelected                // Borde con el color de acento del tema
-            border.width: Geometry.popupBorderWidth         // Grosor editable en GeometrySettings
+            anchors.margins: 8
+            spacing: 4
 
-            ColumnLayout {
-                id: listCol
-                anchors.fill: parent
-                anchors.margins: 8
-                spacing: 4
+            // Slider de volumen: arrastrar o hacer scroll sobre la barra.
+            Slider {
+                value: root.volume
+                dimmed: root.muted
+                onMoved: v => root.setVolume(v)
+            }
 
-                // Slider de volumen: arrastrar o hacer scroll sobre la barra.
-                RowLayout {
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 1
+                color: Theme.border
+            }
+
+            // Mensaje cuando, tras filtrar, no queda ninguna salida usable.
+            Text {
+                Layout.fillWidth: true
+                visible: root.visibleSinks.length === 0
+                text: "Sin salidas de audio"
+                color: Theme.textDisabled
+            }
+
+            // Lista de salidas de audio disponibles (ya filtrada). Usamos
+            // "nickname" (p.ej. "HDMI 1", "Speaker") en vez de
+            // "description" porque varias salidas del mismo chip
+            // comparten un prefijo larguísimo ("500 Series Chipset
+            // Family HD Audio ...") y, con el ancho fijo del popup y el
+            // elide, se veían todas cortadas igual (parecían la misma
+            // opción repetida 4 veces).
+            Repeater {
+                model: root.visibleSinks
+
+                delegate: Rectangle {
+                    required property var modelData
+
                     Layout.fillWidth: true
-                    spacing: 6
-
-                    Rectangle {
-                        id: sliderTrack
-                        Layout.fillWidth: true
-                        implicitHeight: 14
-                        radius: 7
-                        color: Theme.background
-                        border.color: Theme.border
-
-                        Rectangle {
-                            anchors.left: parent.left
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            width: parent.width * Math.min(root.volume, 1)
-                            radius: parent.radius
-                            color: root.muted ? Theme.textDisabled : Theme.textSelected
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onPressed: mouse => root.setVolume(mouse.x / width)
-                            onPositionChanged: mouse => { if (pressed) root.setVolume(mouse.x / width) }
-                            onWheel: wheel => root.setVolume(root.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))
-                        }
-                    }
+                    implicitHeight: 26
+                    radius: 4
+                    color: outMouse.containsMouse ? Theme.surfaceHover : "transparent"
 
                     Text {
-                        text: Math.round(Math.min(root.volume, 1) * 100) + "%"
-                        color: Theme.textActive
-                        font.pixelSize: 11
-                        Layout.preferredWidth: 32
+                        x: 6
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 12
+                        text: (modelData === root.sink ? "✓ " : "") + (modelData.nickname || modelData.description || modelData.name)
+                        color: modelData === root.sink ? Theme.textSelected : Theme.textActive
+                        elide: Text.ElideRight
                     }
-                }
 
-                Rectangle {
-                    Layout.fillWidth: true
-                    implicitHeight: 1
-                    color: Theme.border
-                }
-
-                // Mensaje cuando, tras filtrar, no queda ninguna salida usable.
-                Text {
-                    Layout.fillWidth: true
-                    visible: root.visibleSinks.length === 0
-                    text: "Sin salidas de audio"
-                    color: Theme.textDisabled
-                }
-
-                // Lista de salidas de audio disponibles (ya filtrada). Usamos
-                // "nickname" (p.ej. "HDMI 1", "Speaker") en vez de
-                // "description" porque varias salidas del mismo chip
-                // comparten un prefijo larguísimo ("500 Series Chipset
-                // Family HD Audio ...") y, con el ancho fijo del popup y el
-                // elide, se veían todas cortadas igual (parecían la misma
-                // opción repetida 4 veces).
-                Repeater {
-                    model: root.visibleSinks
-
-                    delegate: Rectangle {
-                        required property var modelData
-
-                        Layout.fillWidth: true
-                        implicitHeight: 26
-                        radius: 4
-                        color: outMouse.containsMouse ? Theme.surfaceHover : "transparent"
-
-                        Text {
-                            x: 6
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 12
-                            text: (modelData === root.sink ? "✓ " : "") + (modelData.nickname || modelData.description || modelData.name)
-                            color: modelData === root.sink ? Theme.textSelected : Theme.textActive
-                            elide: Text.ElideRight
-                        }
-
-                        MouseArea {
-                            id: outMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            onClicked: {
-                                Pipewire.preferredDefaultAudioSink = modelData
-                                menu.visible = false
-                            }
+                    MouseArea {
+                        id: outMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: {
+                            Pipewire.preferredDefaultAudioSink = modelData
+                            menu.visible = false
                         }
                     }
                 }
             }
         }
-    }
-
-    // Cierra el menú al hacer click fuera de él (grabTimer da un frame de
-    // margen antes de activar el grab para no cerrarlo con el mismo click
-    // que lo abrió).
-    HyprlandFocusGrab {
-        id: grab
-        windows: [menu]
-        active: false
-        onCleared: menu.visible = false
-    }
-
-    Timer {
-        id: grabTimer
-        interval: 5
-        onTriggered: grab.active = true
     }
 
     // Mantiene vivos/suscritos los nodos de PipeWire que nos interesan.

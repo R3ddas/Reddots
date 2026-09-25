@@ -54,30 +54,17 @@ ColumnLayout{
         return String.fromCodePoint(0xF007A + Math.floor(level/10) - 1)
     }
 
-    Text{
+    BarIcon {
         text: root.icon
-        color: Theme.textActive
-        font.pixelSize: 18
-        Layout.alignment: Qt.AlignHCenter
-        MouseArea {
-            anchors.fill: parent
-            anchors.margins: -4
-            acceptedButtons: Qt.RightButton
-            onClicked: root.showLevel = !root.showLevel  // Con el botón derecho se esconde/muestra el valor de carga
-        }
+        acceptedButtons: Qt.RightButton
+        onClicked: root.showLevel = !root.showLevel     // Con el botón derecho se esconde/muestra el valor de carga
     }
 
-    Text {                                              // Texto con el valor de carga, se cambia la visibilidad con botón derecho
+    BarIcon {                                           // Texto con el valor de carga, se cambia la visibilidad con botón derecho
         visible: root.showLevel
         text: root.level + "%"
-        color: Theme.textActive
         font.pixelSize: 10                              // Si es muy grande no cabe en la barra y descentra los textos
-        Layout.alignment: Qt.AlignHCenter
-        MouseArea {
-            anchors.fill: parent
-            anchors.margins: -4
-            acceptedButtons: Qt.RightButton
-            onClicked: root.showLevel = !root.showLevel
-        }
+        acceptedButtons: Qt.RightButton
+        onClicked: root.showLevel = !root.showLevel
     }
 }

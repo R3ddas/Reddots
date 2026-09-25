@@ -1,9 +1,7 @@
 import Quickshell
 import Quickshell.Bluetooth
-import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Hyprland
 
 
 ColumnLayout {
@@ -49,10 +47,9 @@ ColumnLayout {
     function flagRepairNeeded(dev) {
         if (!root.repairNeeded.includes(dev.address))          // evita duplicados en la lista
             root.repairNeeded = [...root.repairNeeded, dev.address]  // reasignar el array entero para que QML detecte el cambio
-        notifyProc.command = ["notify-send", "-u", "normal", "-a", "Bluetooth",     // Quickshell no expone Notify() a QML, así que se usa el binario
+        Quickshell.execDetached(["notify-send", "-u", "normal", "-a", "Bluetooth",     // Quickshell no expone Notify() a QML, así que se usa el binario
             "Bluetooth: re-emparejamiento necesario",
-            dev.name + " perdió la clave de emparejamiento. Ponlo en modo pairing y pulsa \"Reparar\" en el menú de Bluetooth."]
-        notifyProc.running = true   // al asignar running=true con el comando ya puesto, lo lanza
+            dev.name + " perdió la clave de emparejamiento. Ponlo en modo pairing y pulsa \"Reparar\" en el menú de Bluetooth."])
     }
 
     function clearRepairNeeded(address) {
@@ -131,151 +128,105 @@ ColumnLayout {
         }
     }
 
-    Process { id: notifyProc }   // proceso reutilizado para lanzar notify-send
-
-    Text {
+    BarIcon {
         id: iconText
         text: root.icon
-        font.pixelSize: 18
         color: root.powered ? Theme.textActive : Theme.textDisabled
-
-        MouseArea {
-            anchors.fill: parent
-            anchors.margins: -4
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-            onClicked: event => {
-                if (event.button === Qt.LeftButton) {
-                    menu.visible = !menu.visible         // clic izq: abre/cierra el menú de dispositivos
-                } else if (root.adapter) {
-                    root.adapter.enabled = !root.adapter.enabled   // clic der: enciende/apaga el radio Bluetooth
-                }
-            }
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: event => {
+            if (event.button === Qt.LeftButton) menu.toggle()                             // clic izq: abre/cierra el menú de dispositivos
+            else if (root.adapter) root.adapter.enabled = !root.adapter.enabled          // clic der: enciende/apaga el radio Bluetooth
         }
     }
 
-    PopupWindow {
+    BarPopup {
         id: menu
-        visible: false
-        color: "transparent"
-
-        anchor.item: iconText
-        anchor.rect.x: Geometry.sidebarWidth // Que el menú no tape la barra, aparece a partir de su borde derecho
-        anchor.gravity: Edges.Bottom | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
-        anchor.onAnchoring: anchor.rect.y = Geometry.popupY(iconText, anchor.rect.x, implicitHeight)  // A la altura del icono; si no cabe, se mueve lo justo para dejar el mismo hueco que a la izquierda
+        anchorItem: iconText
 
         implicitWidth: 240
         implicitHeight: Math.max(40, listCol.implicitHeight + 16)
 
-        onVisibleChanged: {
-            // Escanea mientras el menú está abierto; se detiene al cerrarlo para no gastar batería
-            if (visible) {
-                grabTimer.restart()
-                if (root.adapter) root.adapter.discovering = true
-            } else {
-                grabTimer.stop(); grab.active = false
-                if (root.adapter) root.adapter.discovering = false
-            }
-        }
+        // Escanea mientras el menú está abierto; se detiene al cerrarlo para no gastar batería
+        onVisibleChanged: if (root.adapter) root.adapter.discovering = visible
 
-        Rectangle {
+        ColumnLayout {
+            id: listCol
             anchors.fill: parent
-            color: Theme.surface
-            radius: Geometry.popupRounding                  // Redondeo propio de los desplegables (editable en GeometrySettings)
-            border.color: Theme.textSelected                // Borde con el color de acento del tema
-            border.width: Geometry.popupBorderWidth         // Grosor editable en GeometrySettings
+            anchors.margins: 8
+            spacing: 4
 
-            ColumnLayout {
-                id: listCol
-                anchors.fill: parent
-                anchors.margins: 8
-                spacing: 4
+            Text {
+                Layout.fillWidth: true
+                visible: root.visibleDevices.length === 0   // placeholder solo cuando la lista filtrada está vacía
+                text: root.powered ? (root.adapter?.discovering ? "Buscando…" : "Sin dispositivos") : "Bluetooth apagado"
+                color: Theme.textDisabled
+            }
 
-                Text {
+            Repeater {
+                model: root.visibleDevices   // lista ya filtrada, no el modelo crudo del adaptador
+
+                delegate: Rectangle {
+                    id: deviceRow
+                    required property var modelData
+                    readonly property bool needsRepair: root.repairNeeded.includes(modelData.address)   // muestra el botón "reparar"
+                    readonly property bool repairing: root.repairingAddrs.includes(modelData.address)   // reparación en curso -> deshabilita el botón
+
                     Layout.fillWidth: true
-                    visible: root.visibleDevices.length === 0   // placeholder solo cuando la lista filtrada está vacía
-                    text: root.powered ? (root.adapter?.discovering ? "Buscando…" : "Sin dispositivos") : "Bluetooth apagado"
-                    color: Theme.textDisabled
-                }
+                    implicitHeight: 26
+                    radius: 4
+                    color: deviceMouse.containsMouse ? Theme.surfaceHover : "transparent"
 
-                Repeater {
-                    model: root.visibleDevices   // lista ya filtrada, no el modelo crudo del adaptador
-
-                    delegate: Rectangle {
-                        id: deviceRow
-                        required property var modelData
-                        readonly property bool needsRepair: root.repairNeeded.includes(modelData.address)   // muestra el botón "reparar"
-                        readonly property bool repairing: root.repairingAddrs.includes(modelData.address)   // reparación en curso -> deshabilita el botón
-
-                        Layout.fillWidth: true
-                        implicitHeight: 26
-                        radius: 4
-                        color: deviceMouse.containsMouse ? Theme.surfaceHover : "transparent"
-
-                        Text {
-                            id: deviceLabel
-                            x: 6
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 12 - (deviceRow.needsRepair || deviceRow.repairing ? repairLabel.width + 6 : 0)  // deja hueco al botón "reparar" si está visible
-                            text: {
-                                const icon = modelData.connected ? "󰂱  "     // auricular conectado
-                                    : modelData.pairing ? "⏳  "             // emparejando
-                                    : modelData.paired ? "󰂯  "              // emparejado pero desconectado
-                                    : "󰂲  "                                 // dispositivo nuevo, sin emparejar
-                                const suffix = modelData.paired ? "" : "  (nuevo)"
-                                return icon + modelData.name + suffix
-                            }
-                            color: modelData.connected ? Theme.textActive : Theme.textDisabled
-                            elide: Text.ElideRight
+                    Text {
+                        id: deviceLabel
+                        x: 6
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 12 - (deviceRow.needsRepair || deviceRow.repairing ? repairLabel.width + 6 : 0)  // deja hueco al botón "reparar" si está visible
+                        text: {
+                            const icon = modelData.connected ? "󰂱  "     // auricular conectado
+                                : modelData.pairing ? "⏳  "             // emparejando
+                                : modelData.paired ? "󰂯  "              // emparejado pero desconectado
+                                : "󰂲  "                                 // dispositivo nuevo, sin emparejar
+                            const suffix = modelData.paired ? "" : "  (nuevo)"
+                            return icon + modelData.name + suffix
                         }
+                        color: modelData.connected ? Theme.textActive : Theme.textDisabled
+                        elide: Text.ElideRight
+                    }
+
+                    MouseArea {
+                        id: deviceMouse
+                        x: 0
+                        y: 0
+                        width: parent.width
+                        height: parent.height
+                        hoverEnabled: true
+                        onClicked: {
+                            if (modelData.pairing) modelData.cancelPair()          // click durante el pairing = cancelarlo
+                                else if (modelData.connected) modelData.disconnect()
+                                else if (modelData.paired) modelData.connect()     // ya conocido: solo reconectar
+                                else modelData.pair()                              // desconocido: emparejar por primera vez
+                        }
+                    }
+
+                    Text {
+                        id: repairLabel
+                        visible: deviceRow.needsRepair || deviceRow.repairing   // solo aparece cuando hace falta
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 6
+                        text: deviceRow.repairing ? "reparando…" : "reparar"
+                        font.underline: !deviceRow.repairing   // subrayado = clicable; sin subrayar mientras repara
+                        color: Theme.textActive
 
                         MouseArea {
-                            id: deviceMouse
-                            x: 0
-                            y: 0
-                            width: parent.width
-                            height: parent.height
-                            hoverEnabled: true
-                            onClicked: {
-                                if (modelData.pairing) modelData.cancelPair()          // click durante el pairing = cancelarlo
-                                    else if (modelData.connected) modelData.disconnect()
-                                    else if (modelData.paired) modelData.connect()     // ya conocido: solo reconectar
-                                    else modelData.pair()                              // desconocido: emparejar por primera vez
-                            }
-                        }
-
-                        Text {
-                            id: repairLabel
-                            visible: deviceRow.needsRepair || deviceRow.repairing   // solo aparece cuando hace falta
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.right: parent.right
-                            anchors.rightMargin: 6
-                            text: deviceRow.repairing ? "reparando…" : "reparar"
-                            font.underline: !deviceRow.repairing   // subrayado = clicable; sin subrayar mientras repara
-                            color: Theme.textActive
-
-                            MouseArea {
-                                anchors.fill: parent
-                                anchors.margins: -4
-                                enabled: !deviceRow.repairing   // evita relanzar la reparación mientras ya hay una en curso
-                                onClicked: root.repairDevice(modelData.address)
-                            }
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            enabled: !deviceRow.repairing   // evita relanzar la reparación mientras ya hay una en curso
+                            onClicked: root.repairDevice(modelData.address)
                         }
                     }
                 }
             }
         }
-    }
-    HyprlandFocusGrab {
-        id: grab
-        windows: [menu]
-        active: false
-        onCleared: menu.visible = false   // clic fuera del menú -> se cierra
-    }
-
-    Timer {
-        id: grabTimer
-        interval: 5   // retraso mínimo para que el popup ya esté mapeado antes de activar el grab
-        onTriggered: grab.active = true
     }
 }

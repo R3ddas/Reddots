@@ -15,16 +15,9 @@ ColumnLayout {
     property Item controls: null        // Si se indica, este icono es un duplicado: muestra y cambia el estado de ese otro SettingsToggle
     readonly property Item owner: controls ?? root      // Quién guarda de verdad el estado
 
-    Text {
+    BarIcon {
         text: String.fromCodePoint(0xf01d8)                                 // Mismo icono plegado y desplegado: el estado se nota por el color
         color: root.owner.expanded ? Theme.textSelected : Theme.textActive // Con el color de acento mientras está desplegado
-        font.pixelSize: 18
-        Layout.alignment: Qt.AlignHCenter
-
-        MouseArea {
-            anchors.fill: parent
-            anchors.margins: -4                                         // Zona de clic algo más grande que el icono
-            onClicked: root.owner.expanded = !root.owner.expanded       // Muestra/oculta el grupo
-        }
+        onClicked: root.owner.expanded = !root.owner.expanded               // Muestra/oculta el grupo
     }
 }

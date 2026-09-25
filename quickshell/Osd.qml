@@ -76,29 +76,11 @@ PanelWindow {
                 Layout.preferredWidth: 22
             }
 
-            Rectangle {                         // Barra de nivel
-                Layout.fillWidth: true
-                implicitHeight: 8
-                radius: 4
-                color: Theme.background
-                border.color: Theme.border
-
-                Rectangle {
-                    anchors.left: parent.left
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    width: parent.width * Math.min(root.value, 100) / 100
-                    radius: parent.radius
-                    color: root.mode === "volume" && root.muted ? Theme.textDisabled : Theme.textSelected
-                }
-            }
-
-            Text {
-                text: root.value + "%"
-                color: Theme.textActive
-                font.pixelSize: 11
-                horizontalAlignment: Text.AlignRight
-                Layout.preferredWidth: 32
+            Slider {                            // Barra de nivel con el porcentaje (la misma que en la barra, sin poder moverla)
+                interactive: false
+                barHeight: 8
+                value: root.value / 100
+                dimmed: root.mode === "volume" && root.muted
             }
         }
     }

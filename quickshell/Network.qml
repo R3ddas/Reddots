@@ -3,7 +3,6 @@
 
 import Quickshell
 import Quickshell.Networking  // Para la información de las conexiones
-import Quickshell.Hyprland    // Para el HyprlandFocusGrab
 import QtQuick
 import QtQuick.Layouts          // Para usar RowLayout o ColumnLayout
 
@@ -35,184 +34,140 @@ ColumnLayout{
         menu.expandedNetwork = null
     }
 
-    Text{
+    BarIcon {
         id: iconText
         text: root.icon
         color: (root.wiredConnected || Networking.wifiEnabled) ? Theme.textActive : Theme.textDisabled
-        font.pixelSize: 18
-
-        MouseArea {
-            anchors.fill: parent
-            anchors.margins: -4
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-            onClicked: event => {
-                if (event.button === Qt.RightButton) {
-                    Networking.wifiEnabled = !Networking.wifiEnabled
-                } else {
-                    menu.visible = !menu.visible
-                }
-            }
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: event => {
+            if (event.button === Qt.RightButton) Networking.wifiEnabled = !Networking.wifiEnabled   // Clic derecho: enciende/apaga el wifi
+            else menu.toggle()
         }
     }
 
-    PopupWindow {
+    BarPopup {
         id: menu
-        visible: false
-        color: "transparent"
-
+        anchorItem: iconText
         property var expandedNetwork: null      // Red a la espera de que se introduzca la contraseña
 
-        anchor.item: iconText
-        anchor.rect.x: Geometry.sidebarWidth  // Que el menú no tape la barra, aparece a partir de su borde derecho
-        anchor.gravity: Edges.Bottom | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
-        anchor.onAnchoring: anchor.rect.y = Geometry.popupY(iconText, anchor.rect.x, implicitHeight)  // A la altura del icono; si no cabe, se mueve lo justo para dejar el mismo hueco que a la izquierda
 
         implicitWidth: 260
         implicitHeight: Math.max(40, listCol.implicitHeight + 16)
 
         onVisibleChanged: {
-            if (visible) {
-                grabTimer.restart()
-                if (root.wifiDevice) root.wifiDevice.scannerEnabled = true    // Fuerza un escaneo al abrir la lista
-            } else {
-                grabTimer.stop()
-                grab.active = false
-                if (root.wifiDevice) root.wifiDevice.scannerEnabled = false   // Deja de escanear al cerrar (ahorra batería)
-                expandedNetwork = null
-            }
+            if (root.wifiDevice) root.wifiDevice.scannerEnabled = visible   // Escanea mientras está abierto: al abrir fuerza un escaneo y al cerrar deja de escanear (ahorra batería)
+            if (!visible) expandedNetwork = null
         }
 
-        Rectangle {
+        ColumnLayout {
+            id: listCol
             anchors.fill: parent
-            color: Theme.surface
-            radius: Geometry.popupRounding                  // Redondeo propio de los desplegables (editable en GeometrySettings)
-            border.color: Theme.textSelected                // Borde con el color de acento del tema
-            border.width: Geometry.popupBorderWidth         // Grosor editable en GeometrySettings
+            anchors.margins: 8
+            spacing: 4
 
-            ColumnLayout {
-                id: listCol
-                anchors.fill: parent
-                anchors.margins: 8
-                spacing: 4
+            Text {
+                Layout.fillWidth: true
+                visible: !Networking.wifiEnabled
+                text: "Wifi apagado"
+                color: Theme.textDisabled
+            }
 
-                Text {
+            Text {
+                Layout.fillWidth: true
+                visible: Networking.wifiEnabled && (!root.wifiDevice || root.wifiDevice.networks.values.length === 0)
+                text: root.wifiDevice ? "Buscando redes..." : "Sin adaptador wifi"
+                color: Theme.textDisabled
+            }
+
+            Repeater {
+                model: Networking.wifiEnabled ? (root.wifiDevice ? root.wifiDevice.networks : null) : null
+
+                delegate: ColumnLayout {
+                    id: delegateRoot
+                    required property var modelData
+
                     Layout.fillWidth: true
-                    visible: !Networking.wifiEnabled
-                    text: "Wifi apagado"
-                    color: Theme.textDisabled
-                }
+                    spacing: 2
 
-                Text {
-                    Layout.fillWidth: true
-                    visible: Networking.wifiEnabled && (!root.wifiDevice || root.wifiDevice.networks.values.length === 0)
-                    text: root.wifiDevice ? "Buscando redes..." : "Sin adaptador wifi"
-                    color: Theme.textDisabled
-                }
-
-                Repeater {
-                    model: Networking.wifiEnabled ? (root.wifiDevice ? root.wifiDevice.networks : null) : null
-
-                    delegate: ColumnLayout {
-                        id: delegateRoot
-                        required property var modelData
-
+                    Rectangle {
                         Layout.fillWidth: true
-                        spacing: 2
+                        implicitHeight: 26
+                        radius: 4
+                        color: netMouse.containsMouse ? Theme.surfaceHover : "transparent"
 
-                        Rectangle {
-                            Layout.fillWidth: true
-                            implicitHeight: 26
-                            radius: 4
-                            color: netMouse.containsMouse ? Theme.surfaceHover : "transparent"
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 6
+                            anchors.rightMargin: 6
+                            spacing: 4
 
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 6
-                                anchors.rightMargin: 6
-                                spacing: 4
-
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: (modelData.connected ? "✓ " : "") + modelData.name
-                                    color: modelData.connected ? Theme.textSelected : Theme.textActive
-                                    elide: Text.ElideRight
-                                }
-                                Text {
-                                    visible: modelData.security !== WifiSecurityType.Open
-                                    text: "🔒"
-                                    font.pixelSize: 11
-                                }
+                            Text {
+                                Layout.fillWidth: true
+                                text: (modelData.connected ? "✓ " : "") + modelData.name
+                                color: modelData.connected ? Theme.textSelected : Theme.textActive
+                                elide: Text.ElideRight
                             }
-
-                            MouseArea {
-                                id: netMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: {
-                                    if (modelData.connected) {
-                                        modelData.disconnect()
-                                    } else if (modelData.known || modelData.security === WifiSecurityType.Open) {
-                                        modelData.connect()
-                                    } else {
-                                        menu.expandedNetwork = (menu.expandedNetwork === modelData) ? null : modelData
-                                    }
-                                }
+                            Text {
+                                visible: modelData.security !== WifiSecurityType.Open
+                                text: "🔒"
+                                font.pixelSize: 11
                             }
                         }
 
-                        RowLayout {
-                            Layout.fillWidth: true
-                            visible: menu.expandedNetwork === modelData
-                            spacing: 4
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                implicitHeight: 22
-                                radius: 4
-                                color: Theme.background
-                                border.color: Theme.border
-
-                                TextInput {
-                                    id: pskInput
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 6
-                                    anchors.rightMargin: 6
-                                    verticalAlignment: TextInput.AlignVCenter
-                                    color: Theme.textActive
-                                    echoMode: TextInput.Password
-                                    focus: menu.expandedNetwork === modelData
-                                    onAccepted: root.tryConnect(modelData, text)
+                        MouseArea {
+                            id: netMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                if (modelData.connected) {
+                                    modelData.disconnect()
+                                } else if (modelData.known || modelData.security === WifiSecurityType.Open) {
+                                    modelData.connect()
+                                } else {
+                                    menu.expandedNetwork = (menu.expandedNetwork === modelData) ? null : modelData
                                 }
                             }
+                        }
+                    }
 
-                            Text {
-                                text: "Conectar"
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: menu.expandedNetwork === modelData
+                        spacing: 4
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: 22
+                            radius: 4
+                            color: Theme.background
+                            border.color: Theme.border
+
+                            TextInput {
+                                id: pskInput
+                                anchors.fill: parent
+                                anchors.leftMargin: 6
+                                anchors.rightMargin: 6
+                                verticalAlignment: TextInput.AlignVCenter
                                 color: Theme.textActive
+                                echoMode: TextInput.Password
+                                focus: menu.expandedNetwork === modelData
+                                onAccepted: root.tryConnect(modelData, text)
+                            }
+                        }
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    anchors.margins: -4
-                                    onClicked: root.tryConnect(modelData, pskInput.text)
-                                }
+                        Text {
+                            text: "Conectar"
+                            color: Theme.textActive
+
+                            MouseArea {
+                                anchors.fill: parent
+                                anchors.margins: -4
+                                onClicked: root.tryConnect(modelData, pskInput.text)
                             }
                         }
                     }
                 }
             }
         }
-    }
-
-    HyprlandFocusGrab {
-        id: grab
-        windows: [menu]
-        active: false
-        onCleared: menu.visible = false
-    }
-
-    Timer {
-        id: grabTimer
-        interval: 5
-        onTriggered: grab.active = true
     }
 }

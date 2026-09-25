@@ -8,7 +8,6 @@
 // Si no hay ninguna app con icono, el widget no ocupa sitio en la barra.
 
 import Quickshell
-import Quickshell.Hyprland              // Para el HyprlandFocusGrab
 import Quickshell.Widgets               // Para el IconImage
 import Quickshell.Services.SystemTray
 import QtQuick
@@ -58,12 +57,9 @@ ColumnLayout {
     // --- Menú de la app ------------------------------------------------------------
     // Uno solo para todos los iconos: se engancha al que se ha pulsado.
 
-    PopupWindow {
+    BarPopup {
         id: menu
-        visible: false
-        color: "transparent"
 
-        property Item anchorIcon: null      // Icono de la barra junto al que sale
         property int depth: 0               // 0 = menú principal, 1 = submenú, 2 = submenú de submenú...
 
         // Un QsMenuOpener por nivel, y no uno solo al que se le cambia el menú: al soltar un
@@ -76,8 +72,7 @@ ColumnLayout {
         function openFor(item, icon) {
             if (!item.hasMenu) return
             if (visible && level0.menu === item.menu && depth === 0) { visible = false; return }   // Segundo clic en el mismo icono: se cierra
-            anchorIcon = icon
-            anchor.item = icon
+            anchorItem = icon
             level0.menu = item.menu
             visible = true
         }
@@ -98,17 +93,10 @@ ColumnLayout {
             depth = 0
         }
 
-        anchor.rect.x: Geometry.sidebarWidth // Que el menú no tape la barra, aparece a partir de su borde derecho
-        anchor.gravity: Edges.Bottom | Edges.Right  // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
-        anchor.onAnchoring: if (anchorIcon) anchor.rect.y = Geometry.popupY(anchorIcon, anchor.rect.x, implicitHeight)  // A la altura del icono; si no cabe, se mueve lo justo
-
         implicitWidth: Math.min(Math.max(180, listCol.implicitWidth + 16), 340)
         implicitHeight: listCol.implicitHeight + 16
 
-        onVisibleChanged: {
-            if (visible) grabTimer.restart()
-            else { grabTimer.stop(); grab.active = false; closeAll() }
-        }
+        onVisibleChanged: if (!visible) closeAll()
 
         // Leen las entradas del menú de la app (llegan por D-Bus)
         QsMenuOpener { id: level0 }
@@ -116,56 +104,48 @@ ColumnLayout {
         QsMenuOpener { id: level2 }
         QsMenuOpener { id: level3 }
 
-        Rectangle {
+        ColumnLayout {
+            id: listCol
             anchors.fill: parent
-            color: Theme.surface
-            radius: Geometry.popupRounding                  // Redondeo propio de los desplegables (editable en GeometrySettings)
-            border.color: Theme.textSelected                // Borde con el color de acento del tema
-            border.width: Geometry.popupBorderWidth         // Grosor editable en GeometrySettings
+            anchors.margins: 8
+            spacing: 2
 
-            ColumnLayout {
-                id: listCol
-                anchors.fill: parent
-                anchors.margins: 8
-                spacing: 2
+            MenuRow {                                   // Solo dentro de un submenú
+                visible: menu.depth > 0
+                icon: "‹"
+                text: "Atrás"
+                onClicked: menu.back()
+            }
 
-                MenuRow {                                   // Solo dentro de un submenú
-                    visible: menu.depth > 0
-                    icon: "‹"
-                    text: "Atrás"
-                    onClicked: menu.back()
-                }
+            Repeater {
+                model: menu.current.children
 
-                Repeater {
-                    model: menu.current.children
+                delegate: Item {
+                    id: entryItem
+                    required property QsMenuEntry modelData
 
-                    delegate: Item {
-                        id: entryItem
-                        required property QsMenuEntry modelData
+                    Layout.fillWidth: true
+                    implicitWidth: modelData.isSeparator ? 0 : row.implicitWidth
+                    implicitHeight: modelData.isSeparator ? 9 : row.implicitHeight
 
-                        Layout.fillWidth: true
-                        implicitWidth: modelData.isSeparator ? 0 : row.implicitWidth
-                        implicitHeight: modelData.isSeparator ? 9 : row.implicitHeight
+                    Rectangle {                         // Separador
+                        visible: entryItem.modelData.isSeparator
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width
+                        height: 1
+                        color: Theme.border
+                    }
 
-                        Rectangle {                         // Separador
-                            visible: entryItem.modelData.isSeparator
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width
-                            height: 1
-                            color: Theme.border
-                        }
-
-                        MenuRow {
-                            id: row
-                            visible: !entryItem.modelData.isSeparator
-                            width: parent.width
-                            entry: entryItem.modelData
-                            onClicked: {
-                                if (entry.hasChildren) menu.enter(entry)
-                                else {
-                                    entry.triggered()       // Le dice a la app que se ha pulsado
-                                    menu.visible = false
-                                }
+                    EntryRow {
+                        id: row
+                        visible: !entryItem.modelData.isSeparator
+                        width: parent.width
+                        entry: entryItem.modelData
+                        onClicked: {
+                            if (entry.hasChildren) menu.enter(entry)
+                            else {
+                                entry.triggered()       // Le dice a la app que se ha pulsado
+                                menu.visible = false
                             }
                         }
                     }
@@ -174,83 +154,17 @@ ColumnLayout {
         }
     }
 
-    // Fila del menú, con el mismo estilo que las de Power.qml. Si lleva "entry" (una
-    // entrada del menú de la app), saca de ahí el texto, si está activa, la marca de
-    // casilla y la flecha de submenú; si no, usa "icon" y "text" (la fila de "Atrás").
-    component MenuRow: Rectangle {
-        id: menuRow
-        property QsMenuEntry entry: null
-        property string icon: ""
-        property string text: entry ? entry.text : ""      // Quickshell ya quita los "_" de tecla rápida ("_Abrir" llega como "Abrir")
-        readonly property bool active: !entry || entry.enabled
-        readonly property bool checkable: entry !== null && entry.buttonType !== QsMenuButtonType.None
-        signal clicked()
+    // Fila de una entrada del menú de la app, sobre la MenuRow común (la de Power.qml,
+    // Screenshot.qml...): saca de la entrada el texto, si está activa, la marca de
+    // casilla, su icono y la flecha de submenú.
+    component EntryRow: MenuRow {
+        required property QsMenuEntry entry
+        readonly property bool checkable: entry.buttonType !== QsMenuButtonType.None
 
-        implicitWidth: label.implicitWidth + 28 + 16 + (entry && entry.hasChildren ? 20 : 0)
-        implicitHeight: 28
-        radius: 4
-        color: rowMouse.containsMouse && active ? Theme.surfaceHover : "transparent"
-
-        Text {                                      // Marca de casilla, icono de "Atrás" o nada
-            anchors.left: parent.left
-            anchors.leftMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            text: menuRow.checkable ? (menuRow.entry.checkState === Qt.Checked ? "✓" : "") : menuRow.icon
-            color: menuRow.active ? Theme.textActive : Theme.textDisabled
-            font.pixelSize: 14
-        }
-
-        IconImage {                                 // Icono de la entrada, si la app pone uno (y no es casilla)
-            visible: !menuRow.checkable && menuRow.entry !== null && menuRow.entry.icon !== ""
-            source: menuRow.entry ? menuRow.entry.icon : ""
-            implicitSize: 16
-            anchors.left: parent.left
-            anchors.leftMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-        }
-
-        Text {
-            id: label
-            anchors.left: parent.left
-            anchors.leftMargin: 36
-            anchors.right: arrow.visible ? arrow.left : parent.right
-            anchors.rightMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            text: menuRow.text
-            color: menuRow.active ? Theme.textActive : Theme.textDisabled
-            elide: Text.ElideRight
-        }
-
-        Text {                                      // Tiene submenú
-            id: arrow
-            visible: menuRow.entry !== null && menuRow.entry.hasChildren
-            anchors.right: parent.right
-            anchors.rightMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            text: "›"
-            color: Theme.textActive
-            font.pixelSize: 14
-        }
-
-        MouseArea {
-            id: rowMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            enabled: menuRow.active
-            onClicked: menuRow.clicked()
-        }
-    }
-
-    HyprlandFocusGrab {
-        id: grab
-        windows: [menu]
-        active: false
-        onCleared: menu.visible = false
-    }
-
-    Timer {
-        id: grabTimer
-        interval: 5
-        onTriggered: grab.active = true
+        text: entry.text                    // Quickshell ya quita los "_" de tecla rápida ("_Abrir" llega como "Abrir")
+        active: entry.enabled
+        arrow: entry.hasChildren
+        icon: checkable && entry.checkState === Qt.Checked ? "✓" : ""
+        iconSource: checkable ? "" : entry.icon   // El icono que pone la app, si lo pone (y no es casilla)
     }
 }

@@ -47,17 +47,12 @@ PanelWindow {
         return list
     }
 
-    // Quita mayúsculas y tildes, para que "musica" encuentre "Música"
-    function normalize(s) {
-        return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
-    }
-
     // Las que coinciden con lo escrito, buscando en el nombre, el nombre genérico
     // ("Navegador web") y las palabras clave del .desktop
     property var filteredApps: {
-        const query = normalize(searchInput.text.trim())
+        const query = Search.normalize(searchInput.text.trim())
         if (query === "") return apps
-        return apps.filter(e => normalize([e.name, e.genericName, ...(e.keywords || [])].join(" ")).includes(query))
+        return apps.filter(e => Search.normalize([e.name, e.genericName, ...(e.keywords || [])].join(" ")).includes(query))
     }
 
     function launch(entry) {

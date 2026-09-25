@@ -595,7 +595,7 @@ Singleton {
         const t = themeByName(activeTheme)  // Directo del tema, no de las propiedades derivadas (lo mismo que en hyprGeneralText())
         alacrittySync.running = false
         alacrittySync.command = [
-            Quickshell.env("HOME") + "/.config/quickshell/scripts/gen-alacritty-colors.py",
+            Quickshell.shellPath("scripts/gen-alacritty-colors.py"),
             t.background.toString(), t.textActive.toString(), t.textSelected.toString(),
             t.textDisabled.toString(), t.surface.toString(), t.surfaceHover.toString(),
             t.border.toString(), t.extra1.toString(), t.extra2.toString(), t.extra3.toString(),

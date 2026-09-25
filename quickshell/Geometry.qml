@@ -39,7 +39,7 @@ Singleton {
     // que se abre a la derecha de "item": centrado en vertical con el icono,
     // salvo que se saliese por abajo o por arriba, en cuyo caso se mueve lo
     // justo para que quede tan separado de ese borde como lo está del marco
-    // por la izquierda. Se llama desde el "anchoring" de cada PopupWindow
+    // por la izquierda. Se llama desde el "anchoring" de BarPopup.qml
     // (justo antes de colocarlo), porque mapToItem no avisa cuando el icono
     // cambia de sitio.
     function popupY(item, popupX, popupHeight) {
