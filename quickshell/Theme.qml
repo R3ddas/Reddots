@@ -3,55 +3,36 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Fuentes de las paletas:
-//   Gruvbox              https://github.com/morhetz/gruvbox
-//   Everforest            https://github.com/sainnhe/everforest
-//   Rosé Pine              https://rosepinetheme.com/palette
-//   Catppuccin            https://github.com/catppuccin/catppuccin
-//   Nord                   https://www.nordtheme.com/docs/colors-and-palettes
-//   Dracula                https://draculatheme.com/contribute
-//   Solarized             https://ethanschoonover.com/solarized/
-//   Tokyo Night           https://github.com/tokyo-night/tokyo-night-vscode-theme
-//   One Dark               https://github.com/joshdick/onedark.vim
-//   Everblush, Old World, Shado Theme, Dark Green y Caelestia (el esquema "default" de Caelestia)
-//                          https://github.com/caelestia-dots/cli/tree/main/src/caelestia/data/schemes
-//   Monokai                paleta clásica de Sublime Text / monokai.pro
-//   Kanagawa               https://github.com/rebelot/kanagawa.nvim
-//   Ayu (Claro/Mirage/Oscuro) https://github.com/dempfi/ayu
-//   Nightfox (Dayfox/Nightfox) https://github.com/EdenEast/nightfox.nvim
-//   Oxocarbon              https://github.com/nyoom-engineering/oxocarbon.nvim (paleta IBM Carbon)
-//   GitHub                 https://github.com/primer/github-vscode-theme
-//   Zenburn                https://github.com/bbatsov/zenburn-emacs
-//   Sonokai                https://github.com/sainnhe/sonokai
-//   Horizon                https://github.com/jolaleye/horizon-theme-vscode
+// Temas de color en formato Base16 (https://github.com/tinted-theming/home): cada tema son
+// 16 colores en un orden fijo, así que un tema nuevo se añade copiando los 16 de su esquema
+// (hay cientos en https://github.com/tinted-theming/schemes, carpeta base16):
+//   base00–base07: del fondo al texto. 00 fondo, 01 fondo más claro (desplegables),
+//                  02 selección y bordes, 03 comentarios, 04 texto apagado, 05 texto,
+//                  06–07 texto más claro (en los temas claros, más oscuro)
+//   base08–base0F: rojo, naranja, amarillo, verde, cian, azul, morado y marrón
+// Cada tema dice además qué casilla hace de color de acento ("accent").
 //
-// Nota sobre Extra1/Extra2/Extra3: son tres colores de acento adicionales por si
-// hacen falta más de los 7 básicos. Cuando la paleta de origen no tenía tres
-// acentos "de sobra" (Original, Old World, Shado Theme, Dark Green y Caelestia),
-// alguno de los tres se ha elegido a mano a juego con el resto, no viene de
-// ninguna fuente online.
+// La barra no usa las casillas directamente sino los "papeles" de roles(): background,
+// textActive, textSelected (el acento)... Alacritty sí recibe los 16 (ver syncAlacritty()).
+//
+// De dónde sale cada tema (lo dice el comentario de su línea):
+//   - "Base16: <nombre>": el esquema de tinted-theming tal cual.
+//   - "reordenados": GitHub y Tokyo Night tienen en su esquema Base16 los acentos fuera de
+//     sitio (el rojo en la casilla del morado...): son sus colores oficiales, cada uno en su casilla.
+//   - Everblush, Nightfox y Sonokai no tienen esquema Base16: salen de sus paletas oficiales.
+//   - Old World, Shado Theme, Dark Green y Caelestia son esquemas Material de Caelestia
+//     (https://github.com/caelestia-dots/cli/tree/main/src/caelestia/data/schemes), en los que
+//     todos los colores son tonos del principal: los grises, el principal y el rojo (su color
+//     de error) son suyos; los demás acentos se han generado a juego (misma luminosidad y
+//     saturación, cada uno con su tono), para que en la terminal el verde sea verde.
+//   - Original: hecho a mano, con el mismo criterio para los acentos que le faltaban.
+
 Singleton {
     // Tema activo: se elige desde el icono de la paleta en la barra
     // (ThemeSettings.qml) y se guarda solo, gracias al FileView de más abajo.
     // El de por defecto (instalación nueva) es el del JsonAdapter, "Gruvbox Claro";
     // si lo cambias, cambia también los colores de arranque de col en hypr/hyprland.lua.
-    // Debe coincidir con el "name" de una de las entradas de themes:
-    //   "Original", "Gruvbox Claro", "Gruvbox Oscuro",
-    //   "Everforest Claro", "Everforest Oscuro",
-    //   "Rosé Pine Claro", "Rosé Pine Oscuro",
-    //   "Catppuccin Claro", "Catppuccin Oscuro",
-    //   "Nord Oscuro", "Dracula Oscuro",
-    //   "Solarized Claro", "Solarized Oscuro",
-    //   "Tokyo Night Oscuro", "One Dark Oscuro",
-    //   "Everblush Oscuro", "Old World Oscuro",
-    //   "Shado Theme Oscuro", "Dark Green Oscuro",
-    //   "Caelestia Claro", "Caelestia Oscuro",
-    //   "Monokai Oscuro", "Kanagawa Oscuro",
-    //   "Ayu Claro", "Ayu Mirage", "Ayu Oscuro",
-    //   "Nightfox Claro", "Nightfox Oscuro",
-    //   "Oxocarbon Claro", "Oxocarbon Oscuro",
-    //   "GitHub Claro", "GitHub Oscuro",
-    //   "Zenburn Oscuro", "Sonokai Oscuro", "Horizon Oscuro"
+    // Debe coincidir con el "name" de uno de los temas de "themes".
     property alias activeTheme: adapter.activeTheme
 
     FileView {
@@ -76,499 +57,151 @@ Singleton {
         return themes[0]
     }
 
-    readonly property list<QtObject> themes: [
-        QtObject {
-            readonly property string name:        "Original"
-            readonly property color background:   "#454138"     // Color de la barra lateral y el recuadro
-            readonly property color textActive:   "#f5e2c5"     // Caracteres activos en la barra lateral
-            readonly property color textSelected: "#db911a"     // Caracteres seleccionados en la barra lateral
-            readonly property color textDisabled: "#837564"     // Caracteres inactivos en la barra lateral
-            readonly property color surface:      "#454138"     // Color de las ventanas flotantes
-            readonly property color surfaceHover: "#a8957c"     // Color de los componentes sobre los que está el ratón en las ventanas flotantes
-            readonly property color border:       "#5a4d3e"     // Color del borde de las ventanas flotantes
-            readonly property color extra1:       "#c1502e"     // Rojo teja (a mano)
-            readonly property color extra2:       "#7c8b53"     // Verde oliva (a mano)
-            readonly property color extra3:       "#6f8fa3"     // Azul apagado (a mano)
-        },
-        // Gruvbox Claro: crema cálido, a juego con el fondo del wallpaper
-        QtObject {
-            readonly property string name:        "Gruvbox Claro"
-            readonly property color background:   "#fbf1c7"
-            readonly property color textActive:   "#3c3836"
-            readonly property color textSelected: "#af3a03"
-            readonly property color textDisabled: "#a89984"
-            readonly property color surface:      "#ebdbb2"
-            readonly property color surfaceHover: "#d5c4a1"
-            readonly property color border:       "#bdae93"
-            readonly property color extra1:       "#b57614"     // Amarillo
-            readonly property color extra2:       "#79740e"     // Verde
-            readonly property color extra3:       "#076678"     // Azul
-        },
-        // Gruvbox Oscuro: versión oscura del anterior, tinta y carbón
-        QtObject {
-            readonly property string name:        "Gruvbox Oscuro"
-            readonly property color background:   "#282828"
-            readonly property color textActive:   "#ebdbb2"
-            readonly property color textSelected: "#fe8019"
-            readonly property color textDisabled: "#928374"
-            readonly property color surface:      "#3c3836"
-            readonly property color surfaceHover: "#504945"
-            readonly property color border:       "#504945"
-            readonly property color extra1:       "#fabd2f"     // Amarillo
-            readonly property color extra2:       "#b8bb26"     // Verde
-            readonly property color extra3:       "#83a598"     // Azul
-        },
-        // Everforest Claro: crema suave y natural, acento rojizo como el sello del wallpaper
-        QtObject {
-            readonly property string name:        "Everforest Claro"
-            readonly property color background:   "#fdf6e3"
-            readonly property color textActive:   "#5c6a72"
-            readonly property color textSelected: "#f57d26"
-            readonly property color textDisabled: "#a6b0a0"
-            readonly property color surface:      "#f4f0d9"
-            readonly property color surfaceHover: "#e5ddc8"
-            readonly property color border:       "#e0dcc7"
-            readonly property color extra1:       "#dfa000"     // Amarillo
-            readonly property color extra2:       "#8da101"     // Verde
-            readonly property color extra3:       "#3a94c5"     // Azul
-        },
-        // Everforest Oscuro: versión oscura del anterior, grises y verdes apagados
-        QtObject {
-            readonly property string name:        "Everforest Oscuro"
-            readonly property color background:   "#2d353b"
-            readonly property color textActive:   "#d3c6aa"
-            readonly property color textSelected: "#e69875"
-            readonly property color textDisabled: "#859289"
-            readonly property color surface:      "#343f44"
-            readonly property color surfaceHover: "#475258"
-            readonly property color border:       "#475258"
-            readonly property color extra1:       "#dbbc7f"     // Amarillo
-            readonly property color extra2:       "#a7c080"     // Verde
-            readonly property color extra3:       "#7fbbb3"     // Azul
-        },
-        // Rosé Pine Claro (Dawn): crema rosado, acento vino a juego con el sello rojo
-        QtObject {
-            readonly property string name:        "Rosé Pine Claro"
-            readonly property color background:   "#faf4ed"
-            readonly property color textActive:   "#575279"
-            readonly property color textSelected: "#b4637a"
-            readonly property color textDisabled: "#9893a5"
-            readonly property color surface:      "#fffaf3"
-            readonly property color surfaceHover: "#dfdad9"
-            readonly property color border:       "#cecacd"
-            readonly property color extra1:       "#ea9d34"     // Gold
-            readonly property color extra2:       "#286983"     // Pine
-            readonly property color extra3:       "#907aa9"     // Iris
-        },
-        // Rosé Pine Oscuro (Main): versión oscura del anterior, malva y ciruela
-        QtObject {
-            readonly property string name:        "Rosé Pine Oscuro"
-            readonly property color background:   "#191724"
-            readonly property color textActive:   "#e0def4"
-            readonly property color textSelected: "#eb6f92"
-            readonly property color textDisabled: "#6e6a86"
-            readonly property color surface:      "#1f1d2e"
-            readonly property color surfaceHover: "#403d52"
-            readonly property color border:       "#524f67"
-            readonly property color extra1:       "#f6c177"     // Gold
-            readonly property color extra2:       "#9ccfd8"     // Foam
-            readonly property color extra3:       "#c4a7e7"     // Iris
-        },
-        // Catppuccin Claro (Latte): muy popular, crema frío con acento rojo
-        QtObject {
-            readonly property string name:        "Catppuccin Claro"
-            readonly property color background:   "#eff1f5"
-            readonly property color textActive:   "#4c4f69"
-            readonly property color textSelected: "#d20f39"
-            readonly property color textDisabled: "#9ca0b0"
-            readonly property color surface:      "#e6e9ef"
-            readonly property color surfaceHover: "#bcc0cc"
-            readonly property color border:       "#ccd0da"
-            readonly property color extra1:       "#df8e1d"     // Amarillo
-            readonly property color extra2:       "#40a02b"     // Verde
-            readonly property color extra3:       "#1e66f5"     // Azul
-        },
-        // Catppuccin Oscuro (Mocha): versión oscura del anterior, muy usada en dotfiles
-        QtObject {
-            readonly property string name:        "Catppuccin Oscuro"
-            readonly property color background:   "#1e1e2e"
-            readonly property color textActive:   "#cdd6f4"
-            readonly property color textSelected: "#f38ba8"
-            readonly property color textDisabled: "#6c7086"
-            readonly property color surface:      "#181825"
-            readonly property color surfaceHover: "#45475a"
-            readonly property color border:       "#313244"
-            readonly property color extra1:       "#f9e2af"     // Amarillo
-            readonly property color extra2:       "#a6e3a1"     // Verde
-            readonly property color extra3:       "#89b4fa"     // Azul
-        },
-        // Nord Oscuro
-        QtObject {
-            readonly property string name:        "Nord Oscuro"
-            readonly property color background:   "#2e3440"
-            readonly property color textActive:   "#eceff4"
-            readonly property color textSelected: "#88c0d0"
-            readonly property color textDisabled: "#4c566a"
-            readonly property color surface:      "#3b4252"
-            readonly property color surfaceHover: "#434c5e"
-            readonly property color border:       "#4c566a"
-            readonly property color extra1:       "#ebcb8b"     // Amarillo
-            readonly property color extra2:       "#a3be8c"     // Verde
-            readonly property color extra3:       "#b48ead"     // Morado
-        },
-        // Dracula Oscuro
-        QtObject {
-            readonly property string name:        "Dracula Oscuro"
-            readonly property color background:   "#282a36"
-            readonly property color textActive:   "#f8f8f2"
-            readonly property color textSelected: "#bd93f9"
-            readonly property color textDisabled: "#6272a4"
-            readonly property color surface:      "#343746"
-            readonly property color surfaceHover: "#4d4f66"
-            readonly property color border:       "#6272a4"
-            readonly property color extra1:       "#50fa7b"     // Verde
-            readonly property color extra2:       "#8be9fd"     // Cian
-            readonly property color extra3:       "#ff79c6"     // Rosa
-        },
-        // Solarized Claro
-        QtObject {
-            readonly property string name:        "Solarized Claro"
-            readonly property color background:   "#fdf6e3"
-            readonly property color textActive:   "#586e75"
-            readonly property color textSelected: "#268bd2"
-            readonly property color textDisabled: "#93a1a1"
-            readonly property color surface:      "#eee8d5"
-            readonly property color surfaceHover: "#e4ddc8"
-            readonly property color border:       "#93a1a1"
-            readonly property color extra1:       "#b58900"     // Amarillo
-            readonly property color extra2:       "#859900"     // Verde
-            readonly property color extra3:       "#2aa198"     // Cian
-        },
-        // Solarized Oscuro
-        QtObject {
-            readonly property string name:        "Solarized Oscuro"
-            readonly property color background:   "#002b36"
-            readonly property color textActive:   "#93a1a1"
-            readonly property color textSelected: "#268bd2"
-            readonly property color textDisabled: "#586e75"
-            readonly property color surface:      "#073642"
-            readonly property color surfaceHover: "#0d4250"
-            readonly property color border:       "#586e75"
-            readonly property color extra1:       "#b58900"     // Amarillo
-            readonly property color extra2:       "#859900"     // Verde
-            readonly property color extra3:       "#2aa198"     // Cian
-        },
-        // Tokyo Night Oscuro
-        QtObject {
-            readonly property string name:        "Tokyo Night Oscuro"
-            readonly property color background:   "#1a1b26"
-            readonly property color textActive:   "#c0caf5"
-            readonly property color textSelected: "#7aa2f7"
-            readonly property color textDisabled: "#565f89"
-            readonly property color surface:      "#24283b"
-            readonly property color surfaceHover: "#2a2f41"
-            readonly property color border:       "#414868"
-            readonly property color extra1:       "#e0af68"     // Amarillo
-            readonly property color extra2:       "#9ece6a"     // Verde
-            readonly property color extra3:       "#bb9af7"     // Morado
-        },
-        // One Dark Oscuro
-        QtObject {
-            readonly property string name:        "One Dark Oscuro"
-            readonly property color background:   "#282c34"
-            readonly property color textActive:   "#abb2bf"
-            readonly property color textSelected: "#61afef"
-            readonly property color textDisabled: "#5c6370"
-            readonly property color surface:      "#2c313a"
-            readonly property color surfaceHover: "#3e4451"
-            readonly property color border:       "#3b4048"
-            readonly property color extra1:       "#e5c07b"     // Amarillo
-            readonly property color extra2:       "#98c379"     // Verde
-            readonly property color extra3:       "#c678dd"     // Morado
-        },
-        // Everblush Oscuro
-        QtObject {
-            readonly property string name:        "Everblush Oscuro"
-            readonly property color background:   "#141b1e"
-            readonly property color textActive:   "#e8e8e8"
-            readonly property color textSelected: "#8ccfb0"
-            readonly property color textDisabled: "#8a8f94"
-            readonly property color surface:      "#232a2d"
-            readonly property color surfaceHover: "#3a4145"
-            readonly property color border:       "#3a4145"
-            readonly property color extra1:       "#e5c76b"     // Amarillo
-            readonly property color extra2:       "#67b0e8"     // Azul
-            readonly property color extra3:       "#b279db"     // Morado
-        },
-        // Old World Oscuro
-        QtObject {
-            readonly property string name:        "Old World Oscuro"
-            readonly property color background:   "#121317"
-            readonly property color textActive:   "#e3e2e7"
-            readonly property color textSelected: "#aac7ff"
-            readonly property color textDisabled: "#8e909a"
-            readonly property color surface:      "#1e2023"
-            readonly property color surfaceHover: "#292a2e"
-            readonly property color border:       "#43474f"
-            readonly property color extra1:       "#bcc7df"     // Secundario de la paleta
-            readonly property color extra2:       "#ffb4ab"     // Rojo de error de la paleta
-            readonly property color extra3:       "#d6c2a1"     // Tostado (a mano)
-        },
-        // Shado Theme Oscuro
-        QtObject {
-            readonly property string name:        "Shado Theme Oscuro"
-            readonly property color background:   "#131317"
-            readonly property color textActive:   "#e5e1e7"
-            readonly property color textSelected: "#bfc1ff"
-            readonly property color textDisabled: "#918f9a"
-            readonly property color surface:      "#1f1f23"
-            readonly property color surfaceHover: "#2a292e"
-            readonly property color border:       "#46464f"
-            readonly property color extra1:       "#c5c4e0"     // Secundario de la paleta
-            readonly property color extra2:       "#ffb4ab"     // Rojo de error de la paleta
-            readonly property color extra3:       "#a0e0c8"     // Verde agua (a mano)
-        },
-        // Dark Green Oscuro
-        QtObject {
-            readonly property string name:        "Dark Green Oscuro"
-            readonly property color background:   "#23262d"
-            readonly property color textActive:   "#f5f5f6"
-            readonly property color textSelected: "#24bd5c"
-            readonly property color textDisabled: "#979797"
-            readonly property color surface:      "#23262c"
-            readonly property color surfaceHover: "#1b1d22"
-            readonly property color border:       "#1e1e25"
-            readonly property color extra1:       "#c66e73"     // Rojo de error de la paleta
-            readonly property color extra2:       "#4fd67d"     // Verde claro (a mano)
-            readonly property color extra3:       "#d9a441"     // Ámbar (a mano)
-        },
-        // Caelestia Claro
-        QtObject {
-            readonly property string name:        "Caelestia Claro"
-            readonly property color background:   "#f6faf9"
-            readonly property color textActive:   "#2a3433"
-            readonly property color textSelected: "#1c6a66"
-            readonly property color textDisabled: "#727d7c"
-            readonly property color surface:      "#e7f0ee"
-            readonly property color surfaceHover: "#e1eae8"
-            readonly property color border:       "#a9b4b3"
-            readonly property color extra1:       "#4a6462"     // Secundario de la paleta
-            readonly property color extra2:       "#a83836"     // Rojo de error de la paleta
-            readonly property color extra3:       "#6a8caa"     // Azul (a mano)
-        },
-        // Caelestia Oscuro
-        QtObject {
-            readonly property string name:        "Caelestia Oscuro"
-            readonly property color background:   "#0a0f0f"
-            readonly property color textActive:   "#dce8e6"
-            readonly property color textSelected: "#9bd0cc"
-            readonly property color textDisabled: "#6d7876"
-            readonly property color surface:      "#131b1a"
-            readonly property color surfaceHover: "#192120"
-            readonly property color border:       "#3f4a49"
-            readonly property color extra1:       "#b0ccc9"     // Secundario de la paleta
-            readonly property color extra2:       "#fa746f"     // Rojo de error de la paleta
-            readonly property color extra3:       "#d9c98a"     // Arena cálida (a mano)
-        },
-        // Monokai Oscuro
-        QtObject {
-            readonly property string name:        "Monokai Oscuro"
-            readonly property color background:   "#272822"
-            readonly property color textActive:   "#f8f8f2"
-            readonly property color textSelected: "#a6e22e"
-            readonly property color textDisabled: "#75715e"
-            readonly property color surface:      "#383830"
-            readonly property color surfaceHover: "#49483e"
-            readonly property color border:       "#49483e"
-            readonly property color extra1:       "#f92672"     // Rosa/rojo
-            readonly property color extra2:       "#66d9ef"     // Cian
-            readonly property color extra3:       "#e6db74"     // Amarillo
-        },
-        // Kanagawa Oscuro (Wave)
-        QtObject {
-            readonly property string name:        "Kanagawa Oscuro"
-            readonly property color background:   "#1f1f28"
-            readonly property color textActive:   "#dcd7ba"
-            readonly property color textSelected: "#7fb4ca"
-            readonly property color textDisabled: "#727169"
-            readonly property color surface:      "#16161d"
-            readonly property color surfaceHover: "#2a2a37"
-            readonly property color border:       "#252535"
-            readonly property color extra1:       "#c34043"     // Rojo otoñal
-            readonly property color extra2:       "#76946a"     // Verde otoñal
-            readonly property color extra3:       "#dca561"     // Amarillo otoñal
-        },
-        // Ayu Claro
-        QtObject {
-            readonly property string name:        "Ayu Claro"
-            readonly property color background:   "#fcfcfc"
-            readonly property color textActive:   "#5c6166"
-            readonly property color textSelected: "#fa8d3e"
-            readonly property color textDisabled: "#787b80"
-            readonly property color surface:      "#f3f4f5"
-            readonly property color surfaceHover: "#e7e8e9"
-            readonly property color border:       "#e0e1e2"
-            readonly property color extra1:       "#86b300"     // Verde
-            readonly property color extra2:       "#55b4d4"     // Azul
-            readonly property color extra3:       "#a37acc"     // Morado
-        },
-        // Ayu Mirage
-        QtObject {
-            readonly property string name:        "Ayu Mirage"
-            readonly property color background:   "#242936"
-            readonly property color textActive:   "#cccac2"
-            readonly property color textSelected: "#ffcc66"
-            readonly property color textDisabled: "#b8cfe6"
-            readonly property color surface:      "#1f2430"
-            readonly property color surfaceHover: "#2d3343"
-            readonly property color border:       "#333944"
-            readonly property color extra1:       "#d5ff80"     // Verde
-            readonly property color extra2:       "#ffad66"     // Naranja
-            readonly property color extra3:       "#ff6666"     // Rojo
-        },
-        // Ayu Oscuro
-        QtObject {
-            readonly property string name:        "Ayu Oscuro"
-            readonly property color background:   "#10141c"
-            readonly property color textActive:   "#bfbdb6"
-            readonly property color textSelected: "#e6b450"
-            readonly property color textDisabled: "#acb6bf"
-            readonly property color surface:      "#0d1017"
-            readonly property color surfaceHover: "#151a21"
-            readonly property color border:       "#1b222c"
-            readonly property color extra1:       "#aad94c"     // Verde
-            readonly property color extra2:       "#d2a6ff"     // Morado
-            readonly property color extra3:       "#f07178"     // Rojo
-        },
-        // Nightfox Claro (Dayfox)
-        QtObject {
-            readonly property string name:        "Nightfox Claro"
-            readonly property color background:   "#f6f2ee"
-            readonly property color textActive:   "#3d2b5a"
-            readonly property color textSelected: "#a5222f"
-            readonly property color textDisabled: "#837a72"
-            readonly property color surface:      "#e4dcd4"
-            readonly property color surfaceHover: "#dbd1dd"
-            readonly property color border:       "#d3c7bb"
-            readonly property color extra1:       "#396847"     // Verde
-            readonly property color extra2:       "#2848a9"     // Azul
-            readonly property color extra3:       "#ac5402"     // Amarillo/naranja
-        },
-        // Nightfox Oscuro
-        QtObject {
-            readonly property string name:        "Nightfox Oscuro"
-            readonly property color background:   "#192330"
-            readonly property color textActive:   "#cdcecf"
-            readonly property color textSelected: "#719cd6"
-            readonly property color textDisabled: "#738091"
-            readonly property color surface:      "#212e3f"
-            readonly property color surfaceHover: "#29394f"
-            readonly property color border:       "#39506d"
-            readonly property color extra1:       "#c94f6d"     // Rojo
-            readonly property color extra2:       "#81b29a"     // Verde
-            readonly property color extra3:       "#dbc074"     // Amarillo
-        },
-        // Oxocarbon Claro (paleta IBM Carbon)
-        QtObject {
-            readonly property string name:        "Oxocarbon Claro"
-            readonly property color background:   "#ffffff"
-            readonly property color textActive:   "#161616"
-            readonly property color textSelected: "#0f62fe"
-            readonly property color textDisabled: "#90a4ae"
-            readonly property color surface:      "#f2f4f8"
-            readonly property color surfaceHover: "#e0e5eb"
-            readonly property color border:       "#d8dee4"
-            readonly property color extra1:       "#ff7eb6"     // Rosa
-            readonly property color extra2:       "#42be65"     // Verde
-            readonly property color extra3:       "#673ab7"     // Morado
-        },
-        // Oxocarbon Oscuro (paleta IBM Carbon)
-        QtObject {
-            readonly property string name:        "Oxocarbon Oscuro"
-            readonly property color background:   "#161616"
-            readonly property color textActive:   "#ffffff"
-            readonly property color textSelected: "#78a9ff"
-            readonly property color textDisabled: "#b0b0b0"
-            readonly property color surface:      "#201f1f"
-            readonly property color surfaceHover: "#2a2a2a"
-            readonly property color border:       "#3a3a3a"
-            readonly property color extra1:       "#ee5396"     // Rosa
-            readonly property color extra2:       "#42be65"     // Verde
-            readonly property color extra3:       "#be95ff"     // Morado
-        },
-        // GitHub Claro
-        QtObject {
-            readonly property string name:        "GitHub Claro"
-            readonly property color background:   "#ffffff"
-            readonly property color textActive:   "#1f2328"
-            readonly property color textSelected: "#0969da"
-            readonly property color textDisabled: "#656d76"
-            readonly property color surface:      "#f6f8fa"
-            readonly property color surfaceHover: "#eaeef2"
-            readonly property color border:       "#d0d7de"
-            readonly property color extra1:       "#1a7f37"     // Verde
-            readonly property color extra2:       "#cf222e"     // Rojo
-            readonly property color extra3:       "#8250df"     // Morado
-        },
-        // GitHub Oscuro
-        QtObject {
-            readonly property string name:        "GitHub Oscuro"
-            readonly property color background:   "#0d1117"
-            readonly property color textActive:   "#e6edf3"
-            readonly property color textSelected: "#2f81f7"
-            readonly property color textDisabled: "#7d8590"
-            readonly property color surface:      "#161b22"
-            readonly property color surfaceHover: "#21262d"
-            readonly property color border:       "#30363d"
-            readonly property color extra1:       "#3fb950"     // Verde
-            readonly property color extra2:       "#f85149"     // Rojo
-            readonly property color extra3:       "#a371f7"     // Morado
-        },
-        // Zenburn Oscuro
-        QtObject {
-            readonly property string name:        "Zenburn Oscuro"
-            readonly property color background:   "#3f3f3f"
-            readonly property color textActive:   "#dcdccc"
-            readonly property color textSelected: "#8cd0d3"
-            readonly property color textDisabled: "#656555"
-            readonly property color surface:      "#4f4f4f"
-            readonly property color surfaceHover: "#383838"
-            readonly property color border:       "#2b2b2b"
-            readonly property color extra1:       "#cc9393"     // Rojo
-            readonly property color extra2:       "#7f9f7f"     // Verde
-            readonly property color extra3:       "#f0dfaf"     // Amarillo
-        },
-        // Sonokai Oscuro
-        QtObject {
-            readonly property string name:        "Sonokai Oscuro"
-            readonly property color background:   "#2c2e34"
-            readonly property color textActive:   "#e2e2e3"
-            readonly property color textSelected: "#fc5d7c"
-            readonly property color textDisabled: "#7f8490"
-            readonly property color surface:      "#33353f"
-            readonly property color surfaceHover: "#363944"
-            readonly property color border:       "#3b3e48"
-            readonly property color extra1:       "#9ed072"     // Verde
-            readonly property color extra2:       "#76cce0"     // Azul
-            readonly property color extra3:       "#e7c664"     // Amarillo
-        },
-        // Horizon Oscuro
-        QtObject {
-            readonly property string name:        "Horizon Oscuro"
-            readonly property color background:   "#1c1e26"
-            readonly property color textActive:   "#d5d8da"
-            readonly property color textSelected: "#e95678"
-            readonly property color textDisabled: "#6c6f93"
-            readonly property color surface:      "#232530"
-            readonly property color surfaceHover: "#2b2d3a"
-            readonly property color border:       "#333548"
-            readonly property color extra1:       "#fab795"     // Melocotón
-            readonly property color extra2:       "#26bbd9"     // Azul
-            readonly property color extra3:       "#27d797"     // Verde
-        }
+    // Cada tema: nombre, casilla del acento y sus 16 colores (base00–07 en la primera
+    // línea, base08–0F en la segunda). El orden de aquí es el del selector de la barra.
+    readonly property var themes: [
+        { name: "Original", accent: "base09",     // hecho a mano: grises y rojo/naranja/verde/azul propios, el resto a juego
+          base: ["#454138", "#454138", "#5a4d3e", "#837564", "#a8957c", "#f5e2c5", "#f5e2c5", "#f5e2c5",
+                 "#c1502e", "#db911a", "#9e8934", "#7c8b53", "#079e9e", "#6f8fa3", "#a774b2", "#964f2c"] },
+        { name: "Gruvbox Claro", accent: "base09",     // Base16: gruvbox-light
+          base: ["#fbf1c7", "#ebdbb2", "#d5c4a1", "#bdae93", "#7c6f64", "#3c3836", "#282828", "#1d2021",
+                 "#cc241d", "#d65d0e", "#d79921", "#98971a", "#689d6a", "#458588", "#b16286", "#9d0006"] },
+        { name: "Gruvbox Oscuro", accent: "base09",     // Base16: gruvbox-dark
+          base: ["#282828", "#3c3836", "#504945", "#665c54", "#928374", "#ebdbb2", "#fbf1c7", "#f9f5d7",
+                 "#cc241d", "#d65d0e", "#d79921", "#98971a", "#689d6a", "#458588", "#b16286", "#9d0006"] },
+        { name: "Everforest Claro", accent: "base09",     // Base16: everforest-light-medium
+          base: ["#fdf6e3", "#f4f0d9", "#e6e2cc", "#939f91", "#829181", "#5c6a72", "#475258", "#2d353b",
+                 "#f85552", "#f57d26", "#dfa000", "#8da101", "#35a77c", "#3a94c5", "#df69ba", "#829181"] },
+        { name: "Everforest Oscuro", accent: "base09",     // Base16: everforest
+          base: ["#2d353b", "#343f44", "#475258", "#859289", "#9da9a0", "#d3c6aa", "#e6e2cc", "#fdf6e3",
+                 "#e67e80", "#e69875", "#dbbc7f", "#a7c080", "#83c092", "#7fbbb3", "#d699b6", "#9da9a0"] },
+        { name: "Rosé Pine Claro", accent: "base08",     // Base16: rose-pine-dawn
+          base: ["#faf4ed", "#fffaf3", "#f2e9de", "#9893a5", "#797593", "#575279", "#575279", "#cecacd",
+                 "#b4637a", "#ea9d34", "#d7827e", "#286983", "#56949f", "#907aa9", "#ea9d34", "#cecacd"] },
+        { name: "Rosé Pine Oscuro", accent: "base08",     // Base16: rose-pine
+          base: ["#191724", "#1f1d2e", "#26233a", "#6e6a86", "#908caa", "#e0def4", "#e0def4", "#524f67",
+                 "#eb6f92", "#f6c177", "#ebbcba", "#31748f", "#9ccfd8", "#c4a7e7", "#f6c177", "#524f67"] },
+        { name: "Catppuccin Claro", accent: "base08",     // Base16: catppuccin-latte
+          base: ["#eff1f5", "#e6e9ef", "#ccd0da", "#bcc0cc", "#acb0be", "#4c4f69", "#dc8a78", "#7287fd",
+                 "#d20f39", "#fe640b", "#df8e1d", "#40a02b", "#179299", "#1e66f5", "#8839ef", "#dd7878"] },
+        { name: "Catppuccin Oscuro", accent: "base08",     // Base16: catppuccin-mocha
+          base: ["#1e1e2e", "#181825", "#313244", "#45475a", "#585b70", "#cdd6f4", "#f5e0dc", "#b4befe",
+                 "#f38ba8", "#fab387", "#f9e2af", "#a6e3a1", "#94e2d5", "#89b4fa", "#cba6f7", "#f2cdcd"] },
+        { name: "Nord Oscuro", accent: "base0C",     // Base16: nord
+          base: ["#2e3440", "#3b4252", "#434c5e", "#4c566a", "#d8dee9", "#e5e9f0", "#eceff4", "#8fbcbb",
+                 "#bf616a", "#d08770", "#ebcb8b", "#a3be8c", "#88c0d0", "#81a1c1", "#b48ead", "#5e81ac"] },
+        { name: "Dracula Oscuro", accent: "base0D",     // Base16: dracula
+          base: ["#282a36", "#21222c", "#44475a", "#6272a4", "#9ea8c7", "#f8f8f2", "#f8f8f2", "#ffffff",
+                 "#ff5555", "#ffb86c", "#f1fa8c", "#50fa7b", "#8be9fd", "#bd93f9", "#ff79c6", "#993333"] },
+        { name: "Solarized Claro", accent: "base0D",     // Base16: solarized-light
+          base: ["#fdf6e3", "#eee8d5", "#93a1a1", "#839496", "#657b83", "#586e75", "#073642", "#002b36",
+                 "#dc322f", "#cb4b16", "#b58900", "#859900", "#2aa198", "#268bd2", "#6c71c4", "#d33682"] },
+        { name: "Solarized Oscuro", accent: "base0D",     // Base16: solarized-dark
+          base: ["#002b36", "#073642", "#586e75", "#657b83", "#839496", "#93a1a1", "#eee8d5", "#fdf6e3",
+                 "#dc322f", "#cb4b16", "#b58900", "#859900", "#2aa198", "#268bd2", "#6c71c4", "#d33682"] },
+        { name: "Tokyo Night Oscuro", accent: "base0D",     // tokyo-night-dark (acentos reordenados)
+          base: ["#1a1b26", "#16161e", "#2f3549", "#444b6a", "#787c99", "#a9b1d6", "#cbccd1", "#d5d6db",
+                 "#f7768e", "#ff9e64", "#e0af68", "#9ece6a", "#7dcfff", "#7aa2f7", "#bb9af7", "#d18616"] },
+        { name: "One Dark Oscuro", accent: "base0D",     // Base16: onedark
+          base: ["#282c34", "#353b45", "#3e4451", "#545862", "#565c64", "#abb2bf", "#b6bdca", "#c8ccd4",
+                 "#e06c75", "#d19a66", "#e5c07b", "#98c379", "#56b6c2", "#61afef", "#c678dd", "#be5046"] },
+        { name: "Everblush Oscuro", accent: "base0B",     // everblush (Caelestia)
+          base: ["#141b1e", "#232a2d", "#3a4145", "#8a8f94", "#b3b9be", "#e8e8e8", "#e8e8e8", "#e8e8e8",
+                 "#e57474", "#e59a84", "#e5c76b", "#8ccfb0", "#6cbfbf", "#67b0e8", "#c47fd5", "#e5a5c5"] },
+        { name: "Old World Oscuro", accent: "base0D",     // oldworld (Caelestia; acentos a juego)
+          base: ["#121317", "#1e2023", "#43474f", "#8e909a", "#c4c6d0", "#e3e2e7", "#e3e2e7", "#ffffff",
+                 "#ffb4ab", "#f5ba92", "#dac886", "#a5d8a6", "#80dada", "#aac7ff", "#e2b6ec", "#c18367"] },
+        { name: "Shado Theme Oscuro", accent: "base0D",     // shadotheme (Caelestia; acentos a juego)
+          base: ["#131317", "#1f1f23", "#46464f", "#918f9a", "#c7c5d1", "#e5e1e7", "#e5e1e7", "#ffffff",
+                 "#ffb4ab", "#f6ba92", "#dac986", "#a5d8a6", "#7fdbda", "#bfc1ff", "#e3b7ed", "#c28367"] },
+        { name: "Dark Green Oscuro", accent: "base0B",     // darkgreen (Caelestia; acentos a juego)
+          base: ["#23262d", "#23262c", "#343434", "#979797", "#c9c9c9", "#f5f5f6", "#f5f5f6", "#ffffff",
+                 "#c66e73", "#d9792b", "#af9314", "#24bd5c", "#02abab", "#5197ee", "#bd75cd", "#b04a0d"] },
+        { name: "Caelestia Claro", accent: "base0C",     // caelestia (Caelestia; acentos a juego)
+          base: ["#f6faf9", "#e7f0ee", "#a9b4b3", "#727d7c", "#566160", "#2a3433", "#2a3433", "#0a0f0f",
+                 "#a83836", "#8f4d15", "#725f03", "#327036", "#1c6a66", "#31619e", "#7c4a87", "#732d02"] },
+        { name: "Caelestia Oscuro", accent: "base0C",     // caelestia (Caelestia; acentos a juego)
+          base: ["#0a0f0f", "#131b1a", "#3f4a49", "#6d7876", "#a2adac", "#dce8e6", "#dce8e6", "#f6faf9",
+                 "#fa746f", "#eaa16e", "#cab35c", "#86c788", "#9bd0cc", "#83b7f9", "#d39ddf", "#bb6e4a"] },
+        { name: "Monokai Oscuro", accent: "base0B",     // Base16: monokai
+          base: ["#272822", "#383830", "#49483e", "#75715e", "#a59f85", "#f8f8f2", "#f5f4f1", "#f9f8f5",
+                 "#f92672", "#fd971f", "#f4bf75", "#a6e22e", "#a1efe4", "#66d9ef", "#ae81ff", "#cc6633"] },
+        { name: "Kanagawa Oscuro", accent: "base0D",     // Base16: kanagawa
+          base: ["#1f1f28", "#16161d", "#223249", "#54546d", "#727169", "#dcd7ba", "#c8c093", "#717c7c",
+                 "#c34043", "#ffa066", "#c0a36e", "#76946a", "#6a9589", "#7e9cd8", "#957fb8", "#d27e99"] },
+        { name: "Ayu Claro", accent: "base09",     // Base16: ayu-light
+          base: ["#f8f9fa", "#edeff1", "#d2d4d8", "#a0a6ac", "#8a9199", "#5c6166", "#4e5257", "#404447",
+                 "#f07171", "#fa8d3e", "#f2ae49", "#6cbf49", "#4cbf99", "#399ee6", "#a37acc", "#e6ba7e"] },
+        { name: "Ayu Mirage", accent: "base0A",     // Base16: ayu-mirage
+          base: ["#1f2430", "#242936", "#323844", "#4a5059", "#707a8c", "#cccac2", "#d9d7ce", "#f3f4f5",
+                 "#f28779", "#ffad66", "#ffd173", "#d5ff80", "#95e6cb", "#73d0ff", "#d4bfff", "#f27983"] },
+        { name: "Ayu Oscuro", accent: "base0F",     // Base16: ayu-dark
+          base: ["#0b0e14", "#131721", "#202229", "#3e4b59", "#bfbdb6", "#e6e1cf", "#ece8db", "#f2f0e7",
+                 "#f07178", "#ff8f40", "#ffb454", "#aad94c", "#95e6cb", "#59c2ff", "#d2a6ff", "#e6b450"] },
+        { name: "Nightfox Claro", accent: "base08",     // dayfox (nightfox.nvim)
+          base: ["#f6f2ee", "#e4dcd4", "#dbd1dd", "#837a72", "#643f61", "#3d2b5a", "#302b5d", "#352c24",
+                 "#a5222f", "#955f61", "#ac5402", "#396847", "#287980", "#2848a9", "#6e33ce", "#a440b5"] },
+        { name: "Nightfox Oscuro", accent: "base0D",     // nightfox (nightfox.nvim)
+          base: ["#192330", "#212e3f", "#29394f", "#738091", "#aeafb0", "#cdcecf", "#d6d6d7", "#dfdfe0",
+                 "#c94f6d", "#f4a261", "#dbc074", "#81b29a", "#63cdcf", "#719cd6", "#9d79d6", "#d67ad2"] },
+        { name: "Oxocarbon Claro", accent: "base0D",     // Base16: oxocarbon-light
+          base: ["#f2f4f8", "#dde1e6", "#bec6cf", "#a1acba", "#68788d", "#525f70", "#3d4652", "#272d35",
+                 "#ff7eb6", "#ee5396", "#ff6f00", "#42be65", "#673ab7", "#0f62fe", "#be95ff", "#803800"] },
+        { name: "Oxocarbon Oscuro", accent: "base0D",     // Base16: oxocarbon-dark
+          base: ["#161616", "#262626", "#393939", "#525252", "#dde1e6", "#f2f4f8", "#ffffff", "#08bdba",
+                 "#ee5396", "#ff7eb6", "#ff6f00", "#42be65", "#3ddbd9", "#33b1ff", "#be95ff", "#82cfff"] },
+        { name: "GitHub Claro", accent: "base0D",     // github (acentos reordenados)
+          base: ["#ffffff", "#f6f8fa", "#afb8c1", "#8c959f", "#6e7781", "#424a53", "#32383f", "#1f2328",
+                 "#cf222e", "#953800", "#bf8700", "#116329", "#0a3069", "#0550ae", "#8250df", "#82071e"] },
+        { name: "GitHub Oscuro", accent: "base0D",     // github-dark (acentos reordenados)
+          base: ["#0d1117", "#161b22", "#484f58", "#6e7681", "#8b949e", "#c9d1d9", "#f0f6fc", "#ffffff",
+                 "#ff7b72", "#ffa657", "#bb8009", "#7ee787", "#a5d6ff", "#79c0ff", "#d2a8ff", "#ffa198"] },
+        { name: "Zenburn Oscuro", accent: "base0C",     // Base16: zenburn
+          base: ["#383838", "#404040", "#606060", "#6f6f6f", "#808080", "#dcdccc", "#c0c0c0", "#ffffff",
+                 "#dca3a3", "#dfaf8f", "#e0cf9f", "#5f7f5f", "#93e0e3", "#7cb8bb", "#dc8cc3", "#000000"] },
+        { name: "Sonokai Oscuro", accent: "base08",     // Base16: sonokai
+          base: ["#2c2e34", "#33353f", "#414550", "#595f6f", "#7f8490", "#e2e2e3", "#e2e2e3", "#e2e2e3",
+                 "#fc5d7c", "#f39660", "#e7c664", "#9ed072", "#76cce0", "#85d3f2", "#b39df3", "#ff6077"] },
+        { name: "Horizon Oscuro", accent: "base08",     // Base16: horizon-terminal-dark
+          base: ["#1c1e26", "#232530", "#2e303e", "#6f6f70", "#9da0a2", "#cbced0", "#dcdfe4", "#e3e6ee",
+                 "#e95678", "#fab795", "#fac29a", "#29d398", "#59e1e3", "#26bbd9", "#ee64ac", "#f09383"] }
     ]
 
-    readonly property QtObject current:   themeByName(activeTheme)
+    // Papeles de la barra a partir de los 16 colores de un tema
+    function roles(theme) {
+        const b = theme.base
+        // Texto apagado (workspaces vacíos, pistas...): base03 o base04, el que mejor se
+        // distinga a la vez del fondo y del texto normal (según el tema, uno de los dos se
+        // confunde con el fondo o con el texto)
+        const mutedScore = c => Math.min(contrast(c, b[0]), contrast(b[5], c))
+        return {
+            background:   b[0],     // La barra lateral y el recuadro
+            surface:      b[1],     // Fondo de los desplegables y ventanas flotantes
+            // Fila bajo el ratón: base02, salvo que el texto no se lea encima (Solarized);
+            // entonces un velo del color del texto sobre el fondo del desplegable
+            surfaceHover: contrast(b[5], b[2]) >= 3 ? b[2] : Qt.tint(b[1], Qt.alpha(b[5], 0.12)),
+            border:       b[2],     // Bordes y separadores
+            textActive:   b[5],     // Texto normal
+            textDisabled: mutedScore(b[4]) > mutedScore(b[3]) ? b[4] : b[3],
+            textSelected: b[parseInt(theme.accent.slice(4), 16)]   // Acento: "base0D" -> casilla 13
+        }
+    }
+
+    // Luminancia relativa (WCAG) de un color "#rrggbb": 0 = negro, 1 = blanco
+    function luminance(hex) {
+        const c = [1, 3, 5].map(i => parseInt(hex.substr(i, 2), 16) / 255)
+                           .map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4))
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+    }
+
+    // Contraste WCAG entre dos colores: de 1 (iguales) a 21 (blanco y negro)
+    function contrast(a, b) {
+        const la = luminance(a), lb = luminance(b)
+        return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
+    }
+
+    readonly property var current: roles(themeByName(activeTheme))
+    readonly property var base:    themeByName(activeTheme).base   // Los 16 colores del tema activo, por si algún widget necesita un rojo, un verde...
 
     readonly property color background:   current.background
     readonly property color textActive:   current.textActive
@@ -577,9 +210,6 @@ Singleton {
     readonly property color surface:      current.surface
     readonly property color surfaceHover: current.surfaceHover
     readonly property color border:       current.border
-    readonly property color extra1:       current.extra1
-    readonly property color extra2:       current.extra2
-    readonly property color extra3:       current.extra3
 
     // Alacritty es un proceso aparte y no puede leer este QML directamente,
     // así que le regeneramos su colors.toml (ver alacritty/alacritty.toml,
@@ -594,12 +224,7 @@ Singleton {
         alacrittyTheme = activeTheme
         const t = themeByName(activeTheme)  // Directo del tema, no de las propiedades derivadas (lo mismo que en hyprGeneralText())
         alacrittySync.running = false
-        alacrittySync.command = [
-            Quickshell.shellPath("scripts/gen-alacritty-colors.py"),
-            t.background.toString(), t.textActive.toString(), t.textSelected.toString(),
-            t.textDisabled.toString(), t.surface.toString(), t.surfaceHover.toString(),
-            t.border.toString(), t.extra1.toString(), t.extra2.toString(), t.extra3.toString(),
-        ]
+        alacrittySync.command = [Quickshell.shellPath("scripts/gen-alacritty-colors.py")].concat(t.base)   // Los 16 colores, base00 … base0F
         alacrittySync.running = true
     }
 
@@ -615,7 +240,7 @@ Singleton {
 
     // Tabla "general = {...}" que se pasa a hl.config(), en una línea (vale tanto para el archivo como para "hyprctl eval")
     function hyprGeneralText() {
-        const t = themeByName(activeTheme)              // Directo del tema, no de las propiedades derivadas: puede que aún no se hayan actualizado al saltar onActiveThemeChanged
+        const t = roles(themeByName(activeTheme))       // Directo del tema, no de las propiedades derivadas: puede que aún no se hayan actualizado al saltar onActiveThemeChanged
         return "general = { col = { "
              + "active_border = { colors = {" + hyprColor(t.textSelected, "ee") + ", " + hyprColor(t.textActive, "ee") + "}, angle = 45 }, "  // Degradado, como el que había fijo en hyprland.lua
              + "inactive_border = " + hyprColor(t.border, "aa")

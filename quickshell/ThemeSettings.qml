@@ -24,7 +24,7 @@ ColumnLayout {
         implicitWidth: 220
         implicitHeight: Math.min(360, listCol.implicitHeight + 16)
 
-        // Flickable en vez de Repeater suelto porque hay ~30 temas: con
+        // Flickable en vez de Repeater suelto porque hay 35 temas: con
         // todos desplegados no cabrían en pantalla, así que se recorta a
         // 360px y se puede hacer scroll con la rueda del ratón.
         Flickable {
@@ -61,16 +61,16 @@ ColumnLayout {
                             anchors.rightMargin: 6
                             spacing: 6
 
-                            // Muestra de colores del tema: fondo, seleccionado y los 3 acentos
+                            // Muestra de colores del tema: fondo, acento, rojo, verde y azul
                             Row {
                                 spacing: 2
                                 Repeater {
                                     model: [
-                                        themeRow.modelData.background,
-                                        themeRow.modelData.textSelected,
-                                        themeRow.modelData.extra1,
-                                        themeRow.modelData.extra2,
-                                        themeRow.modelData.extra3
+                                        themeRow.modelData.base[0],                         // base00: fondo
+                                        Theme.roles(themeRow.modelData).textSelected,       // El acento del tema
+                                        themeRow.modelData.base[8],                         // base08: rojo
+                                        themeRow.modelData.base[11],                        // base0B: verde
+                                        themeRow.modelData.base[13]                         // base0D: azul
                                     ]
                                     delegate: Rectangle {
                                         width: 12
