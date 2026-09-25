@@ -74,6 +74,7 @@ ShellRoot {
                             ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
                             WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)
                             Install{Layout.alignment: Qt.AlignHCenter}           // Actualizar Reddots: git pull + install.sh en un terminal
+                            SettingsToggle{controls: settingsToggle; Layout.alignment: Qt.AlignHCenter}  // Copia del engranaje al final del grupo: se oculta con él y hace lo mismo
                         }
                     }
                     Power{Layout.alignment: Qt.AlignHCenter}            // Apagar / Suspender
