@@ -19,21 +19,15 @@ if [ -z "${LID_WATCHER_INHIBITED:-}" ]; then
         "$0" "$@"
 fi
 #
-# Reiniciamos quickshell tras cada cambio porque su PanelWindow no se
-# reengancha solo cuando la pantalla a la que está anclado desaparece/vuelve.
+# No hace falta reiniciar quickshell tras cada cambio: shell.qml envuelve sus
+# ventanas en un Variants atado a la pantalla del portátil, así que se
+# destruyen y recrean solas cuando esa pantalla desaparece/vuelve.
 
 # El panel interno casi siempre usa el prefijo "eDP" (a veces "LVDS" en hardware
 # más antiguo). Usamos "monitors all" porque un monitor deshabilitado no sale
 # en "monitors" a secas, y necesitamos su nombre para poder reactivarlo luego.
 laptop_output() {
     hyprctl monitors all 2>/dev/null | awk '/^Monitor (eDP|LVDS)/ {print $2; exit}'
-}
-
-restart_quickshell() {
-    pkill -x quickshell
-    sleep 0.3
-    nohup quickshell >/tmp/quickshell.log 2>&1 &
-    disown
 }
 
 apply_state() {
@@ -50,8 +44,6 @@ apply_state() {
     else
         hyprctl eval "hl.monitor({ output = \"$output\", disabled = false, mode = \"highres\", position = \"0x0\", scale = \"1\" })" >/dev/null 2>&1   # Los mismos valores que la regla del panel en hypr/hyprland.lua
     fi
-
-    restart_quickshell
 }
 
 # Sincroniza el estado al arrancar, por si Hyprland se lanza con la tapa ya cerrada
