@@ -24,7 +24,10 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "reddots:launcher"
-    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None  // Mientras está abierto, el teclado va al buscador
+    // OnDemand y no Exclusive: con Exclusive Hyprland no deja salir el clic y el
+    // HyprlandFocusGrab nunca se entera de que se ha pulsado fuera (no se cerraba).
+    // El teclado le llega igual al abrirse, porque se lo da el propio grab.
+    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     onVisibleChanged: {
         if (visible) {
