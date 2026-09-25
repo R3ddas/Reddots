@@ -18,53 +18,65 @@ ShellRoot {
         return Quickshell.screens[0]
     }
 
-    Border {
-        screen: laptopScreen
-        frameColor: Theme.background
-    }
-    Launcher{screen: laptopScreen}    // Widget que se abre/cierra con Super, abajo-derecha
-    Notifications{screen: laptopScreen}
-    Osd{screen: laptopScreen}         // Indicador de volumen/brillo al usar las teclas multimedia
-    PanelWindow {
-        screen: laptopScreen
-        anchors { top: true; bottom: true; left: true }
-        implicitWidth: Geometry.sidebarWidth
-        color: Theme.background
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.topMargin: 6
-            anchors.bottomMargin: 6
-            anchors.leftMargin: 6 + Geometry.borderThickness / 2   // Le sumo la mitad del borde que añade "Border"
-            anchors.rightMargin: 6 - Geometry.borderThickness / 2  // Le resto la mitad del borde que añade "Border"
+    // Todas las ventanas van dentro de un Variants: si la pantalla desaparece (monitor
+    // apagado, tapa cerrada...) se destruyen, y cuando vuelve se crean de nuevo solas.
+    // Sin esto, al volver la pantalla las ventanas no se reenganchaban y la barra
+    // desaparecía hasta reiniciar Quickshell.
+    Variants {
+        model: laptopScreen ? [laptopScreen] : []     // Una sola pantalla (o ninguna mientras no haya)
 
-            Workspaces{Layout.alignment: Qt.AlignHCenter}       // Cambiador de Workspaces
-            Item { Layout.fillHeight: true }                    // Empuja el reloj hacia el centro
-            Clock{Layout.alignment: Qt.AlignHCenter}            // Reloj (centrado verticalmente)
-            Item { Layout.fillHeight: true }                    // Empuja el grupo inferior hacia abajo
-            ColumnLayout{
-                spacing: 5
-                Layout.alignment: Qt.AlignHCenter                // Sin esto el grupo queda pegado a la izquierda (es más estrecho que la barra) y sus iconos se descentran
-                Volume{Layout.alignment: Qt.AlignHCenter}       // Volumen
-                Network{Layout.alignment: Qt.AlignHCenter}      // Wifi
-                Bluetooths{Layout.alignment: Qt.AlignHCenter}   // Bluetooth
-                Loader{
-                    active: UPower.displayDevice.isPresent      // Solo se instancia si hay una batería real (en un PC no se crea el widget)
-                    sourceComponent: Battery{}
-                    Layout.alignment: Qt.AlignHCenter
-                }
-                SettingsToggle{id: settingsToggle; Layout.alignment: Qt.AlignHCenter}  // Muestra/oculta el grupo de configuración de debajo
-                ColumnLayout{
-                    visible: settingsToggle.expanded                     // Oculto, el layout no le reserva hueco
-                    spacing: 5
-                    Layout.alignment: Qt.AlignHCenter
-                    Brightness{Layout.alignment: Qt.AlignHCenter}        // Brillo del portátil y de los monitores externos (DDC)
-                    GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
-                    ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
-                    WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)
+        Scope {
+            id: screenScope
+            required property var modelData     // La pantalla en la que se crean las ventanas
+
+            Border {
+                screen: screenScope.modelData
+                frameColor: Theme.background
+            }
+            Launcher{screen: screenScope.modelData}    // Widget que se abre/cierra con Super, abajo-derecha
+            Notifications{screen: screenScope.modelData}
+            Osd{screen: screenScope.modelData}         // Indicador de volumen/brillo al usar las teclas multimedia
+            PanelWindow {
+                screen: screenScope.modelData
+                anchors { top: true; bottom: true; left: true }
+                implicitWidth: Geometry.sidebarWidth
+                color: Theme.background
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.topMargin: 6
+                    anchors.bottomMargin: 6
+                    anchors.leftMargin: 6 + Geometry.borderThickness / 2   // Le sumo la mitad del borde que añade "Border"
+                    anchors.rightMargin: 6 - Geometry.borderThickness / 2  // Le resto la mitad del borde que añade "Border"
+
+                    Workspaces{Layout.alignment: Qt.AlignHCenter}       // Cambiador de Workspaces
+                    Item { Layout.fillHeight: true }                    // Empuja el reloj hacia el centro
+                    Clock{Layout.alignment: Qt.AlignHCenter}            // Reloj (centrado verticalmente)
+                    Item { Layout.fillHeight: true }                    // Empuja el grupo inferior hacia abajo
+                    ColumnLayout{
+                        spacing: 5
+                        Layout.alignment: Qt.AlignHCenter                // Sin esto el grupo queda pegado a la izquierda (es más estrecho que la barra) y sus iconos se descentran
+                        Volume{Layout.alignment: Qt.AlignHCenter}       // Volumen
+                        Network{Layout.alignment: Qt.AlignHCenter}      // Wifi
+                        Bluetooths{Layout.alignment: Qt.AlignHCenter}   // Bluetooth
+                        Loader{
+                            active: UPower.displayDevice.isPresent      // Solo se instancia si hay una batería real (en un PC no se crea el widget)
+                            sourceComponent: Battery{}
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+                        SettingsToggle{id: settingsToggle; Layout.alignment: Qt.AlignHCenter}  // Muestra/oculta el grupo de configuración de debajo
+                        ColumnLayout{
+                            visible: settingsToggle.expanded                     // Oculto, el layout no le reserva hueco
+                            spacing: 5
+                            Layout.alignment: Qt.AlignHCenter
+                            Brightness{Layout.alignment: Qt.AlignHCenter}        // Brillo del portátil y de los monitores externos (DDC)
+                            GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
+                            ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
+                            WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)
+                        }
+                    }
+                    Power{Layout.alignment: Qt.AlignHCenter}            // Apagar / Suspender
                 }
             }
-            Power{Layout.alignment: Qt.AlignHCenter}            // Apagar / Suspender
         }
-
     }
 }
