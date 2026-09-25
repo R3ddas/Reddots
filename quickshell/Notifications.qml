@@ -18,7 +18,6 @@ Scope{
         bodySupported: true
 
         onNotification: n => {
-            console.log("got:", n.summary, "---", n.body)
             n.tracked = true
         }
     }
