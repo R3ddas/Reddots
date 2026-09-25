@@ -19,6 +19,7 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xF06B0)  // update
+        tooltip: menu.visible ? "" : "Reddots: atajos de teclado y actualizar"
         onClicked: menu.toggle()
     }
 

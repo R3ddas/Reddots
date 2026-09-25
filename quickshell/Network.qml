@@ -38,6 +38,11 @@ ColumnLayout{
         id: iconText
         text: root.icon
         color: (root.wiredConnected || Networking.wifiEnabled) ? Theme.textActive : Theme.textDisabled
+        tooltip: menu.visible ? ""
+               : root.wiredConnected ? "Conectado por cable"
+               : !Networking.wifiEnabled ? "Wifi apagado"
+               : !root.active ? "Wifi: sin conexión"
+               : root.active.name + " · señal " + Math.round(root.signal * 100) + " %"
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => {
             if (event.button === Qt.RightButton) Networking.wifiEnabled = !Networking.wifiEnabled   // Clic derecho: enciende/apaga el wifi

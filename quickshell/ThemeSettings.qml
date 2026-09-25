@@ -13,6 +13,7 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xf195A)
+        tooltip: menu.visible ? "" : "Tema: " + Theme.activeTheme
         onClicked: menu.toggle()
     }
 

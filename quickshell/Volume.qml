@@ -127,6 +127,9 @@ ColumnLayout{
         id: iconText
         text: root.icon
         color: root.muted ? Theme.textDisabled : Theme.textActive
+        tooltip: menu.visible || !root.sink ? ""
+               : (root.muted ? "Silenciado" : "Volumen " + Math.round(Math.min(root.volume, 1) * 100) + " %")
+                 + " · " + (root.sink.nickname || root.sink.description || root.sink.name)
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => {
             if (event.button === Qt.RightButton) {

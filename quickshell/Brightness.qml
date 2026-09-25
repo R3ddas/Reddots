@@ -47,6 +47,7 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xF00DF)  // brightness-6
+        tooltip: menu.visible ? "" : "Brillo de las pantallas"
         onClicked: menu.toggle()
     }
 

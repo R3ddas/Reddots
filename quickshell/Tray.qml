@@ -40,16 +40,30 @@ ColumnLayout {
             Layout.alignment: Qt.AlignHCenter
 
             MouseArea {
+                id: trayMouse
                 anchors.fill: parent
                 anchors.margins: -4
+                hoverEnabled: true                      // Para el tooltip
                 acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                onContainsMouseChanged: trayTooltip.active = containsMouse
                 onClicked: event => {
+                    trayTooltip.active = false          // Al pulsar se quita, como en BarIcon.qml
                     const item = trayIcon.modelData
                     if (event.button === Qt.MiddleButton) item.secondaryActivate()
                     else if (event.button === Qt.RightButton || item.onlyMenu) menu.openFor(item, trayIcon)
                     else item.activate()
                 }
                 onWheel: wheel => trayIcon.modelData.scroll(wheel.angleDelta.y, false)
+            }
+
+            LazyLoader {                                // Nombre de la app al dejar el ratón encima (solo existe mientras tanto)
+                id: trayTooltip
+                active: false
+                BarTooltip {
+                    anchorItem: trayIcon
+                    text: menu.visible ? "" : (trayIcon.modelData.tooltipTitle || trayIcon.modelData.title)
+                    hovered: true
+                }
             }
         }
     }

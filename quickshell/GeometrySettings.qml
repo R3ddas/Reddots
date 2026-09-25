@@ -15,6 +15,7 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xEEB0)
+        tooltip: menu.visible ? "" : "Medidas de la barra y las ventanas"
         onClicked: menu.toggle()
     }
 

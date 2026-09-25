@@ -18,6 +18,7 @@ ColumnLayout {
     BarIcon {
         text: String.fromCodePoint(0xf01d8)                                 // Mismo icono plegado y desplegado: el estado se nota por el color
         color: root.owner.expanded ? Theme.textSelected : Theme.textActive // Con el color de acento mientras está desplegado
+        tooltip: root.owner.expanded ? "Ocultar los ajustes" : "Mostrar los ajustes"
         onClicked: root.owner.expanded = !root.owner.expanded               // Muestra/oculta el grupo
     }
 }

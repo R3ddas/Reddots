@@ -13,6 +13,7 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xF0425)  // power
         font.pixelSize: 20
+        tooltip: menu.visible ? "" : "Apagar, reiniciar o suspender"
         onClicked: menu.toggle()
     }
 

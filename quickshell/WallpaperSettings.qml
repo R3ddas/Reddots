@@ -27,6 +27,7 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xF0E09)  // wallpaper
+        tooltip: menu.visible ? "" : "Fondo de pantalla"
         onClicked: menu.toggle()
     }
 

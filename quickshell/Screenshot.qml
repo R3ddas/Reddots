@@ -18,6 +18,7 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xF0100)  // camera
+        tooltip: menu.visible ? "" : "Capturas de pantalla (clic derecho: región)"
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => {
             if (event.button === Qt.RightButton) root.capture("region")   // Clic derecho: región directamente

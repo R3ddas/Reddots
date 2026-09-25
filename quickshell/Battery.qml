@@ -54,8 +54,28 @@ ColumnLayout{
         return String.fromCodePoint(0xF007A + Math.floor(level/10) - 1)
     }
 
+    // "2 h 15 min", "40 min"; vacío si UPower aún no lo sabe (da 0 los primeros segundos)
+    function duration(seconds) {
+        if (!(seconds > 0)) return ""
+        const h = Math.floor(seconds / 3600)
+        const m = Math.round((seconds % 3600) / 60)
+        return h > 0 ? h + " h " + m + " min" : m + " min"
+    }
+
+    readonly property string tooltip: {
+        const text = "Batería " + level + " %"
+        if (battery.state === UPowerDeviceState.FullyCharged) return text + " · cargada"
+        if (charging) {
+            const full = duration(battery.timeToFull)
+            return text + " · cargando" + (full ? ", llena en " + full : "")
+        }
+        const left = duration(battery.timeToEmpty)
+        return text + (left ? " · quedan " + left : "")
+    }
+
     BarIcon {
         text: root.icon
+        tooltip: root.tooltip
         acceptedButtons: Qt.RightButton
         onClicked: root.showLevel = !root.showLevel     // Con el botón derecho se esconde/muestra el valor de carga
     }

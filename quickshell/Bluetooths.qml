@@ -132,6 +132,11 @@ ColumnLayout {
         id: iconText
         text: root.icon
         color: root.powered ? Theme.textActive : Theme.textDisabled
+        tooltip: menu.visible ? ""
+               : !root.adapter ? "Sin Bluetooth"
+               : !root.powered ? "Bluetooth apagado"
+               : !root.active ? "Bluetooth: nada conectado"
+               : root.active.name + (root.active.batteryAvailable ? " · batería " + Math.round(root.active.battery * 100) + " %" : "")
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => {
             if (event.button === Qt.LeftButton) menu.toggle()                             // clic izq: abre/cierra el menú de dispositivos

@@ -11,6 +11,7 @@ ColumnLayout{
     onShowDateChanged: if (!showDate) menu.visible = false   // Si se oculta la fecha, el calendario también
 
     Text{
+        id: timeText
         text: Qt.formatDateTime(clock.date, "hh\nmm")
         color: Theme.textActive
         font.pixelSize: 15
@@ -21,8 +22,23 @@ ColumnLayout{
         MouseArea{
             anchors.fill: parent
             anchors.margins: -4
+            hoverEnabled: true                                  // Para el tooltip con la fecha completa
             acceptedButtons: Qt.RightButton
-            onClicked: root.showDate = !root.showDate
+            onContainsMouseChanged: dateTooltip.active = containsMouse
+            onClicked: {
+                dateTooltip.active = false
+                root.showDate = !root.showDate
+            }
+        }
+
+        LazyLoader {                                            // "jueves, 25 de septiembre de 2026" al dejar el ratón encima de la hora
+            id: dateTooltip
+            active: false
+            BarTooltip {
+                anchorItem: timeText
+                text: menu.visible ? "" : Qt.locale("es_ES").toString(clock.date, "dddd, d 'de' MMMM 'de' yyyy")
+                hovered: true
+            }
         }
     }
 
