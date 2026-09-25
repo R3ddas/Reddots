@@ -16,7 +16,20 @@ import QtQuick
 Singleton {
     id: root
 
-    readonly property string folder: Quickshell.env("HOME") + "/Pictures/Wallpapers"                // Carpeta de los fondos (install.sh la enlaza a Wallpapers/ del repo)
+    // Carpeta de imágenes del usuario (~/Imágenes con el sistema en español), la misma en
+    // la que guarda las capturas scripts/screenshot.sh. Se lee de user-dirs.dirs, que es de
+    // donde la saca "xdg-user-dir PICTURES"; si no existe, ~/Pictures.
+    FileView {
+        id: userDirs
+        path: Quickshell.env("HOME") + "/.config/user-dirs.dirs"
+        blockLoading: true      // Para que text() ya tenga el contenido al calcular "folder"
+    }
+    readonly property string picturesDir: {
+        const m = userDirs.text().match(/^XDG_PICTURES_DIR="(.*)"$/m)     // Línea: XDG_PICTURES_DIR="$HOME/Imágenes"
+        return m ? m[1].replace("$HOME", Quickshell.env("HOME")) : Quickshell.env("HOME") + "/Pictures"
+    }
+
+    readonly property string folder: picturesDir + "/Wallpapers"                                     // Carpeta de los fondos (install.sh la enlaza a Wallpapers/ del repo)
     readonly property string confPath: Quickshell.env("HOME") + "/.config/hypr/shellWallpaper.conf"  // Config de hyprpaper que se genera (fuera del repo, como shellOverrides.lua)
 
     property alias path: adapter.path   // Ruta del fondo activo: al cambiarla (desde WallpaperSettings.qml) se aplica y se guarda sola
@@ -43,13 +56,27 @@ Singleton {
             Quickshell.execDetached(["hyprctl", "hyprpaper", "wallpaper", "," + root.path + ",cover"])  // En caliente. Formato "monitor,ruta,modo" (monitor vacío = todos): una ruta con comas fallaría aquí
         }
         // Igual que en HyprGeometry.qml: al arrancar se reescribe el .conf por
-        // si se quedó desfasado. Si wallpaper.json no existe todavía (nunca se
-        // ha elegido nada) esto no se dispara y hyprpaper sigue con el del repo.
-        onLoaded: confFile.setText(root.confText())
+        // si se quedó desfasado.
+        onLoaded: {
+            // Antes los fondos se enlazaban siempre en ~/Pictures/Wallpapers, aunque la carpeta de
+            // imágenes fuese otra (~/Imágenes): si la ruta guardada es de ahí, se pasa a la de ahora.
+            // Al cambiar "path" salta onAdapterUpdated, que lo guarda y lo aplica en caliente.
+            const oldFolder = Quickshell.env("HOME") + "/Pictures/Wallpapers/"
+            if (root.path.startsWith(oldFolder) && root.folder + "/" !== oldFolder)
+                root.path = root.folder + "/" + root.path.slice(oldFolder.length)
+            confFile.setText(root.confText())
+        }
+        // Si wallpaper.json no existe todavía (nunca se ha elegido nada), se pone ya el fondo
+        // por defecto desde aquí: hypr/hyprpaper.conf lleva una ruta fija, y la carpeta de
+        // imágenes depende del idioma del sistema (~/Imágenes, ~/Pictures...).
+        onLoadFailed: {
+            confFile.setText(root.confText())
+            Quickshell.execDetached(["hyprctl", "hyprpaper", "wallpaper", "," + root.path + ",cover"])
+        }
 
         JsonAdapter {
             id: adapter
-            property string path: root.folder + "/Wallpo1.png"   // Solo si aún no existe wallpaper.json: el mismo de hypr/hyprpaper.conf, para que el selector lo marque
+            property string path: root.folder + "/Wallpo1.png"   // Solo si aún no existe wallpaper.json: el mismo que hypr/hyprpaper.conf, para que el selector lo marque
         }
     }
 

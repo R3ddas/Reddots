@@ -10,6 +10,7 @@
 
 import Quickshell
 import Quickshell.Services.Notifications
+import Quickshell.Wayland                // Para el namespace y la capa de la ventana
 import QtQuick
 import QtQuick.Layouts                  // Para usar RowLayout o ColumnLayout
 
@@ -27,12 +28,17 @@ Scope{
     }
     PanelWindow{
         id: panel
+        // Sin notificaciones la ventana no existe: si no, quedaba una franja invisible
+        // arriba a la derecha que se tragaba los clics
+        visible: server.trackedNotifications.values.length > 0
         anchors{top:true; right:true}
         margins{top:12; right:12}
         implicitWidth: 380
         implicitHeight: Math.max(1, column.implicitHeight)
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore         // Para que no reserve espacio todo el rato en la ventana
+        WlrLayershell.layer: WlrLayer.Top           // La que ya tenía por defecto: por debajo de las ventanas en pantalla completa
+        WlrLayershell.namespace: "reddots:notifications"   // Para poder darle reglas de capa (layerrule) en Hyprland, como a las demás
 
         ColumnLayout{
             id: column

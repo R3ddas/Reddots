@@ -85,8 +85,19 @@ if (( ${#restos[@]} )); then
     echo "Aviso: ~/.config/hypr tenía restos de otra config, movidos a $backup"
 fi
 
-mkdir -p ~/Pictures
-ln -sfn "$DOTS/Wallpapers"   ~/Pictures/Wallpapers
+# Los fondos van a la carpeta de imágenes del sistema (~/Imágenes en español), la misma
+# que las capturas de pantalla. xdg-user-dirs-update la crea si aún no existe.
+xdg-user-dirs-update
+pictures="$(xdg-user-dir PICTURES)"
+mkdir -p "$pictures"
+ln -sfn "$DOTS/Wallpapers"   "$pictures/Wallpapers"
+
+# Antes se enlazaban en ~/Pictures aunque la carpeta de imágenes fuese otra: se quita
+# ese enlace viejo, y ~/Pictures también si se ha quedado vacía.
+if [[ "$pictures" != "$HOME/Pictures" && -L ~/Pictures/Wallpapers ]]; then
+    rm ~/Pictures/Wallpapers
+    rmdir --ignore-fail-on-non-empty ~/Pictures
+fi
 
 echo "Escondiendo aplicaciones del launcher"
 

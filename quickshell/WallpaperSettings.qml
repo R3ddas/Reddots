@@ -1,5 +1,5 @@
 // Icono en la barra + popup para elegir el fondo de pantalla (Wallpaper.qml).
-// Muestra una miniatura de cada imagen de ~/Pictures/Wallpapers; al pulsar
+// Muestra una miniatura de cada imagen de ~/Imágenes/Wallpapers; al pulsar
 // una se aplica al momento y queda guardada (Wallpaper.qml persiste la ruta
 // sola, igual que Theme.qml con el tema). Las imágenes que se añadan o
 // borren de la carpeta aparecen/desaparecen solas, sin reiniciar Quickshell.
@@ -87,7 +87,7 @@ ColumnLayout {
                         Text {
                             Layout.fillWidth: true
                             visible: folderModel.status === FolderListModel.Ready && folderModel.count === 0  // Solo si la carpeta ya se ha leído y está vacía
-                            text: "No hay imágenes en\n~/Pictures/Wallpapers"
+                            text: "No hay imágenes en\n" + Wallpaper.folder.replace(Quickshell.env("HOME"), "~")
                             color: Theme.textDisabled
                             font.pixelSize: 11
                         }
