@@ -72,6 +72,7 @@ ShellRoot {
                             GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
                             ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
                             WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)
+                            Install{Layout.alignment: Qt.AlignHCenter}           // Actualizar Reddots: git pull + install.sh en un terminal
                         }
                     }
                     Power{Layout.alignment: Qt.AlignHCenter}            // Apagar / Suspender
