@@ -17,9 +17,14 @@ ColumnLayout {
 
     BarIcon {
         text: String.fromCodePoint(0xf01d8)                                 // Mismo icono plegado y desplegado: el estado se nota por el color
-        color: root.owner.expanded ? Theme.textSelected : Theme.textActive // Con el color de acento mientras está desplegado
+        // Con el color de acento mientras está desplegado. Plegado, en rojo si hay alguna temperatura
+        // alta (SystemMonitor.qml): el icono del chip, que es el que avisa, está dentro del grupo
+        color: root.owner.expanded ? Theme.textSelected
+             : SystemMonitor.overheating ? SystemMonitor.hotColor
+             : Theme.textActive
         tooltip: root.owner.expanded ? "Ocultar los ajustes"
                : "Mostrar los ajustes" + (Updates.count > 0 ? "\n" + Updates.summary : "")
+                 + (SystemMonitor.overheating ? "\nTemperatura alta: " + SystemMonitor.warning : "")
         onClicked: root.owner.expanded = !root.owner.expanded               // Muestra/oculta el grupo
     }
 
