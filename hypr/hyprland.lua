@@ -254,13 +254,6 @@ hl.gesture({                            -- Puedo cambiar entre workspaces con 3 
     action = "workspace"
 })
 
--- Example per-device config
--- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Devices/ for more
-hl.device({
-    name        = "epic-mouse-v1",
-    sensitivity = -0.5,
-})
-
 ---------------------
 ---- KEYBINDINGS ----
 ---------------------
@@ -271,34 +264,31 @@ require("keybinds")
 ---- WINDOWS AND WORKSPACES ----
 --------------------------------
 
-    -- See https://wiki.hypr.land/Configuring/Basics/Window-Rules/
-    -- and https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
+-- Ver https://wiki.hypr.land/Configuring/Basics/Window-Rules/
+-- y https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
 
-    -- Example window rules that are useful
+hl.window_rule({
+    -- Ignora las peticiones de maximizar de todas las apps (así no se salen del mosaico)
+    name  = "suppress-maximize-events",
+    match = { class = ".*" },
 
-    local suppressMaximizeRule = hl.window_rule({
-        -- Ignore maximize requests from all apps. You'll probably like this.
-        name  = "suppress-maximize-events",
-        match = { class = ".*" },
+    suppress_event = "maximize",
+})
 
-        suppress_event = "maximize",
-    })
-    -- suppressMaximizeRule:set_enabled(false)
+hl.window_rule({
+    -- Arregla algunos problemas al arrastrar en apps XWayland (ventanas flotantes sin clase ni título)
+    name  = "fix-xwayland-drags",
+    match = {
+        class      = "^$",
+        title      = "^$",
+        xwayland   = true,
+        float      = true,
+        fullscreen = false,
+        pin        = false,
+    },
 
-    hl.window_rule({
-        -- Fix some dragging issues with XWayland
-        name  = "fix-xwayland-drags",
-        match = {
-            class      = "^$",
-            title      = "^$",
-            xwayland   = true,
-            float      = true,
-            fullscreen = false,
-            pin        = false,
-        },
-
-        no_focus = true,
-    })
+    no_focus = true,
+})
 
     -- Layer rules also return a handle.
     -- local overlayLayerRule = hl.layer_rule({
