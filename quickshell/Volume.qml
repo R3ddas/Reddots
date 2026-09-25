@@ -1,10 +1,13 @@
 import Quickshell
 import Quickshell.Services.Pipewire   // Para el control de volumen (Pipewire)
 import Quickshell.Io                  // Para consultar la disponibilidad real de los puertos (Process/pactl)
+import Quickshell.Widgets             // Para el IconImage de las aplicaciones
 import QtQuick
 import QtQuick.Layouts                // Para usar RowLayout o ColumnLayout
 
-// Icono de volumen en la barra + popup con slider y selector de salida de audio.
+// Icono de volumen en la barra + popup con tres partes: la salida (volumen y a qué
+// altavoz/auricular va), el micrófono (volumen y cuál se usa) y el volumen de cada
+// aplicación que está sonando.
 ColumnLayout{
     id: root
     spacing: 6
@@ -16,6 +19,9 @@ ColumnLayout{
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property bool muted: sink ? sink.audio.muted : true
     readonly property real volume: sink ? sink.audio.volume : 0
+
+    readonly property var source: Pipewire.defaultAudioSource              // El micrófono que se usa
+    readonly property bool micMuted: source ? source.audio.muted : true
 
     // --- Detección de salidas realmente conectadas ------------------------
     // Quickshell.Services.Pipewire no expone si un puerto (jack) tiene algo
@@ -71,45 +77,55 @@ ColumnLayout{
         }
     }
 
-    // --- Lista de sinks -----------------------------------------------------
-    // IMPORTANTE: esta lista SOLO depende de propiedades constantes de PwNode
-    // (isSink / isStream, marcadas isPropertyConstant en el plugin). Es la que
-    // se pasa a PwObjectTracker más abajo, que es quien engancha/mantiene
+    // --- Listas de nodos ----------------------------------------------------
+    // IMPORTANTE: estas tres listas SOLO dependen de propiedades constantes de
+    // PwNode (isSink / isStream, marcadas isPropertyConstant en el plugin). Son
+    // las que se pasan a PwObjectTracker más abajo, que es quien engancha/mantiene
     // vivos los nodos de PipeWire.
     //
-    // Si esta lista dependiera de algo mutable -como n.properties o
-    // portAvailability-, se forma un bucle: trackear un nodo hace que
-    // PipeWire rellene/actualice sus properties -> se emite propertiesChanged
-    // -> se recalcula esta lista -> cambia el array pasado a
-    // PwObjectTracker.objects -> vuelve a (re)trackear -> bucle infinito.
-    // Eso es justo lo que provocó el "Binding loop detected for property
-    // sinks" y el crash de quickshell la primera vez que se probó el filtro
-    // aquí mismo. La lección: todo lo que alimente a PwObjectTracker.objects
-    // debe depender solo de propiedades constantes.
-    readonly property var sinks: Pipewire.nodes.values.filter(n => n.isSink && !n.isStream)
+    // Si dependieran de algo mutable -como n.properties o portAvailability-, se
+    // forma un bucle: trackear un nodo hace que PipeWire rellene/actualice sus
+    // properties -> se emite propertiesChanged -> se recalcula la lista -> cambia
+    // el array pasado a PwObjectTracker.objects -> vuelve a (re)trackear -> bucle
+    // infinito. Eso es justo lo que provocó el "Binding loop detected for property
+    // sinks" y el crash de quickshell la primera vez que se probó el filtro aquí
+    // mismo. La lección: todo lo que alimente a PwObjectTracker.objects debe
+    // depender solo de propiedades constantes.
+    readonly property var sinks: Pipewire.nodes.values.filter(n => n.isSink && !n.isStream)      // Altavoces, auriculares, HDMI...
+    readonly property var sources: Pipewire.nodes.values.filter(n => !n.isSink && !n.isStream)   // Micrófonos (y nodos sin audio, que se quitan al pintar)
+    readonly property var streams: Pipewire.nodes.values.filter(n => n.isSink && n.isStream)     // Aplicaciones que están sonando
 
-    // Lista SOLO para pintar el menú (Repeater.model). Aquí sí es seguro leer
-    // n.properties y portAvailability, porque nada de esto retroalimenta al
-    // PwObjectTracker: como mucho, el menú se repinta cuando cambian.
-    // Oculta los sinks cuyo puerto físico está marcado "not available" (nada
-    // conectado, p.ej. una salida HDMI sin monitor). Si un sink no tiene
+    // ¿El puerto físico de este nodo está marcado "not available" (nada
+    // conectado, p.ej. una salida HDMI sin monitor)? Si el nodo no tiene
     // device.id/card.profile.device (p.ej. un dispositivo USB o Bluetooth) o
-    // pactl no ha respondido todavía, se muestra igualmente por seguridad.
-    readonly property var visibleSinks: root.sinks.filter(n => {
+    // pactl no ha respondido todavía, se da por conectado por seguridad.
+    function isUnplugged(n) {
         const props = n.properties || {}
         const deviceId = props["device.id"]
         const portIndex = props["card.profile.device"]
-        if (deviceId === undefined || portIndex === undefined) return true
+        if (deviceId === undefined || portIndex === undefined) return false
+        return root.portAvailability[root.keyForPort(deviceId, portIndex)] === "not available"
+    }
 
-        const state = root.portAvailability[root.keyForPort(deviceId, portIndex)]
-        return state !== "not available"
-    })
+    // Listas SOLO para pintar el menú (Repeater.model). Aquí sí es seguro leer
+    // n.properties, n.audio y portAvailability, porque nada de esto retroalimenta
+    // al PwObjectTracker: como mucho, el menú se repinta cuando cambian.
+    readonly property var visibleSinks: root.sinks.filter(n => !root.isUnplugged(n))
+    readonly property var visibleSources: root.sources.filter(n => n.audio && !root.isUnplugged(n))   // Sin audio = nodos MIDI y similares
+    readonly property var visibleStreams: root.streams.filter(n => n.audio)
 
-    function setVolume(fraction) {
-        if (!root.sink) return
+    // Volumen de un nodo (salida, micrófono o aplicación), entre 0 y 1. Subirlo quita el silencio.
+    function setNodeVolume(node, fraction) {
+        if (!node || !node.audio) return
         const v = Math.max(0, Math.min(1, fraction))
-        root.sink.audio.volume = v
-        if (v > 0) root.sink.audio.muted = false
+        node.audio.volume = v
+        if (v > 0) node.audio.muted = false
+    }
+
+    // Nombre de una aplicación: el que da ella misma ("Google Chrome"), o el del nodo
+    function appName(n) {
+        const props = n.properties || {}
+        return props["application.name"] || n.description || n.name
     }
 
     // Icono según estado de mute/volumen (glifos de Nerd Font).
@@ -120,6 +136,7 @@ ColumnLayout{
         if (volume >= 0.33) return String.fromCodePoint(0xF0580)                  // volume-medium
         return String.fromCodePoint(0xF057F)                                      // volume-low
     }
+    readonly property string micIcon: String.fromCodePoint(micMuted ? 0xF036D : 0xF036C)   // microphone-off / microphone
 
     // Icono en la barra: click izquierdo abre/cierra el menú, click derecho
     // silencia/desilencia directamente sin abrir nada.
@@ -130,6 +147,7 @@ ColumnLayout{
         tooltip: menu.visible || !root.sink ? ""
                : (root.muted ? "Silenciado" : "Volumen " + Math.round(Math.min(root.volume, 1) * 100) + " %")
                  + " · " + (root.sink.nickname || root.sink.description || root.sink.name)
+                 + (root.source && root.micMuted ? "\nMicrófono silenciado" : "")
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => {
             if (event.button === Qt.RightButton) {
@@ -140,11 +158,78 @@ ColumnLayout{
         }
     }
 
-    // Popup con el slider de volumen y la lista de salidas de audio.
+    // --- Piezas del popup ----------------------------------------------------
+
+    // Título de cada parte (Salida, Micrófono, Aplicaciones)
+    component SectionTitle: Text {
+        color: Theme.textDisabled
+        font.pixelSize: 11
+        font.bold: true
+        Layout.fillWidth: true
+    }
+
+    // Icono a la izquierda de un slider: al pulsarlo silencia/desilencia ese nodo
+    component MuteIcon: Text {
+        id: muteIcon
+        property var node: null
+        readonly property bool isMuted: !node || !node.audio || node.audio.muted
+        color: isMuted ? Theme.textDisabled : Theme.textActive
+        font.pixelSize: 16
+        Layout.preferredWidth: 20
+        horizontalAlignment: Text.AlignHCenter
+        MouseArea {
+            anchors.fill: parent
+            anchors.margins: -4
+            onClicked: if (muteIcon.node && muteIcon.node.audio) muteIcon.node.audio.muted = !muteIcon.node.audio.muted
+        }
+    }
+
+    // Una salida o un micrófono de la lista: con ✓ y el color de acento el que se está usando
+    component DeviceRow: Rectangle {
+        id: deviceRow
+        property var node
+        property bool current: false
+        signal picked()
+
+        Layout.fillWidth: true
+        implicitHeight: 26
+        radius: 4
+        color: deviceMouse.containsMouse ? Theme.surfaceHover : "transparent"
+
+        // Usamos "nickname" (p.ej. "HDMI 1", "Speaker") en vez de "description"
+        // porque varias salidas del mismo chip comparten un prefijo larguísimo
+        // ("500 Series Chipset Family HD Audio ...") y, con el ancho fijo del
+        // popup y el elide, se veían todas cortadas igual (parecían la misma
+        // opción repetida 4 veces).
+        Text {
+            x: 6
+            anchors.verticalCenter: parent.verticalCenter
+            width: parent.width - 12
+            text: (deviceRow.current ? "✓ " : "") + (deviceRow.node.nickname || deviceRow.node.description || deviceRow.node.name)
+            color: deviceRow.current ? Theme.textSelected : Theme.textActive
+            elide: Text.ElideRight
+        }
+
+        MouseArea {
+            id: deviceMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: deviceRow.picked()
+        }
+    }
+
+    component Separator: Rectangle {
+        Layout.fillWidth: true
+        Layout.topMargin: 4
+        Layout.bottomMargin: 2
+        implicitHeight: 1
+        color: Theme.border
+    }
+
     BarPopup {
         id: menu
         anchorItem: iconText
-        implicitWidth: 240
+        implicitWidth: 260
         implicitHeight: Math.max(40, listCol.implicitHeight + 16)
 
         // Refrescamos la disponibilidad de puertos cada vez que se abre el
@@ -158,61 +243,117 @@ ColumnLayout{
             anchors.margins: 8
             spacing: 4
 
-            // Slider de volumen: arrastrar o hacer scroll sobre la barra.
-            Slider {
-                value: root.volume
-                dimmed: root.muted
-                onMoved: v => root.setVolume(v)
-            }
+            // --- Salida ---
+            SectionTitle { text: "Salida" }
 
-            Rectangle {
+            RowLayout {                             // Silenciar + volumen (arrastrar o rueda)
                 Layout.fillWidth: true
-                implicitHeight: 1
-                color: Theme.border
+                spacing: 6
+                MuteIcon { node: root.sink; text: root.icon }
+                Slider {
+                    value: root.volume
+                    dimmed: root.muted
+                    onMoved: v => root.setNodeVolume(root.sink, v)
+                }
             }
 
-            // Mensaje cuando, tras filtrar, no queda ninguna salida usable.
-            Text {
+            Text {                                  // Cuando, tras filtrar, no queda ninguna salida usable
                 Layout.fillWidth: true
                 visible: root.visibleSinks.length === 0
                 text: "Sin salidas de audio"
                 color: Theme.textDisabled
             }
 
-            // Lista de salidas de audio disponibles (ya filtrada). Usamos
-            // "nickname" (p.ej. "HDMI 1", "Speaker") en vez de
-            // "description" porque varias salidas del mismo chip
-            // comparten un prefijo larguísimo ("500 Series Chipset
-            // Family HD Audio ...") y, con el ancho fijo del popup y el
-            // elide, se veían todas cortadas igual (parecían la misma
-            // opción repetida 4 veces).
             Repeater {
                 model: root.visibleSinks
-
-                delegate: Rectangle {
+                delegate: DeviceRow {
                     required property var modelData
+                    node: modelData
+                    current: modelData === root.sink
+                    onPicked: {
+                        Pipewire.preferredDefaultAudioSink = modelData
+                        menu.visible = false
+                    }
+                }
+            }
 
+            // --- Micrófono ---
+            Separator {}
+            SectionTitle { text: "Micrófono" }
+
+            RowLayout {
+                visible: root.source !== null
+                Layout.fillWidth: true
+                spacing: 6
+                MuteIcon { node: root.source; text: root.micIcon }
+                Slider {
+                    value: root.source ? root.source.audio.volume : 0
+                    dimmed: root.micMuted
+                    onMoved: v => root.setNodeVolume(root.source, v)
+                }
+            }
+
+            Text {
+                Layout.fillWidth: true
+                visible: root.visibleSources.length === 0
+                text: "Sin micrófonos"
+                color: Theme.textDisabled
+            }
+
+            Repeater {
+                model: root.visibleSources
+                delegate: DeviceRow {
+                    required property var modelData
+                    node: modelData
+                    current: modelData === root.source
+                    onPicked: {
+                        Pipewire.preferredDefaultAudioSource = modelData
+                        menu.visible = false
+                    }
+                }
+            }
+
+            // --- Aplicaciones (solo si hay alguna sonando) ---
+            Separator { visible: root.visibleStreams.length > 0 }
+            SectionTitle { visible: root.visibleStreams.length > 0; text: "Aplicaciones" }
+
+            Repeater {
+                model: root.visibleStreams
+                delegate: RowLayout {
+                    id: appRow
+                    required property var modelData
+                    readonly property bool appMuted: modelData.audio.muted
                     Layout.fillWidth: true
-                    implicitHeight: 26
-                    radius: 4
-                    color: outMouse.containsMouse ? Theme.surfaceHover : "transparent"
+                    spacing: 6
 
-                    Text {
-                        x: 6
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 12
-                        text: (modelData === root.sink ? "✓ " : "") + (modelData.nickname || modelData.description || modelData.name)
-                        color: modelData === root.sink ? Theme.textSelected : Theme.textActive
-                        elide: Text.ElideRight
+                    IconImage {                     // Icono de la app; al pulsarlo la silencia
+                        implicitSize: 18
+                        source: Quickshell.iconPath((appRow.modelData.properties || {})["application.icon-name"] ?? "", "audio-x-generic")
+                        opacity: appRow.appMuted ? 0.35 : 1
+                        Layout.alignment: Qt.AlignVCenter
+                        Layout.preferredWidth: 20
+                        MouseArea {
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            onClicked: appRow.modelData.audio.muted = !appRow.modelData.audio.muted
+                        }
                     }
 
-                    MouseArea {
-                        id: outMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: {
-                            Pipewire.preferredDefaultAudioSink = modelData
-                            menu.visible = false
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 1
+                        Text {
+                            text: root.appName(appRow.modelData)
+                            color: appRow.appMuted ? Theme.textDisabled : Theme.textActive
+                            font.pixelSize: 11
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                        }
+                        Slider {
+                            barHeight: 10
+                            value: appRow.modelData.audio.volume
+                            dimmed: appRow.appMuted
+                            onMoved: v => root.setNodeVolume(appRow.modelData, v)
                         }
                     }
                 }
@@ -221,9 +362,9 @@ ColumnLayout{
     }
 
     // Mantiene vivos/suscritos los nodos de PipeWire que nos interesan.
-    // Ligado a `sinks` (la lista SIN filtrar) a propósito: ver el comentario
-    // de más arriba sobre el bucle de bindings.
+    // Ligado a las listas SIN filtrar a propósito: ver el comentario de más
+    // arriba sobre el bucle de bindings.
     PwObjectTracker {
-        objects: root.sinks
+        objects: root.sinks.concat(root.sources, root.streams)
     }
 }

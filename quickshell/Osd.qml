@@ -1,8 +1,9 @@
 // Osd.qml
 // Indicador que aparece un momento abajo en el centro al cambiar el volumen o el
-// brillo con las teclas multimedia. Lo abren los atajos de hypr/keybinds.lua con
-// "qs ipc call osd volume" / "qs ipc call osd brightness" (igual que el Launcher
-// con Super), así que solo sale con las teclas y no al mover el slider de la barra.
+// brillo, o al silenciar el micrófono, con las teclas multimedia. Lo abren los atajos
+// de hypr/keybinds.lua con "qs ipc call osd volume" / "... brightness" / "... mic"
+// (igual que el Launcher con Super), así que solo sale con las teclas y no al mover
+// el slider de la barra.
 
 import Quickshell
 import Quickshell.Io                  // Para el IpcHandler y el Process de brightnessctl
@@ -15,18 +16,25 @@ PanelWindow {
     id: root
     visible: false
 
-    property string mode: "volume"          // "volume" o "brightness": qué se está mostrando
+    property string mode: "volume"          // "volume", "brightness" o "mic": qué se está mostrando
     property int brightness: 0              // Porcentaje de brillo, leído de brightnessctl
 
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property bool muted: sink ? sink.audio.muted : true
     readonly property int volume: sink ? Math.round(sink.audio.volume * 100) : 0
 
-    readonly property int value: mode === "volume" ? (muted ? 0 : volume) : brightness
+    readonly property var source: Pipewire.defaultAudioSource              // El micrófono
+    readonly property bool micMuted: source ? source.audio.muted : true
+    readonly property int micVolume: source ? Math.round(source.audio.volume * 100) : 0
+
+    readonly property int value: mode === "volume" ? (muted ? 0 : volume)
+                               : mode === "mic" ? (micMuted ? 0 : micVolume)
+                               : brightness
 
     // Mismos glifos que Volume.qml para el volumen
     readonly property string icon: {
         if (mode === "brightness") return String.fromCodePoint(0xF00DF)  // brightness-6
+        if (mode === "mic") return String.fromCodePoint(micMuted ? 0xF036D : 0xF036C)   // microphone-off / microphone
         if (muted || volume === 0) return String.fromCodePoint(0xF075F)  // volume-mute
         if (volume >= 66) return String.fromCodePoint(0xF057E)            // volume-high
         if (volume >= 33) return String.fromCodePoint(0xF0580)            // volume-medium
@@ -80,7 +88,7 @@ PanelWindow {
                 interactive: false
                 barHeight: 8
                 value: root.value / 100
-                dimmed: root.mode === "volume" && root.muted
+                dimmed: (root.mode === "volume" && root.muted) || (root.mode === "mic" && root.micMuted)
             }
         }
     }
@@ -108,13 +116,17 @@ PanelWindow {
             root.show("volume")             // El valor se lee en vivo de Pipewire, aunque llegue un poco después
         }
 
+        function mic(): void {
+            root.show("mic")                // Como el volumen: el estado se lee en vivo de Pipewire
+        }
+
         function brightness(): void {
             brightnessProc.running = false
             brightnessProc.running = true
         }
     }
 
-    PwObjectTracker {                       // Mantiene enganchado el sink para que volume/muted estén al día
-        objects: root.sink ? [root.sink] : []
+    PwObjectTracker {                       // Mantiene enganchados la salida y el micro para que volumen y silencio estén al día
+        objects: [root.sink, root.source].filter(n => n)
     }
 }
