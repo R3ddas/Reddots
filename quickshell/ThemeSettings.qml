@@ -113,7 +113,7 @@ ColumnLayout {
 
                                     Text {
                                         Layout.fillWidth: true
-                                        text: themeRow.modelData.name
+                                        text: themeRow.modelData.name.replace(/ (Claro|Oscuro)$/, "")   // Sin "Claro"/"Oscuro": ya lo dice la sección ("Ayu Mirage" se queda igual)
                                         color: Theme.textActive
                                         font.pixelSize: 11
                                         elide: Text.ElideRight
