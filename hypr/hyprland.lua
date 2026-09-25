@@ -1,13 +1,13 @@
--- You can (and should!!) split this configuration into multiple files
--- Create your files separately and then require them like this:
--- require("myColors")
+-- Config principal de Hyprland (API Lua). Está repartida en varios archivos que
+-- se cargan con require(): keybinds.lua, programs.lua (desde keybinds.lua) y los
+-- que genera Quickshell fuera del repo (ver requireIfExists, más abajo).
 
 
-------------------
----- MONITORS ----
-------------------
+-------------------
+---- MONITORES ----
+-------------------
 
--- See https://wiki.hypr.land/Configuring/Basics/Monitors/
+-- Ver https://wiki.hypr.land/Configuring/Basics/Monitors/
 -- Regla genérica primero, como red de seguridad para cualquier monitor que
 -- no tenga una regla específica más abajo (otra máquina, otro monitor externo, etc).
 -- Las reglas posteriores para un mismo monitor sustituyen a esta.
@@ -37,23 +37,12 @@ hl.monitor({
 })
 
 
+----------------------
+---- AUTOARRANQUE ----
+----------------------
 
----------------------
----- MY PROGRAMS ----
----------------------
-local programs = require("programs")
-local terminal, fileManager = programs.terminal, programs.fileManager
+-- Ver https://wiki.hypr.land/Configuring/Basics/Autostart/
 
-
--------------------
----- AUTOSTART ----
--------------------
-
--- See https://wiki.hypr.land/Configuring/Basics/Autostart/
-
--- Autostart necessary processes (like notifications daemons, status bars, etc.)
--- Or execute your favorite apps at launch like this:
---
 hl.on("hyprland.start", function ()
     hl.exec_cmd("quickshell")
 
@@ -73,20 +62,20 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("bash ~/.config/hypr/scripts/lid-watcher.sh")  -- Apaga el panel del portátil al cerrar la tapa
 end)
 
--------------------------------
----- ENVIRONMENT VARIABLES ----
--------------------------------
+------------------------------
+---- VARIABLES DE ENTORNO ----
+------------------------------
 
--- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Environment-variables/
+-- Ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Environment-variables/
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
 
------------------------
----- LOOK AND FEEL ----
------------------------
+-----------------
+---- ASPECTO ----
+-----------------
 
--- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
+-- Ver https://wiki.hypr.land/Configuring/Basics/Variables/
 local opacity = 0.9
 hl.config({
     general = {
@@ -103,14 +92,15 @@ hl.config({
 
         -- Igual que lo de arriba, solo el valor de ARRANQUE: en cuanto Quickshell
         -- arranca, Theme.qml los sobrescribe con los del tema elegido vía
-        -- hypr/shellTheme.lua (ver el require() más abajo). Son los del tema "Original".
+        -- hypr/shellTheme.lua (ver el require() más abajo). Son los del tema
+        -- "Gruvbox Claro", el que usa Theme.qml por defecto.
         col = {
-            active_border   = { colors = {0xeedb911a, 0xeef5e2c5}, angle = 45 },   -- Degradado textSelected -> textActive
-            inactive_border = 0xaa5a4d3e,                                          -- border
+            active_border   = { colors = {0xeeaf3a03, 0xee3c3836}, angle = 45 },   -- Degradado textSelected -> textActive
+            inactive_border = 0xaabdae93,                                          -- border
         },
 
-        resize_on_border = false, -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
-        allow_tearing = false,    -- Please see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/ before you turn this on
+        resize_on_border = false, -- A true permite redimensionar las ventanas arrastrando sus bordes y los huecos entre ellas
+        allow_tearing = false,    -- Antes de activarlo, ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/
 
         -- Colocación automática de ventanas
         -- dwindle: cada vez que abrís una ventana nueva, divide el espacio de la última ventana enfocada en dos (alternando entre división horizontal y vertical)
@@ -118,12 +108,11 @@ hl.config({
         layout = "dwindle",
     },
 
-    
     decoration = {
         rounding       = 16, -- Igual que gaps_in/gaps_out/border_size arriba: solo el valor de arranque, sobrescrito por el panel/shellOverrides.lua
         rounding_power = 2,
 
-        -- Change transparency of focused and unfocused windows
+        -- Transparencia de las ventanas
         active_opacity   = opacity,     -- Opacidad de la ventana activa
         inactive_opacity = opacity,     -- Opacidad de las ventanas inactivas
         fullscreen_opacity = opacity,   -- Opacidad de las ventanas en pantalla completa
@@ -164,14 +153,14 @@ end
 requireIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding (decoration), desde el panel GeometrySettings.qml (quickshell/HyprGeometry.qml)
 requireIfExists("shellTheme")       -- col.active_border/inactive_border (general), según el tema elegido (quickshell/Theme.qml)
 
--- Default curves and animations, see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
+-- Curvas y animaciones por defecto, ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
 hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })
 hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.36, 1}    } })
 hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}       } })
 hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1}    } })
 hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}     } })
 
--- Default springs
+-- Muelles (springs) por defecto
 hl.curve("easy",           { type = "spring", mass = 1, stiffness = 238.1191, dampening = 24.21279333 })
 
 hl.animation({ leaf = "global",        enabled = true,  speed = 10,   bezier = "default" })
@@ -193,43 +182,43 @@ hl.animation({ leaf = "workspacesOut", enabled = true,  speed = 1.94, bezier = "
 hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 7,    bezier = "quick" })
 
 
--- See https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/ for more
+-- Ver https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/
 hl.config({
     dwindle = {
-        preserve_split = true, -- You probably want this
+        preserve_split = true, -- Mantiene la orientación de cada división (horizontal/vertical) aunque cambie el tamaño de las ventanas
     },
 })
 
--- See https://wiki.hypr.land/Configuring/Layouts/Master-Layout/ for more
+-- Ver https://wiki.hypr.land/Configuring/Layouts/Master-Layout/
 hl.config({
     master = {
         new_status = "master",
     },
 })
 
--- See https://wiki.hypr.land/Configuring/Layouts/Scrolling-Layout/ for more
+-- Ver https://wiki.hypr.land/Configuring/Layouts/Scrolling-Layout/
 hl.config({
     scrolling = {
         fullscreen_on_one_column = true,
     },
 })
 
-----------------
-----  MISC  ----
-----------------
+--------------------
+---- MISCELÁNEA ----
+--------------------
 
 hl.config({
     misc = {
-        force_default_wallpaper = 0,    -- Set to 0 or 1 to disable the anime mascot wallpapers
-        disable_hyprland_logo   = true, -- If true disables the random hyprland logo / anime girl background. :(
+        force_default_wallpaper = 0,    -- 0 o 1 quita los fondos por defecto de la mascota anime
+        disable_hyprland_logo   = true, -- Quita el logo de Hyprland / la chica anime del fondo
         disable_splash_rendering = true,
     },
 })
 
 
----------------
----- INPUT ----
----------------
+-----------------
+---- ENTRADA ----
+-----------------
 
 hl.config({
     input = {
@@ -241,7 +230,7 @@ hl.config({
         numlock_by_default = true,      -- Bloq num activo por defecto
 
         follow_mouse = 1,
-        sensitivity = 0, -- -1.0 - 1.0, 0 means no modification.
+        sensitivity = 0, -- De -1.0 a 1.0; 0 = sin modificar
         touchpad = {
             natural_scroll = true,
         },
@@ -254,15 +243,15 @@ hl.gesture({                            -- Puedo cambiar entre workspaces con 3 
     action = "workspace"
 })
 
----------------------
----- KEYBINDINGS ----
----------------------
+---------------------------
+---- ATAJOS DE TECLADO ----
+---------------------------
 require("keybinds")
 
 
---------------------------------
----- WINDOWS AND WORKSPACES ----
---------------------------------
+-------------------------------
+---- VENTANAS Y WORKSPACES ----
+-------------------------------
 
 -- Ver https://wiki.hypr.land/Configuring/Basics/Window-Rules/
 -- y https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
@@ -290,15 +279,7 @@ hl.window_rule({
     no_focus = true,
 })
 
-    -- Layer rules also return a handle.
-    -- local overlayLayerRule = hl.layer_rule({
-    --     name  = "no-anim-overlay",
---     match = { namespace = "^my-overlay$" },
---     no_anim = true,
--- })
--- overlayLayerRule:set_enabled(false)
-
--- Hyprland-run windowrule
+-- La ventanita de hyprland-run, flotante y abajo a la izquierda
 hl.window_rule({
     name  = "move-hyprland-run",
     match = { class = "hyprland-run" },

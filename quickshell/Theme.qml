@@ -13,7 +13,7 @@ import QtQuick
 //   Solarized             https://ethanschoonover.com/solarized/
 //   Tokyo Night           https://github.com/tokyo-night/tokyo-night-vscode-theme
 //   One Dark               https://github.com/joshdick/onedark.vim
-//   Everblush, Old World, Shado Theme, Dark Green y Caelestia (por defecto)
+//   Everblush, Old World, Shado Theme, Dark Green y Caelestia (el esquema "default" de Caelestia)
 //                          https://github.com/caelestia-dots/cli/tree/main/src/caelestia/data/schemes
 //   Monokai                paleta clásica de Sublime Text / monokai.pro
 //   Kanagawa               https://github.com/rebelot/kanagawa.nvim
@@ -33,8 +33,9 @@ import QtQuick
 Singleton {
     // Tema activo: se elige desde el icono de la paleta en la barra
     // (ThemeSettings.qml) y se guarda solo, gracias al FileView de más abajo.
-    // También puedes escribir aquí el valor por defecto a mano si quieres
-    // (debe coincidir con el "name" de una de las entradas de themes):
+    // El de por defecto (instalación nueva) es el del JsonAdapter, "Gruvbox Claro";
+    // si lo cambias, cambia también los colores de arranque de col en hypr/hyprland.lua.
+    // Debe coincidir con el "name" de una de las entradas de themes:
     //   "Original", "Gruvbox Claro", "Gruvbox Oscuro",
     //   "Everforest Claro", "Everforest Oscuro",
     //   "Rosé Pine Claro", "Rosé Pine Oscuro",

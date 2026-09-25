@@ -6,7 +6,7 @@ DOTS="$PWD" # Guardo la ruta en una variable para no acceder todo el rato
 echo "Instalando"
 
 #sudo cachyos-rate-mirrors                   # Actualizo la lista de servidores
-sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes
+sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes (aquí y no en packages.txt: hace falta ya para el "paru -Syu" de abajo)
 
 echo "Actualizando el sistema"
 
@@ -71,6 +71,19 @@ ln -sfn "$DOTS/fish/config.fish"           ~/.config/fish/config.fish
 ln -sfn "$DOTS/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
 ln -sfn "$DOTS/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
 ln -sfn "$DOTS/vscode/settings.json"       ~/.config/Code/User/settings.json  # Ajustes de Visual Studio Code
+
+# Restos de una config de Hyprland anterior (la que trae CachyOS, o archivos que
+# ya no están en el repo): se apartan a una copia para que no se mezclen con la
+# de verdad. Se queda lo que es un enlace (lo de arriba) y lo que genera
+# Quickshell fuera del repo (ver hypr/hyprland.lua); todo lo demás se mueve.
+mapfile -t restos < <(find ~/.config/hypr -mindepth 1 -maxdepth 1 ! -type l \
+    ! -name shellOverrides.lua ! -name shellTheme.lua ! -name shellWallpaper.conf)
+if (( ${#restos[@]} )); then
+    backup=~/.config/hypr.bak-$(date +%Y%m%d-%H%M%S)
+    mkdir -p "$backup"
+    mv "${restos[@]}" "$backup"/
+    echo "Aviso: ~/.config/hypr tenía restos de otra config, movidos a $backup"
+fi
 
 mkdir -p ~/Pictures
 ln -sfn "$DOTS/Wallpapers"   ~/Pictures/Wallpapers

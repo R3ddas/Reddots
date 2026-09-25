@@ -1,6 +1,6 @@
 # Reddots
 
-Primero hay que instalar Cahyos con Hyprland (sin Noctalia)
+Primero hay que instalar Cachyos con Hyprland (sin Noctalia)
 
 Para descargarlo:
 

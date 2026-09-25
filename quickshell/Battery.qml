@@ -63,7 +63,7 @@ ColumnLayout{
             anchors.fill: parent
             anchors.margins: -4
             acceptedButtons: Qt.RightButton
-            onClicked: root.showLevel = !root.showLevel  // Si se pulsa botón izquierdo se esconde/muestra el valor de carga
+            onClicked: root.showLevel = !root.showLevel  // Con el botón derecho se esconde/muestra el valor de carga
         }
     }
 

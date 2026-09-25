@@ -1,35 +1,35 @@
 local programs = require("programs")
-local terminal, fileManager = programs.terminal, programs.fileManager
+local terminal = programs.terminal
 
-local mainMod = "SUPER" -- Sets "Windows" key as main modifier
+local mainMod = "SUPER" -- La tecla "Windows" como modificador principal
 
-hl.bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal))                       -- Abre un terminal
-local closeWindowBind = hl.bind(mainMod .. " + Q", hl.dsp.window.close())   -- Cierra la ventana sobre la que esté el ratón (aunque no haya pulsado)
+hl.bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal))       -- Abre un terminal
+hl.bind(mainMod .. " + Q", hl.dsp.window.close())           -- Cierra la ventana sobre la que esté el ratón (aunque no haya pulsado)
 
--- Move focus with mainMod + arrow keys
+-- Mover el foco con mainMod + flechas
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
 hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
 hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
 
--- Switch workspaces with mainMod + [0-9]
--- Move active window to a workspace with mainMod + SHIFT + [0-9]
+-- Cambiar de workspace con mainMod + [0-9]
+-- Mover la ventana activa a un workspace con mainMod + SHIFT + [0-9]
 for i = 1, 10 do
-    local key = i % 10 -- 10 maps to key 0
+    local key = i % 10 -- El 10 va en la tecla 0
     hl.bind(mainMod .. " + " .. key,             hl.dsp.focus({ workspace = i}))
     hl.bind(mainMod .. " + SHIFT + " .. key,     hl.dsp.window.move({ workspace = i }))
-    end
+end
 
--- Scroll through existing workspaces with mainMod + scroll
+-- Recorrer los workspaces existentes con mainMod + rueda del ratón
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
 hl.bind("ALT + TAB", hl.dsp.focus({ workspace = "e+1" }))                   -- Siguiente Workspace con Alt+Tab
 
--- Move/resize windows with mainMod + LMB/RMB and dragging
+-- Mover/redimensionar ventanas arrastrando con mainMod + clic izquierdo/derecho
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
--- Laptop multimedia keys for volume and LCD brightness
+-- Teclas multimedia del portátil: volumen y brillo de la pantalla
 -- El "qs ipc call osd ..." de detrás muestra el indicador (quickshell/Osd.qml) con el nuevo valor
 local osdVolume     = " && qs ipc call osd volume"
 local osdBrightness = " && qs ipc call osd brightness"

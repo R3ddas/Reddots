@@ -1,5 +1,3 @@
-paru            # El descargador de paquetes
-
 quickshell      # El gestor de widgets, barra, etc
 alacritty       # La terminal (install.sh quita kitty, así que tiene que estar sí o sí)
 
