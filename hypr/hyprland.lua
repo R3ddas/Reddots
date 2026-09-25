@@ -93,9 +93,9 @@ hl.config({
         -- gaps_in, gaps_out y border_size de aquí son solo el valor de
         -- ARRANQUE (para una instalación nueva, antes de tocar nada).
         -- En cuanto se cambia algo en el panel GeometrySettings.qml de
-        -- Quickshell, HyprGeometry.qml los sobrescribe en caliente vía
-        -- hypr/shellOverrides.lua (ver el require() al final de este
-        -- hl.config, más abajo), que gana siempre a estos valores. Editar
+        -- Quickshell, HyprGeometry.qml los aplica en caliente (hyprctl eval)
+        -- y los guarda en hypr/shellOverrides.lua (ver el require() al final
+        -- de este hl.config, más abajo), que gana siempre a estos valores. Editar
         -- estas líneas a mano no tiene efecto una vez que existe ese archivo.
         gaps_in  = 5,       -- Distancia entre ventanas
         gaps_out = 12,      -- Distancia entre ventana y borde de pantalla
