@@ -6,6 +6,9 @@
 // Las críticas no se van solas. Con el ratón encima no se van.
 // Clic izquierdo: la acción principal de la app si la tiene (si no, la cierra). Clic derecho: la cierra.
 // Con acciones se pintan botones: notify-send -A si=Sí -A no=No "Titulo" "Contenido"
+// Como mucho se ven maxVisible a la vez (las más antiguas); el resto espera en cola,
+// sin gastar su tiempo, y debajo sale un "+N más". Así una ráfaga (Teams...) no se sale
+// de la pantalla. Probar: for i in $(seq 8); do notify-send "Prueba $i"; done
 
 
 import Quickshell
@@ -18,6 +21,8 @@ Scope{
     id: root
     property alias screen: panel.screen
     readonly property real defaultTimeout: 5    // Segundos en pantalla si la app no pide un tiempo concreto
+    readonly property int maxVisible: 4         // Notificaciones que se ven a la vez; las demás esperan su turno
+    readonly property int hiddenCount: Math.max(0, server.trackedNotifications.values.length - maxVisible)
     NotificationServer{
         id:server
         actionsSupported: true
@@ -49,6 +54,12 @@ Scope{
                 delegate: Rectangle{
                     id: card
                     required property var modelData
+                    required property int index
+
+                    // Las que no caben esperan ocultas (el layout no les deja hueco). Se hace
+                    // así, y no recortando el modelo, para que las que ya se ven no se
+                    // recreen (y vuelvan a empezar su cuenta) cada vez que llega otra.
+                    visible: index < root.maxVisible
 
                     // appIcon puede venir como nombre de icono del tema ("firefox"), como ruta
                     // ("/usr/share/...") o como URL ("file:///..."). Solo el nombre hay que
@@ -91,7 +102,7 @@ Scope{
 
                     Timer{
                         interval: card.timeout
-                        running: card.timeout > 0 && !hover.hovered     // Con el ratón encima no se va (al quitarlo, la cuenta empieza de nuevo)
+                        running: card.visible && card.timeout > 0 && !hover.hovered     // Con el ratón encima no se va (al quitarlo, la cuenta empieza de nuevo). En cola, tampoco
                         onTriggered: card.modelData.expire()            // Le dice a la app que ha caducado (no que la haya cerrado el usuario)
                     }
 
@@ -138,6 +149,8 @@ Scope{
                                 text: card.modelData.body
                                 color: Theme.textActive
                                 wrapMode: Text.WordWrap
+                                maximumLineCount: 8         // Un mensaje larguísimo tampoco se sale de la pantalla
+                                elide: Text.ElideRight
                             }
                             Flow{                           // Botones de las acciones (si no caben en una fila, pasan a la siguiente)
                                 Layout.fillWidth: true
@@ -173,6 +186,35 @@ Scope{
                                 }
                             }
                         }
+                    }
+                }
+            }
+
+            Rectangle{                                      // "+N más": las que esperan en cola
+                Layout.fillWidth: true
+                visible: root.hiddenCount > 0
+                implicitHeight: moreText.implicitHeight + 12
+                radius: 8
+                color: moreMouse.containsMouse ? Theme.surfaceHover : Theme.background
+                border.width: 1
+                border.color: Theme.border
+
+                Text{
+                    id: moreText
+                    anchors.centerIn: parent
+                    text: "+" + root.hiddenCount + (root.hiddenCount === 1 ? " notificación más" : " notificaciones más")
+                          + "  ·  clic derecho: cerrar todas"
+                    color: Theme.textActive
+                    font.pixelSize: 11
+                }
+
+                MouseArea{
+                    id: moreMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.RightButton                 // Derecho, como para cerrar una sola: así no se borran todas por un clic sin querer
+                    onClicked: {
+                        for (const n of server.trackedNotifications.values.slice()) n.dismiss()   // Copia de la lista: se va vaciando al cerrarlas
                     }
                 }
             }

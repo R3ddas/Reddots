@@ -44,7 +44,18 @@ pacman -Qq dolphin &>/dev/null && sudo pacman -Rns --noconfirm dolphin || true  
 pacman -Qq kitty &>/dev/null && sudo pacman -Rns --noconfirm kitty || true         # Quito Kitty porque uso Alacritty como terminal
 pacman -Qq meld &>/dev/null && sudo pacman -Rns --noconfirm meld || true           # Quito Meld porque no lo uso
 pacman -Qq firefox &>/dev/null && sudo pacman -Rns --noconfirm firefox || true     # Quito firefox porque instalo chrome y zen
+pacman -Qq hyprpaper &>/dev/null && sudo pacman -Rns --noconfirm hyprpaper || true # Quito hyprpaper porque el fondo lo pinta Quickshell (quickshell/Background.qml)
 
+
+echo "Servicios"
+
+# El agente de polkit (la ventana que pide la contraseña al montar un disco, etc.) es
+# ahora quickshell/PolkitDialog.qml. Solo puede haber uno por sesión, y hyprpolkitagent
+# viene activado de serie: arrancaría antes que Quickshell y le quitaría el sitio.
+if systemctl --user list-unit-files hyprpolkitagent.service &>/dev/null; then
+    systemctl --user disable --now hyprpolkitagent.service &>/dev/null || true
+    systemctl --user reset-failed hyprpolkitagent.service &>/dev/null || true
+fi
 
 echo "Sistema de archivos"
 
@@ -72,12 +83,20 @@ ln -sfn "$DOTS/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
 ln -sfn "$DOTS/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
 ln -sfn "$DOTS/vscode/settings.json"       ~/.config/Code/User/settings.json  # Ajustes de Visual Studio Code
 
+# Enlaces a archivos que ya no están en el repo (p.ej. el antiguo hypr/hyprpaper.conf):
+# apuntan a la nada, se quitan. Solo los que apuntan al repo, no los de otras cosas.
+find ~/.config/hypr -maxdepth 1 -xtype l -lname "$DOTS/*" -delete
+
+# Archivos que generaba Quickshell y ya no se usan: shellWallpaper.conf era la config
+# de hyprpaper con el fondo elegido (ahora el fondo lo pinta quickshell/Background.qml)
+rm -f ~/.config/hypr/shellWallpaper.conf
+
 # Restos de una config de Hyprland anterior (la que trae CachyOS, o archivos que
 # ya no están en el repo): se apartan a una copia para que no se mezclen con la
 # de verdad. Se queda lo que es un enlace (lo de arriba) y lo que genera
 # Quickshell fuera del repo (ver hypr/hyprland.lua); todo lo demás se mueve.
 mapfile -t restos < <(find ~/.config/hypr -mindepth 1 -maxdepth 1 ! -type l \
-    ! -name shellOverrides.lua ! -name shellTheme.lua ! -name shellWallpaper.conf)
+    ! -name shellOverrides.lua ! -name shellTheme.lua)
 if (( ${#restos[@]} )); then
     backup=~/.config/hypr.bak-$(date +%Y%m%d-%H%M%S)
     mkdir -p "$backup"

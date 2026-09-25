@@ -19,7 +19,7 @@ ColumnLayout {
     FolderListModel {
         id: folderModel
         folder: "file://" + Wallpaper.folder                            // Pide una URL, no una ruta
-        nameFilters: ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"]    // Solo imágenes que hyprpaper sabe abrir
+        nameFilters: ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"]    // Solo imágenes que sabe abrir Qt (Background.qml)
         caseSensitive: false                                            // Para que también entren .PNG, .JPG...
         showDirs: false                                                 // Sin subcarpetas
     }

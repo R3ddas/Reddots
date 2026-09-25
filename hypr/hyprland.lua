@@ -44,21 +44,8 @@ end
 -- Ver https://wiki.hypr.land/Configuring/Basics/Autostart/
 
 hl.on("hyprland.start", function ()
-    hl.exec_cmd("quickshell")
+    hl.exec_cmd("quickshell")   -- La barra, las ventanas de la shell, el agente de polkit y el fondo de pantalla (quickshell/Background.qml)
 
-    -- El gestor del fondo de pantalla. Si ya se ha elegido un fondo desde la
-    -- barra (quickshell/WallpaperSettings.qml), arranca con la config que
-    -- genera quickshell/Wallpaper.qml; si no, con hypr/hyprpaper.conf.
-    local wallpaperConf = os.getenv("HOME") .. "/.config/hypr/shellWallpaper.conf"   -- Fuera del repo, lo genera Wallpaper.qml (igual que shellOverrides.lua)
-    local wallpaperConfFile = io.open(wallpaperConf, "r")   -- Lua no tiene un "exists": se intenta abrir para saber si existe
-    if wallpaperConfFile then
-        wallpaperConfFile:close()
-        hl.exec_cmd('hyprpaper -c "' .. wallpaperConf .. '"')   -- Con el fondo elegido en la barra (entre comillas por si la ruta tiene espacios)
-    else
-        hl.exec_cmd("hyprpaper")                                -- Todavía no se ha elegido nada: usa hypr/hyprpaper.conf
-    end
-
-    hl.exec_cmd("systemctl --user start hyprpolkitagent")   -- Necesario para autorizar montar discos, etc. (No me gusta mucho)
     hl.exec_cmd("bash ~/.config/hypr/scripts/lid-watcher.sh")  -- Apaga el panel del portátil al cerrar la tapa
     hl.exec_cmd("wl-paste --watch cliphist store")             -- Guarda en el historial todo lo que se copia (texto e imágenes); se ve con Super + V (quickshell/Clipboard.qml)
 end)

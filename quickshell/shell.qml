@@ -10,6 +10,7 @@ import Quickshell.Hyprland          // Para acceder a los WorkSpaces
 import QtQuick
 import QtQuick.Layouts              // Para usar RowLayout o ColumnLayout
 import Quickshell.Services.UPower   // Para detectar si hay bateria o no (y no mostrar el icono en un PC de mesa)
+import Quickshell.Services.Polkit   // Agente de polkit: pide la contraseña cuando una app necesita permisos (PolkitDialog.qml)
 
 ShellRoot {
 
@@ -21,6 +22,24 @@ ShellRoot {
             if (Quickshell.screens[i].name.startsWith("eDP") || Quickshell.screens[i].name.startsWith("LVDS")) return Quickshell.screens[i]
         }
         return Quickshell.screens[0]
+    }
+
+    // Agente de polkit (sustituye a hyprpolkitagent). Aquí y no dentro del Variants de
+    // abajo: si se destruyese con la pantalla, se daría de baja en el sistema y una
+    // petición que llegase justo entonces se quedaría sin respuesta. Solo puede haber
+    // un agente por sesión: si hyprpolkitagent sigue en marcha, este no se registra
+    // (install.sh lo para y lo desactiva).
+    PolkitAgent { id: polkitAgent }
+
+    // Fondo de pantalla (Background.qml): en todos los monitores, no solo en el de la
+    // barra, así que va en su propio Variants. Se crea y se quita solo al enchufar o
+    // desenchufar un monitor (o al cerrar la tapa del portátil).
+    Variants {
+        model: Quickshell.screens
+        Background {
+            required property var modelData
+            screen: modelData
+        }
     }
 
     // Todas las ventanas van dentro de un Variants: si la pantalla desaparece (monitor
@@ -43,6 +62,7 @@ ShellRoot {
             Osd{screen: screenScope.modelData}         // Indicador de volumen/brillo al usar las teclas multimedia
             Keybinds{id: keybinds; screen: screenScope.modelData}   // Chuleta de atajos, se abre desde el menú de Reddots
             Clipboard{screen: screenScope.modelData}   // Historial del portapapeles, se abre con Super + V
+            PolkitDialog{screen: screenScope.modelData; agent: polkitAgent}   // Pide la contraseña cuando una app necesita permisos
             PanelWindow {
                 screen: screenScope.modelData
                 anchors { top: true; bottom: true; left: true }
