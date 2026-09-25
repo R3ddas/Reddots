@@ -200,6 +200,12 @@ Singleton {
         return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
     }
 
+    // Tema claro (fondo claro) u oscuro, según la luminancia de base00. El mismo
+    // criterio que usa scripts/gen-alacritty-colors.py; lo usa el selector (ThemeSettings.qml)
+    function isLight(theme) {
+        return luminance(theme.base[0]) > 0.18
+    }
+
     readonly property var current: roles(themeByName(activeTheme))
     readonly property var base:    themeByName(activeTheme).base   // Los 16 colores del tema activo, por si algún widget necesita un rojo, un verde...
 
