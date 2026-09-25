@@ -2,7 +2,7 @@
 // En el video también enseña como ahcer que se queden ahí y poner botones para quitrlas
 // Se pueden generar notificaciones desde terminal con: notify-send "Titulo" "Contenido"
 // Pueden ser críticas con: notify-send -u critical "Titulo" "Contenido"
-// Se van solas a los 5 s (defaultTimeout) o al tiempo que pida la app (notify-send -t 3000 = 3 s; -t 0 = nunca).
+// Se van solas a los 10 s (defaultTimeout) o al tiempo que pida la app (notify-send -t 3000 = 3 s; -t 0 = nunca).
 // Las críticas no se van solas. Con el ratón encima no se van.
 // Clic izquierdo: la acción principal de la app si la tiene (si no, la cierra). Clic derecho: la cierra.
 // Con acciones se pintan botones: notify-send -A si=Sí -A no=No "Titulo" "Contenido"
@@ -20,7 +20,7 @@ import QtQuick.Layouts                  // Para usar RowLayout o ColumnLayout
 Scope{
     id: root
     property alias screen: panel.screen
-    readonly property real defaultTimeout: 5    // Segundos en pantalla si la app no pide un tiempo concreto
+    readonly property real defaultTimeout: 10   // Segundos en pantalla si la app no pide un tiempo concreto
     readonly property int maxVisible: 4         // Notificaciones que se ven a la vez; las demás esperan su turno
     readonly property int hiddenCount: Math.max(0, server.trackedNotifications.values.length - maxVisible)
     NotificationServer{
