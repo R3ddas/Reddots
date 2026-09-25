@@ -1,6 +1,6 @@
 # Aplicaciones a esconder del launcher (nombre del .desktop en /usr/share/applications, sin la extensión)
-# Se buscan en /usr/share/applications/<nombre>.desktop y se copian a ~/.local/share/applications
-# con NoDisplay=true para que no salgan en el launcher, sin tocar el paquete del sistema.
+# Si existe /usr/share/applications/<nombre>.desktop, install.sh crea en ~/.local/share/applications
+# uno mínimo con el mismo nombre y NoDisplay=true para que no salga en el launcher, sin tocar el paquete del sistema.
 
 # El launcher muestra el campo Name del .desktop (o su traducción Name[es] si existe), no el nombre del archivo. Para encontrar el archivo a partir de ese nombre, busca por ese campo:
 # grep -rliE "^Name(\[.*\])?=NOMBRE" /usr/share/applications/*.desktop

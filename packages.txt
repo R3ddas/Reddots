@@ -27,6 +27,13 @@ xdg-utils               # Trae xdg-open, para el botón "Abrir carpeta" de los f
 python                  # Para generar los colores de Alacritty según el tema (scripts/gen-alacritty-colors.py)
 git                     # Para el botón de actualizar Reddots (scripts/update-reddots.sh)
 cliphist                # Historial del portapapeles (Clipboard.qml; lo arranca hypr/hyprland.lua con wl-paste de wl-clipboard)
+networkmanager          # Redes wifi y cable del widget de red (Network.qml: Quickshell.Networking habla con NetworkManager)
+bluez                   # El servicio de Bluetooth del que tira Bluetooths.qml (Quickshell.Bluetooth)
+upower                  # Datos de la batería (Battery.qml y shell.qml: Quickshell.Services.UPower)
+noto-fonts-emoji        # Emojis de la barra: el 🔒 de las redes con contraseña y el ⏳ al emparejar por Bluetooth
+
+# Del sistema, no de la barra
+xdg-desktop-portal-hyprland # Para compartir pantalla (Teams, Chrome...) y para las apps que piden hacer capturas
 
 # Capturas de pantalla (Screenshot.qml y scripts/screenshot.sh)
 grim            # Hace la captura

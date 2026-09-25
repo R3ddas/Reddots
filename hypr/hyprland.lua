@@ -1,6 +1,7 @@
 -- Config principal de Hyprland (API Lua). Está repartida en varios archivos que
--- se cargan con require(): keybinds.lua, programs.lua (desde keybinds.lua) y los
--- que genera Quickshell fuera del repo (ver requireIfExists, más abajo).
+-- se cargan con require(): monitors.lua (desde aquí y desde keybinds.lua), keybinds.lua,
+-- programs.lua (desde keybinds.lua) y los que genera Quickshell fuera del repo (ver
+-- requireIfExists, más abajo).
 
 
 -------------------

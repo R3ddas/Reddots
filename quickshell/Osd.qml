@@ -29,7 +29,8 @@ PanelWindow {
         if (mode === "brightness") return String.fromCodePoint(0xF00DF)  // brightness-6
         if (muted || volume === 0) return String.fromCodePoint(0xF075F)  // volume-mute
         if (volume >= 66) return String.fromCodePoint(0xF057E)            // volume-high
-        return String.fromCodePoint(0xF0580)                              // volume-medium
+        if (volume >= 33) return String.fromCodePoint(0xF0580)            // volume-medium
+        return String.fromCodePoint(0xF057F)                              // volume-low
     }
 
     anchors.bottom: true

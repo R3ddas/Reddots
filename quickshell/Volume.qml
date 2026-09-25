@@ -114,11 +114,12 @@ ColumnLayout{
     }
 
     // Icono según estado de mute/volumen (glifos de Nerd Font).
+    // Tres tramos: por debajo de 1/3 bajo, hasta 2/3 medio y de ahí para arriba alto (igual que en Osd.qml).
     readonly property string icon: {
-        if (!sink || muted) return String.fromCodePoint(0xF075F)  // volume-mute
-        if (volume >= 0.66) return String.fromCodePoint(0xF057E)  // volume-high
-        if (volume > 0)     return String.fromCodePoint(0xF0580)  // volume-medium
-        return String.fromCodePoint(0xF057F)                      // volume-low
+        if (!sink || muted || volume === 0) return String.fromCodePoint(0xF075F)  // volume-mute
+        if (volume >= 0.66) return String.fromCodePoint(0xF057E)                  // volume-high
+        if (volume >= 0.33) return String.fromCodePoint(0xF0580)                  // volume-medium
+        return String.fromCodePoint(0xF057F)                                      // volume-low
     }
 
     // Icono en la barra: click izquierdo abre/cierra el menú, click derecho

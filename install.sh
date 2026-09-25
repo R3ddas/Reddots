@@ -107,10 +107,10 @@ sed 's/#.*//' hidden_apps.txt | grep -v '^\s*$' | while read -r app; do
     src="/usr/share/applications/$app.desktop"
     dest="$HOME/.local/share/applications/$app.desktop"
     if [[ -f "$src" ]]; then
-        cp -f "$src" "$dest"
-        grep -q '^NoDisplay=' "$dest" \
-            && sed -i 's/^NoDisplay=.*/NoDisplay=true/' "$dest" \
-            || echo "NoDisplay=true" >> "$dest"
+        # Un .desktop mínimo con el mismo nombre, no una copia del del sistema: al estar en
+        # ~/.local gana al de /usr/share, y como no lleva Exec ni nada más, no se queda
+        # desfasado cuando el paquete se actualiza.
+        printf '[Desktop Entry]\nType=Application\nName=%s\nNoDisplay=true\n' "$app" > "$dest"
     else
         echo "Aviso: no se encontró $src, se omite $app"
     fi
