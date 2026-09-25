@@ -19,8 +19,17 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xF06B0)  // update
-        tooltip: menu.visible ? "" : "Reddots: atajos de teclado y actualizar"
+        tooltip: menu.visible ? "" : "Reddots: atajos de teclado y actualizar" + (Updates.count > 0 ? "\n" + Updates.summary : "")
         onClicked: menu.toggle()
+    }
+
+    Text {                                  // Actualizaciones pendientes (Updates.qml), en pequeño como el % de la batería
+        visible: Updates.count > 0
+        text: Updates.count > 99 ? "99+" : Updates.count
+        color: Theme.textSelected
+        font.pixelSize: 10
+        font.bold: true
+        Layout.alignment: Qt.AlignHCenter
     }
 
     BarPopup {
@@ -41,7 +50,8 @@ ColumnLayout {
                 model: [
                     { icon: 0xF030C, label: "Atajos de teclado",  run: () => root.keybindsRequested() },     // keyboard
                     { icon: 0xF06B0, label: "Actualizar Reddots",                                             // update
-                      hint: "Baja los cambios del repo y ejecuta install.sh en un terminal. Actualiza todo el sistema y pide la contraseña.",
+                      hint: "Baja los cambios del repo y ejecuta install.sh en un terminal. Actualiza todo el sistema y pide la contraseña."
+                            + (Updates.count > 0 ? "\n" + Updates.summary + "." : ""),
                       run: () => Quickshell.execDetached(["alacritty", "--title", "Actualizar Reddots", "-e",
                                     Quickshell.shellPath("scripts/update-reddots.sh")]) }
                 ]

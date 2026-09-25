@@ -18,7 +18,17 @@ ColumnLayout {
     BarIcon {
         text: String.fromCodePoint(0xf01d8)                                 // Mismo icono plegado y desplegado: el estado se nota por el color
         color: root.owner.expanded ? Theme.textSelected : Theme.textActive // Con el color de acento mientras está desplegado
-        tooltip: root.owner.expanded ? "Ocultar los ajustes" : "Mostrar los ajustes"
+        tooltip: root.owner.expanded ? "Ocultar los ajustes"
+               : "Mostrar los ajustes" + (Updates.count > 0 ? "\n" + Updates.summary : "")
         onClicked: root.owner.expanded = !root.owner.expanded               // Muestra/oculta el grupo
+    }
+
+    Text {                  // Actualizaciones pendientes: con el grupo plegado no se ve el icono de Reddots, así que el número sale aquí
+        visible: root.controls === null && !root.expanded && Updates.count > 0
+        text: Updates.count > 99 ? "99+" : Updates.count
+        color: Theme.textSelected
+        font.pixelSize: 10
+        font.bold: true
+        Layout.alignment: Qt.AlignHCenter
     }
 }

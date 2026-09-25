@@ -50,6 +50,10 @@ if grep -q '^hypr/' <<< "$changed"; then
     hyprctl reload >/dev/null
 fi
 
+# Que el contador de actualizaciones de la barra (Updates.qml) vuelva a mirar, ahora
+# que ya se ha actualizado. Si Quickshell se acaba de reiniciar, mira él solo al minuto.
+qs ipc call updates refresh >/dev/null 2>&1
+
 # El terminal no se cierra al terminar: se queda con tu shell abierta en el repo,
 # para poder revisar la salida o seguir trabajando. Se cierra como cualquier otro.
 echo
