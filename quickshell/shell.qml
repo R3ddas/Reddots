@@ -43,6 +43,7 @@ ShellRoot {
             Item { Layout.fillHeight: true }                    // Empuja el grupo inferior hacia abajo
             ColumnLayout{
                 spacing: 5
+                Layout.alignment: Qt.AlignHCenter                // Sin esto el grupo queda pegado a la izquierda (es más estrecho que la barra) y sus iconos se descentran
                 Volume{Layout.alignment: Qt.AlignHCenter}       // Volumen
                 Network{Layout.alignment: Qt.AlignHCenter}      // Wifi
                 Bluetooths{Layout.alignment: Qt.AlignHCenter}   // Bluetooth
