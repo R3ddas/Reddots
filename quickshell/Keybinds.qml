@@ -35,8 +35,10 @@ PanelWindow {
             bindsProc.running = false
             bindsProc.running = true            // Siempre los atajos actuales (por si se ha tocado keybinds.lua)
             flick.contentY = 0
+            flick.forceActiveFocus()            // Para recibir el Esc
             grabTimer.restart()
         } else {
+            flick.focus = false                 // Nada con foco mientras está cerrada (ver el comentario de Keys, más abajo)
             grabTimer.stop(); grab.active = false
         }
     }
@@ -127,6 +129,12 @@ PanelWindow {
             clip: true
             boundsBehavior: Flickable.StopAtBounds
 
+            // Esc con Keys y el foco solo mientras está abierta, como en el Launcher. No con un
+            // Shortcut: Quickshell a veces se cuelga (segfault) al cerrarse por culpa de él, aunque
+            // la chuleta esté cerrada. Y al probar, no crear esta ventana ya visible (visible: true
+            // de inicio) con algo con foco dentro: también se cuelga al cerrar Quickshell.
+            Keys.onEscapePressed: root.visible = false
+
             ColumnLayout {
                 id: content
                 width: flick.width
@@ -205,15 +213,6 @@ PanelWindow {
                 }
             }
         }
-    }
-
-    // Esc con un Shortcut: funciona sin que ningún elemento tenga el foco del teclado.
-    // Ojo al probar: si esta ventana se crea ya visible (visible: true de inicio) con un
-    // elemento con foco dentro, Quickshell se cuelga (segfault) al cerrarse. Abierta
-    // después de arrancar, como se usa normalmente, no pasa.
-    Shortcut {
-        sequence: "Escape"
-        onActivated: root.visible = false
     }
 
     HyprlandFocusGrab {

@@ -18,13 +18,14 @@ brightnessctl   # Para las teclas de brillo de la pantalla
 ddcutil         # Brillo de los monitores externos por DDC/CI (widget Brightness.qml)
 playerctl       # Para las teclas multimedia (siguiente, anterior, pausa)
 
-# Usados por la barra (quickshell/). CachyOS ya los trae, pero así no dependo de eso
+# Usados por la barra (quickshell/). CachyOS ya trae alguno, pero así no dependo de eso
 ttf-cascadia-code-nerd  # Fuente de la que salen los iconos de la barra (Nerd Font)
-libnotify       # Trae notify-send, para los avisos de batería baja y de Bluetooth
-libpulse        # Trae pactl, para saber qué salidas de audio tienen algo enchufado (Volume.qml)
-xdg-utils       # Trae xdg-open, para el botón "Abrir carpeta" de los fondos de pantalla
-python          # Para generar los colores de Alacritty según el tema (scripts/gen-alacritty-colors.py)
-git             # Para el botón de actualizar Reddots (scripts/update-reddots.sh)
+papirus-icon-theme      # Tema de iconos de Quickshell: lanzador, notificaciones, bandeja (pragma IconTheme en shell.qml)
+libnotify               # Trae notify-send, para los avisos de batería baja y de Bluetooth
+libpulse                # Trae pactl, para saber qué salidas de audio tienen algo enchufado (Volume.qml)
+xdg-utils               # Trae xdg-open, para el botón "Abrir carpeta" de los fondos de pantalla
+python                  # Para generar los colores de Alacritty según el tema (scripts/gen-alacritty-colors.py)
+git                     # Para el botón de actualizar Reddots (scripts/update-reddots.sh)
 
 # Capturas de pantalla (Screenshot.qml y scripts/screenshot.sh)
 grim            # Hace la captura

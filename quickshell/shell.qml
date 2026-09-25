@@ -1,4 +1,9 @@
+//@ pragma IconTheme Papirus
 // Recursos: https://tonybtw.com/tutorial/quickshell/
+
+// El pragma de arriba es el tema de iconos de Quickshell (lanzador, notificaciones,
+// bandeja). Sin él solo busca en "hicolor" y muchos iconos salían con el genérico o
+// no salían. Papirus viene en packages.txt. Tiene que ir en la primera línea del archivo.
 
 import Quickshell
 import Quickshell.Hyprland          // Para acceder a los WorkSpaces
@@ -65,6 +70,7 @@ ShellRoot {
                     ColumnLayout{
                         spacing: 5
                         Layout.alignment: Qt.AlignHCenter                // Sin esto el grupo queda pegado a la izquierda (es más estrecho que la barra) y sus iconos se descentran
+                        Tray{Layout.alignment: Qt.AlignHCenter}         // Bandeja del sistema (iconos de Steam, Teams...); sin apps no ocupa sitio
                         Volume{Layout.alignment: Qt.AlignHCenter}       // Volumen
                         Network{Layout.alignment: Qt.AlignHCenter}      // Wifi
                         Bluetooths{Layout.alignment: Qt.AlignHCenter}   // Bluetooth
