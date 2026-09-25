@@ -58,8 +58,8 @@ Singleton {
         watchChanges: true
         onFileChanged: reload()
         onAdapterUpdated: writeAdapter()
-        onLoaded: syncHyprland()        // Al arrancar, cuando ya se sabe el tema guardado (antes activeTheme aún vale el de por defecto)
-        onLoadFailed: syncHyprland()    // Si theme.json aún no existe (instalación nueva), con el tema por defecto
+        onLoaded: syncAll()             // Al arrancar, cuando ya se sabe el tema guardado (antes activeTheme aún vale el de por defecto)
+        onLoadFailed: syncAll()         // Si theme.json aún no existe (instalación nueva), con el tema por defecto
 
         JsonAdapter {
             id: adapter
@@ -584,40 +584,46 @@ Singleton {
     // así que le regeneramos su colors.toml (ver alacritty/alacritty.toml,
     // que lo importa) cada vez que cambia el tema. Alacritty recarga solo
     // porque tiene live_config_reload activado por defecto.
-    Process {
-        id: alacrittySync
-        command: [
-            Quickshell.env("HOME") + "/.config/quickshell/scripts/gen-alacritty-colors.py",
-            background.toString(), textActive.toString(), textSelected.toString(),
-            textDisabled.toString(), surface.toString(), surfaceHover.toString(),
-            border.toString(), extra1.toString(), extra2.toString(), extra3.toString(),
-        ]
-    }
+    Process { id: alacrittySync }       // El comando se pone en syncAlacritty(), justo antes de lanzarlo
+
+    property string alacrittyTheme: ""  // Último tema enviado a Alacritty: al arrancar el tema llega por onLoaded y por onActiveThemeChanged, así no se genera dos veces
 
     function syncAlacritty() {
+        if (alacrittyTheme === activeTheme) return
+        alacrittyTheme = activeTheme
+        const t = themeByName(activeTheme)  // Directo del tema, no de las propiedades derivadas (lo mismo que en hyprGeneralText())
         alacrittySync.running = false
+        alacrittySync.command = [
+            Quickshell.env("HOME") + "/.config/quickshell/scripts/gen-alacritty-colors.py",
+            t.background.toString(), t.textActive.toString(), t.textSelected.toString(),
+            t.textDisabled.toString(), t.surface.toString(), t.surfaceHover.toString(),
+            t.border.toString(), t.extra1.toString(), t.extra2.toString(), t.extra3.toString(),
+        ]
         alacrittySync.running = true
     }
 
     // Lo mismo para los bordes de las ventanas, que los pinta Hyprland: igual
-    // que HyprGeometry.qml con las medidas, se regenera entero
-    // ~/.config/hypr/shellTheme.lua (fuera del repo) y se aplica con
-    // "hyprctl reload". hyprland.lua hace require() de ese archivo si existe.
+    // que HyprGeometry.qml con las medidas, se aplican en caliente con
+    // "hyprctl eval" y se regenera entero ~/.config/hypr/shellTheme.lua (fuera
+    // del repo) para el siguiente arranque. hyprland.lua hace require() de ese
+    // archivo si existe. Sin "hyprctl reload", por lo mismo que en HyprGeometry.qml:
+    // desharía el panel apagado por lid-watcher.sh, el mirror de Super+M...
     function hyprColor(c, alpha) {
         return "0x" + alpha + c.toString().slice(1)     // "#rrggbb" -> 0xAARRGGBB, el formato de hyprland.lua
     }
 
-    function hyprThemeText() {
+    // Tabla "general = {...}" que se pasa a hl.config(), en una línea (vale tanto para el archivo como para "hyprctl eval")
+    function hyprGeneralText() {
         const t = themeByName(activeTheme)              // Directo del tema, no de las propiedades derivadas: puede que aún no se hayan actualizado al saltar onActiveThemeChanged
+        return "general = { col = { "
+             + "active_border = { colors = {" + hyprColor(t.textSelected, "ee") + ", " + hyprColor(t.textActive, "ee") + "}, angle = 45 }, "  // Degradado, como el que había fijo en hyprland.lua
+             + "inactive_border = " + hyprColor(t.border, "aa")
+             + " } }"
+    }
+
+    function hyprThemeText() {
         return "-- Generado por Theme.qml (quickshell). No editar a mano: se sobrescribe.\n"
-             + "hl.config({\n"
-             + "    general = {\n"
-             + "        col = {\n"
-             + "            active_border   = { colors = {" + hyprColor(t.textSelected, "ee") + ", " + hyprColor(t.textActive, "ee") + "}, angle = 45 },\n"  // Degradado, como el que había fijo en hyprland.lua
-             + "            inactive_border = " + hyprColor(t.border, "aa") + ",\n"
-             + "        },\n"
-             + "    },\n"
-             + "})\n"
+             + "hl.config({ " + hyprGeneralText() + " })\n"
     }
 
     FileView {
@@ -625,15 +631,19 @@ Singleton {
         path: Quickshell.env("HOME") + "/.config/hypr/shellTheme.lua"
         atomicWrites: true
         blockLoading: true                                  // Para que text() devuelva ya el contenido actual al arrancar
-        onSaved: Quickshell.execDetached(["hyprctl", "reload"])  // Solo cuando ya está escrito en disco (ver HyprGeometry.qml)
     }
 
     function syncHyprland() {
         const text = hyprThemeText()
-        if (hyprThemeFile.text() !== text)                  // Si no ha cambiado nada no se escribe, y así no hay un "hyprctl reload" en cada arranque de Quickshell
-            hyprThemeFile.setText(text)
+        if (hyprThemeFile.text() === text) return           // Si no ha cambiado nada no se toca (lo normal en cada arranque de Quickshell: Hyprland ya lo cargó con el require())
+        hyprThemeFile.setText(text)                                                             // Para el siguiente arranque de Hyprland
+        Quickshell.execDetached(["hyprctl", "eval", "hl.config({ " + hyprGeneralText() + " })"])  // En caliente
     }
 
-    Component.onCompleted: syncAlacritty()
-    onActiveThemeChanged: { syncAlacritty(); syncHyprland() }
+    function syncAll() {
+        syncAlacritty()
+        syncHyprland()
+    }
+
+    onActiveThemeChanged: syncAll()
 }
