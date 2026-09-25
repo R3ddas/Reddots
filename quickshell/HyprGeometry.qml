@@ -57,8 +57,8 @@ Singleton {
     }
 
     // Si shellOverrides.lua ya tiene estos valores no se hace nada: es lo que
-    // pasa en casi todos los arranques de Quickshell (incluidos los reinicios
-    // de lid-watcher.sh), y Hyprland ya los cargó con el require().
+    // pasa en casi todos los arranques de Quickshell, y Hyprland ya los cargó
+    // con el require().
     function sync() {
         const text = root.overridesText()
         if (overridesFile.text() === text) return

@@ -3,6 +3,5 @@
 ---------------------
 
 return {
-    terminal    = "alacritty",
-    fileManager = "nemo",
+    terminal = "alacritty",
 }

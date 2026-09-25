@@ -36,6 +36,7 @@ ShellRoot {
             Launcher{screen: screenScope.modelData}    // Widget que se abre/cierra con Super, abajo-derecha
             Notifications{screen: screenScope.modelData}
             Osd{screen: screenScope.modelData}         // Indicador de volumen/brillo al usar las teclas multimedia
+            Keybinds{id: keybinds; screen: screenScope.modelData}   // Chuleta de atajos, se abre desde el menú de Reddots
             PanelWindow {
                 screen: screenScope.modelData
                 anchors { top: true; bottom: true; left: true }
@@ -82,7 +83,10 @@ ShellRoot {
                             GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
                             ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
                             WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)
-                            Install{Layout.alignment: Qt.AlignHCenter}           // Actualizar Reddots: git pull + install.sh en un terminal
+                            Reddots{                                             // Lo relativo al repo: chuleta de atajos y actualizar Reddots
+                                Layout.alignment: Qt.AlignHCenter
+                                onKeybindsRequested: keybinds.visible = true
+                            }
                             SettingsToggle{controls: settingsToggle; Layout.alignment: Qt.AlignHCenter}  // Copia del engranaje al final del grupo: se oculta con él y hace lo mismo
                         }
                     }

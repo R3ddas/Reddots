@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Lo lanza el botón de actualizar de la barra (Install.qml) dentro de un Alacritty:
+# Lo lanza el botón de actualizar de la barra (Reddots.qml) dentro de un Alacritty:
 # baja los cambios del repo, ejecuta install.sh y, si el pull ha traído algo, reinicia
 # Quickshell y/o recarga Hyprland. Va en un terminal porque install.sh pide la
 # contraseña con sudo y paru -Syu puede hacer preguntas.
