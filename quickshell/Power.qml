@@ -60,7 +60,14 @@ ColumnLayout {
         // cmatrix -s se cierra solo al pulsar una tecla en SU terminal; en cuanto Alacritty termina (por eso, o por cierre manual)
         // el "pkill" mata los cmatrix de los demás monitores, lo que a su vez hace que sus Alacritty también se cierren
         const matrix = "cmatrix -bsu 10"    // Una sola vez: el pkill tiene que buscar exactamente lo mismo que se lanza (el -u es la velocidad)
-        const cmd = `alacritty -o 'window.startup_mode="Fullscreen"' -e sh -c 'sleep 0.5 && exec ${matrix}'; pkill -f '${matrix}'`
+        // cmatrix no deja el fondo por defecto de la terminal: lo pinta con el color "negro"
+        // (\e[40m). En colors.toml ese negro no es el fondo (gen-alacritty-colors.py pone
+        // base01 en los temas oscuros, que casi no se distingue, y base02 en los claros, un
+        // gris que canta), así que solo para este Alacritty se sobrescribe con base00: el
+        // salvapantallas queda con el fondo del tema, sea claro u oscuro, sin tocar el
+        // negro del resto de terminales.
+        const background = Theme.base[0]
+        const cmd = `alacritty -o 'window.startup_mode="Fullscreen"' -o 'colors.normal.black="${background}"' -e sh -c 'sleep 0.5 && exec ${matrix}'; pkill -f '${matrix}'`
         const escapedCmd = cmd.replace(/"/g, "\\\"")
         for (const mon of Hyprland.monitors.values) {
             Hyprland.dispatch(`hl.dsp.exec_cmd("${escapedCmd}", { monitor = "${mon.name}" })`)
