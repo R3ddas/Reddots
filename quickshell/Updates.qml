@@ -4,10 +4,11 @@ import Quickshell.Io                // Para lanzar scripts/check-updates.sh y el
 import QtQuick
 
 // Actualizaciones pendientes del sistema (repos oficiales y AUR), para el contador de
-// la barra (Reddots.qml y el engranaje de SettingsToggle.qml). Las mira
-// scripts/check-updates.sh un minuto después de arrancar (para no competir con el
-// arranque ni mirar antes de que haya red) y luego cada hora. También con
-// "qs ipc call updates refresh", que lanza update-reddots.sh al terminar.
+// la barra (Reddots.qml). Las mira
+// scripts/check-updates.sh solo al desplegar el grupo de ajustes del engranaje
+// (SettingsToggle.qml llama a refresh()), que es donde está el contador: sin
+// consultas de fondo mientras no se mira. También con "qs ipc call updates refresh",
+// que lanza update-reddots.sh al terminar.
 Singleton {
     id: root
 
@@ -36,19 +37,6 @@ Singleton {
                 root.aur = list("aur")
             }
         }
-    }
-
-    Timer {                             // Primera vez, un minuto después de arrancar
-        interval: 60 * 1000
-        running: true
-        onTriggered: root.refresh()
-    }
-
-    Timer {                             // Y luego cada hora
-        interval: 60 * 60 * 1000
-        running: true
-        repeat: true
-        onTriggered: root.refresh()
     }
 
     IpcHandler {

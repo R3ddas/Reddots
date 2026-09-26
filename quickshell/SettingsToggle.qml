@@ -15,6 +15,11 @@ ColumnLayout {
     property Item controls: null        // Si se indica, este icono es un duplicado: muestra y cambia el estado de ese otro SettingsToggle
     readonly property Item owner: controls ?? root      // Quién guarda de verdad el estado
 
+    // Al desplegar, se miran las actualizaciones pendientes para el contador de Reddots.qml,
+    // que está dentro del grupo (Updates.qml no mira por su cuenta). Solo en el que guarda
+    // el estado: en la copia "expanded" no cambia nunca
+    onExpandedChanged: if (expanded) Updates.refresh()
+
     BarIcon {
         text: String.fromCodePoint(0xf01d8)                                 // Mismo icono plegado y desplegado: el estado se nota por el color
         // Con el color de acento mientras está desplegado. Plegado, en rojo si hay alguna temperatura
@@ -23,7 +28,7 @@ ColumnLayout {
              : SystemMonitor.overheating ? SystemMonitor.hotColor
              : Theme.textActive
         tooltip: root.owner.expanded ? "Ocultar los ajustes"
-               : "Mostrar los ajustes" + (Updates.count > 0 ? "\n" + Updates.summary : "")
+               : "Mostrar los ajustes"                  // Sin las actualizaciones: plegado no se miran (ver Updates.qml) y el número podría estar desfasado
                  + (SystemMonitor.overheating ? "\nTemperatura alta: " + SystemMonitor.warning : "")
         onClicked: root.owner.expanded = !root.owner.expanded               // Muestra/oculta el grupo
     }
