@@ -19,6 +19,7 @@ Singleton {
     property alias sidebarWidth: adapter.sidebarWidth
     property alias borderThickness: adapter.borderThickness
     property alias borderRounding: adapter.borderRounding
+    property alias borderShadow: adapter.borderShadow
     property alias popupRounding: adapter.popupRounding
     property alias popupBorderWidth: adapter.popupBorderWidth
 
@@ -31,6 +32,7 @@ Singleton {
         { target: root, key: "sidebarWidth",    label: "Ancho barra lateral",  min: 16, max: 80, step: 1 },
         { target: root, key: "borderThickness", label: "Grosor del borde",     min: 0,  max: 20, step: 1 },
         { target: root, key: "borderRounding",  label: "Redondeo de esquinas", min: 0,  max: 40, step: 1 },
+        { target: root, key: "borderShadow",    label: "Sombra del borde",     min: 0,  max: 40, step: 1 },
         { target: root, key: "popupRounding",   label: "Redondeo desplegables", min: 0, max: 40, step: 1 },
         { target: root, key: "popupBorderWidth", label: "Borde desplegables",   min: 0, max: 10, step: 1 }
     ]
@@ -64,6 +66,7 @@ Singleton {
             property int sidebarWidth: 32      // Ancho de la barra lateral (PanelWindow.implicitWidth y Border.margins.left deben coincidir)
             property int borderThickness: 6    // Grosor del marco que dibuja Border
             property int borderRounding: 22    // Radio de las esquinas redondeadas de Border
+            property int borderShadow: 5       // Cuántos px hacia adentro se difumina la sombra de Border (0 = sin sombra)
             property int popupRounding: 16     // Radio de las esquinas de los desplegables de la barra
             property int popupBorderWidth: 2   // Grosor del borde de color de los desplegables y del lanzador (0 = sin borde)
         }

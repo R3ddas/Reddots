@@ -1,5 +1,5 @@
 // Icono en la barra + popup para editar en caliente las medidas de Geometry.qml
-// (ancho de la barra lateral, grosor y redondeo del borde) y las de
+// (ancho de la barra lateral, grosor, redondeo y sombra del borde) y las de
 // HyprGeometry.qml (gaps y borde/redondeo de ventana, que vive en Hyprland).
 // Los cambios de Geometry se aplican al momento (Border.qml y shell.qml están
 // enlazados a Geometry); los de HyprGeometry se aplican en caliente con "hyprctl eval".

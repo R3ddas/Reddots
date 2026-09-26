@@ -26,7 +26,7 @@ PanelWindow {
     property color shadowColor: "#000000"     // color de la sombra
     property real shadowOpacity: 0.8         // opacidad máxima de la sombra (0 invisible, 1 totalmente opaca)
     property real shadowBlur: 1.0             // cuánto de "shadowBlurMax" se usa realmente (0 nada, 1 el máximo)
-    property real shadowBlurMax: 5           // difuminado: cuántos píxeles hacia adentro se desvanece la sombra
+    property int shadowBlurMax: Geometry.borderShadow  // difuminado: cuántos píxeles hacia adentro se desvanece la sombra (editable desde GeometrySettings.qml)
 
     anchors { top: true; bottom: true; left: true; right: true }
     margins { left: Geometry.sidebarWidth }   // el ancho de tu barra
@@ -37,11 +37,28 @@ PanelWindow {
     WlrLayershell.namespace: "reddots:border"
     mask: Region {}        // click-through: no roba ningún clic
 
+    // El marco se dibuja más grande que la ventana ("bleed" px de más por
+    // cada lado, que quedan fuera de pantalla y no se ven). Sin eso, la
+    // sombra sale de difuminar solo los 6 px visibles del marco con lo que
+    // hay fuera (nada, transparente): cuanto más se difumina, más se diluyen
+    // esos 6 px y la sombra se ensancha pero se aclara hasta desaparecer
+    // (medido: con 40 px apenas oscurecía un 7 %). Con el marco alargado
+    // hacia fuera, el difuminado solo encuentra marco opaco por ese lado y
+    // la sombra conserva la misma intensidad junto al borde sea cual sea su
+    // tamaño; así el número del panel cambia lo lejos que llega, no si se ve.
+    // Se deja el doble del difuminado para ir sobrados: el blur de
+    // MultiEffect no corta exactamente en blurMax.
+    readonly property int bleed: shadowBlurMax * 2
+
     Shape {
         anchors.fill: parent
+        anchors.margins: -root.bleed      // Márgenes negativos: sobresale de la ventana por los cuatro lados
         preferredRendererType: Shape.CurveRenderer
 
-        layer.enabled: true
+        // Con 0 px no hay sombra que dibujar: se apaga la capa entera en vez
+        // de dejar un MultiEffect que solo pintaría una copia nítida tapada
+        // por el propio marco (y se ahorra el render a textura).
+        layer.enabled: root.shadowBlurMax > 0
         layer.effect: MultiEffect {
             shadowEnabled: true
             shadowColor: root.shadowColor
@@ -57,10 +74,13 @@ PanelWindow {
             fillColor: root.frameColor
             strokeWidth: 0
 
-            PathRectangle { width: root.width; height: root.height }
+            // Coordenadas relativas al Shape, que empieza "bleed" px antes
+            // que la ventana: el hueco interior se desplaza lo mismo para
+            // que en pantalla quede exactamente donde estaba.
+            PathRectangle { width: root.width + root.bleed * 2; height: root.height + root.bleed * 2 }
             PathRectangle {
-                x: root.thickness
-                y: root.thickness
+                x: root.bleed + root.thickness
+                y: root.bleed + root.thickness
                 width: root.width - root.thickness * 2
                 height: root.height - root.thickness * 2
                 radius: root.rounding
