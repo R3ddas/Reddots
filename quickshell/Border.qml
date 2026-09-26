@@ -24,7 +24,7 @@ PanelWindow {
     // (como una foto desenfocada), así que el corte pasa a ser un
     // degradado suave de opaco a transparente en vez de una línea dura.
     property color shadowColor: "#000000"     // color de la sombra
-    property real shadowOpacity: 0.8         // opacidad máxima de la sombra (0 invisible, 1 totalmente opaca)
+    property real shadowOpacity: Geometry.borderShadowOpacity / 100  // opacidad máxima de la sombra (0 invisible, 1 totalmente opaca); en Geometry va en %
     property real shadowBlur: 1.0             // cuánto de "shadowBlurMax" se usa realmente (0 nada, 1 el máximo)
     property int shadowBlurMax: Geometry.borderShadow  // difuminado: cuántos píxeles hacia adentro se desvanece la sombra (editable desde GeometrySettings.qml)
 
@@ -55,10 +55,10 @@ PanelWindow {
         anchors.margins: -root.bleed      // Márgenes negativos: sobresale de la ventana por los cuatro lados
         preferredRendererType: Shape.CurveRenderer
 
-        // Con 0 px no hay sombra que dibujar: se apaga la capa entera en vez
+        // Con 0 px (o 0 % de opacidad) no hay sombra que dibujar: se apaga la capa entera en vez
         // de dejar un MultiEffect que solo pintaría una copia nítida tapada
         // por el propio marco (y se ahorra el render a textura).
-        layer.enabled: root.shadowBlurMax > 0
+        layer.enabled: root.shadowBlurMax > 0 && root.shadowOpacity > 0
         layer.effect: MultiEffect {
             shadowEnabled: true
             shadowColor: root.shadowColor

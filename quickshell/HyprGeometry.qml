@@ -4,7 +4,7 @@ import Quickshell.Io
 import QtQuick
 
 // Igual que Geometry.qml pero para propiedades que no vive Quickshell sino
-// Hyprland (gaps, grosor de borde de ventana, redondeo). No hay binding
+// Hyprland (gaps, grosor de borde de ventana, redondeo, opacidad). No hay binding
 // directo posible con el compositor, así que cada cambio se hace en dos sitios:
 //   - En caliente, con "hyprctl eval" de la misma llamada a hl.config().
 //   - Para el siguiente arranque, en ~/.config/hypr/shellOverrides.lua (fuera
@@ -22,16 +22,24 @@ Singleton {
     property alias gapsOut: adapter.gapsOut
     property alias borderSize: adapter.borderSize
     property alias rounding: adapter.rounding
+    property alias windowOpacity: adapter.windowOpacity
 
     readonly property var editable: [
         { target: root, key: "gapsIn",     label: "Espacio entre ventanas",        min: 0, max: 40, step: 1 },
         { target: root, key: "gapsOut",    label: "Espacio con borde de pantalla", min: 0, max: 60, step: 1 },
         { target: root, key: "borderSize", label: "Grosor borde de ventana",       min: 0, max: 10, step: 1 },
-        { target: root, key: "rounding",   label: "Redondeo de ventanas",          min: 0, max: 40, step: 1 }
+        { target: root, key: "rounding",   label: "Redondeo de ventanas",          min: 0, max: 40, step: 1 },
+        // Mínimo 10 %: por debajo las ventanas son prácticamente invisibles y
+        // costaría encontrar el panel para volver a subirla
+        { target: root, key: "windowOpacity", label: "Opacidad de ventanas",       min: 10, max: 100, step: 5, unit: "%" }
     ]
 
+    // En el JSON va en % (entero, para que el stepper no acumule decimales);
+    // Hyprland la quiere de 0 a 1. 90/100 se imprime "0.9", no 0.9000001.
+    readonly property real opacity: windowOpacity / 100
+
     // Regenera el archivo entero cada vez (no un patch incremental tipo
-    // regex): como solo hay 4 claves y las 4 se conocen siempre, es más
+    // regex): como solo hay unas pocas claves y se conocen siempre, es más
     // simple y evita el riesgo de dejar líneas huérfanas si algún día se
     // quita una clave de aquí.
     function overridesText() {
@@ -44,6 +52,9 @@ Singleton {
              + "    },\n"
              + "    decoration = {\n"
              + "        rounding = " + root.rounding + ",\n"
+             + "        active_opacity = " + root.opacity + ",\n"       // Las tres iguales, como el "local opacity" de hyprland.lua
+             + "        inactive_opacity = " + root.opacity + ",\n"
+             + "        fullscreen_opacity = " + root.opacity + ",\n"
              + "    },\n"
              + "})\n"
     }
@@ -53,7 +64,10 @@ Singleton {
         return "hl.config({ general = { gaps_in = " + root.gapsIn
              + ", gaps_out = " + root.gapsOut
              + ", border_size = " + root.borderSize
-             + " }, decoration = { rounding = " + root.rounding + " } })"
+             + " }, decoration = { rounding = " + root.rounding
+             + ", active_opacity = " + root.opacity
+             + ", inactive_opacity = " + root.opacity
+             + ", fullscreen_opacity = " + root.opacity + " } })"
     }
 
     // Si shellOverrides.lua ya tiene estos valores no se hace nada: es lo que
@@ -90,6 +104,7 @@ Singleton {
             property int gapsOut: 12      // hypr/hyprland.lua: general.gaps_out
             property int borderSize: 2    // hypr/hyprland.lua: general.border_size
             property int rounding: 16     // hypr/hyprland.lua: decoration.rounding
+            property int windowOpacity: 90 // hypr/hyprland.lua: "local opacity" (active/inactive/fullscreen_opacity), en %
         }
     }
 

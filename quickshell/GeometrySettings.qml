@@ -1,6 +1,6 @@
 // Icono en la barra + popup para editar en caliente las medidas de Geometry.qml
-// (ancho de la barra lateral, grosor, redondeo y sombra del borde) y las de
-// HyprGeometry.qml (gaps y borde/redondeo de ventana, que vive en Hyprland).
+// (ancho de la barra lateral; grosor, redondeo, sombra y opacidad de la sombra del borde) y las de
+// HyprGeometry.qml (gaps, borde/redondeo y opacidad de ventana, que viven en Hyprland).
 // Los cambios de Geometry se aplican al momento (Border.qml y shell.qml están
 // enlazados a Geometry); los de HyprGeometry se aplican en caliente con "hyprctl eval".
 // Ambos se guardan solos en disco gracias a sus respectivos FileView.
@@ -80,7 +80,7 @@ ColumnLayout {
                         Text {
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignHCenter
-                            text: row.modelData.target[row.modelData.key] + "px"
+                            text: row.modelData.target[row.modelData.key] + (row.modelData.unit ?? "px")   // Unidad opcional de la entrada (p.ej. "%")
                             color: Theme.textActive
                         }
 

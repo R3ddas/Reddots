@@ -64,6 +64,9 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -----------------
 
 -- Ver https://wiki.hypr.land/Configuring/Basics/Variables/
+-- Como gaps_in/gaps_out/border_size más abajo, solo el valor de ARRANQUE: el
+-- panel GeometrySettings.qml ("Opacidad de ventanas") lo sobrescribe vía
+-- hypr/shellOverrides.lua en active/inactive/fullscreen_opacity.
 local opacity = 0.9
 hl.config({
     general = {
@@ -146,7 +149,7 @@ local function requireIfExists(name)
     end
 end
 
-requireIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding (decoration), desde el panel GeometrySettings.qml (quickshell/HyprGeometry.qml)
+requireIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding + active/inactive/fullscreen_opacity (decoration), desde el panel GeometrySettings.qml (quickshell/HyprGeometry.qml)
 requireIfExists("shellTheme")       -- col.active_border/inactive_border (general) y background_color (misc), según el tema elegido (quickshell/Theme.qml)
 
 -- Curvas y animaciones por defecto, ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
