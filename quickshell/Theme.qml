@@ -23,6 +23,8 @@ import QtQuick
 //   - "Base16: <nombre>": el esquema de tinted-theming tal cual.
 //   - "reordenados": GitHub y Tokyo Night tienen en su esquema Base16 los acentos fuera de
 //     sitio (el rojo en la casilla del morado...): son sus colores oficiales, cada uno en su casilla.
+//     El esquema de GitHub no tiene cian: su casilla lleva el cian de terminal de Primer, el
+//     sistema de diseño de GitHub (ansi.cyan: #1b7c83 en el claro, #39c5cf en el oscuro).
 //   - Everblush, Nightfox y Sonokai no tienen esquema Base16: salen de sus paletas oficiales.
 //   - Old World, Shado Theme, Dark Green y Caelestia son esquemas Material de Caelestia
 //     (https://github.com/caelestia-dots/cli/tree/main/src/caelestia/data/schemes), en los que
@@ -154,21 +156,51 @@ Singleton {
         { name: "Oxocarbon Oscuro", accent: "base0D",     // Base16: oxocarbon-dark
           base: ["#161616", "#262626", "#393939", "#525252", "#dde1e6", "#f2f4f8", "#ffffff", "#08bdba",
                  "#ee5396", "#ff7eb6", "#ff6f00", "#42be65", "#3ddbd9", "#33b1ff", "#be95ff", "#82cfff"] },
-        { name: "GitHub Claro", accent: "base0D",     // github (acentos reordenados)
+        { name: "GitHub Claro", accent: "base0D",     // github (acentos reordenados; cian de terminal de Primer)
           base: ["#ffffff", "#f6f8fa", "#afb8c1", "#8c959f", "#6e7781", "#424a53", "#32383f", "#1f2328",
-                 "#cf222e", "#953800", "#bf8700", "#116329", "#0a3069", "#0550ae", "#8250df", "#82071e"] },
-        { name: "GitHub Oscuro", accent: "base0D",     // github-dark (acentos reordenados)
+                 "#cf222e", "#953800", "#bf8700", "#116329", "#1b7c83", "#0550ae", "#8250df", "#82071e"] },
+        { name: "GitHub Oscuro", accent: "base0D",     // github-dark (acentos reordenados; cian de terminal de Primer)
           base: ["#0d1117", "#161b22", "#484f58", "#6e7681", "#8b949e", "#c9d1d9", "#f0f6fc", "#ffffff",
-                 "#ff7b72", "#ffa657", "#bb8009", "#7ee787", "#a5d6ff", "#79c0ff", "#d2a8ff", "#ffa198"] },
+                 "#ff7b72", "#ffa657", "#bb8009", "#7ee787", "#39c5cf", "#79c0ff", "#d2a8ff", "#ffa198"] },
         { name: "Zenburn Oscuro", accent: "base0C",     // Base16: zenburn
           base: ["#383838", "#404040", "#606060", "#6f6f6f", "#808080", "#dcdccc", "#c0c0c0", "#ffffff",
                  "#dca3a3", "#dfaf8f", "#e0cf9f", "#5f7f5f", "#93e0e3", "#7cb8bb", "#dc8cc3", "#000000"] },
-        { name: "Sonokai Oscuro", accent: "base0D",     // Base16: sonokai
+        { name: "Sonokai Oscuro", accent: "base0D",     // sonokai (paleta oficial)
           base: ["#2c2e34", "#33353f", "#414550", "#595f6f", "#7f8490", "#e2e2e3", "#e2e2e3", "#e2e2e3",
                  "#fc5d7c", "#f39660", "#e7c664", "#9ed072", "#76cce0", "#85d3f2", "#b39df3", "#ff6077"] },
         { name: "Horizon Oscuro", accent: "base0D",     // Base16: horizon-terminal-dark
           base: ["#1c1e26", "#232530", "#2e303e", "#6f6f70", "#9da0a2", "#cbced0", "#dcdfe4", "#e3e6ee",
-                 "#e95678", "#fab795", "#fac29a", "#29d398", "#59e1e3", "#26bbd9", "#ee64ac", "#f09383"] }
+                 "#e95678", "#fab795", "#fac29a", "#29d398", "#59e1e3", "#26bbd9", "#ee64ac", "#f09383"] },
+        { name: "Flexoki Claro", accent: "base0D",     // Base16: flexoki-light
+          base: ["#fffcf0", "#f2f0e5", "#e6e4d9", "#cecdc3", "#9f9d96", "#403e3c", "#282726", "#100f0f",
+                 "#af3029", "#bc5215", "#ad8301", "#66800b", "#24837b", "#205ea6", "#5e409d", "#a02f6f"] },
+        { name: "Flexoki Oscuro", accent: "base0D",     // Base16: flexoki-dark
+          base: ["#100f0f", "#1c1b1a", "#282726", "#575653", "#878580", "#cecdc3", "#e6e4d9", "#fffcf0",
+                 "#d14d41", "#da702c", "#d0a215", "#879a39", "#3aa99f", "#4385be", "#8b7ec8", "#ce5d97"] },
+        { name: "Pastelón de Amarillos Claro", accent: "base0D",     // Base16: pastelon-de-amarillos
+          base: ["#fff4d6", "#f2d083", "#d69b45", "#80616b", "#684653", "#432c3b", "#2f1c2e", "#1c0f20",
+                 "#bd3548", "#ad570f", "#946400", "#167451", "#007270", "#1e5da8", "#8d3f89", "#7c3528"] },
+        { name: "Selenized Oscuro", accent: "base0D",     // Base16: selenized-dark
+          base: ["#103c48", "#184956", "#2d5b69", "#72898f", "#72898f", "#adbcbc", "#cad8d9", "#cad8d9",
+                 "#fa5750", "#ed8649", "#dbb32d", "#75b938", "#41c7b9", "#4695f7", "#af88eb", "#f275be"] },
+        { name: "Paraíso Oscuro", accent: "base0D",     // Base16: paraiso
+          base: ["#2f1e2e", "#41323f", "#4f424c", "#776e71", "#8d8687", "#a39e9b", "#b9b6b0", "#e7e9db",
+                 "#ef6155", "#f99b15", "#fec418", "#48b685", "#5bc4bf", "#06b6ef", "#815ba4", "#e96ba8"] },
+        { name: "Brasa Oscuro", accent: "base0D",     // Base16: brasa
+          base: ["#1a0f0a", "#2b1c14", "#45261a", "#7a6150", "#b59d88", "#f0d8c0", "#f6e1cc", "#fbead8",
+                 "#f2685a", "#ff7a4d", "#f0b23a", "#b8c24a", "#6bc8b8", "#9aa6e0", "#e68aa2", "#5a3a28"] },
+        { name: "Apprentice Oscuro", accent: "base0D",     // Base16: apprentice
+          base: ["#262626", "#303030", "#3a3a3a", "#444444", "#6c6c6c", "#bcbcbc", "#dfdfdf", "#ffffff",
+                 "#af5f5f", "#ff8700", "#87875f", "#5f875f", "#5f8787", "#5f87af", "#5f5f87", "#af5f5f"] },
+        { name: "Deep Oceanic Next Oscuro", accent: "base0D",     // Base16: deep-oceanic-next
+          base: ["#001c1f", "#002931", "#003640", "#004852", "#0093a3", "#d4e1e8", "#e0e9ef", "#f2f7f9",
+                 "#d3464d", "#e37552", "#f3b863", "#63b784", "#4fb7ae", "#568ccf", "#8b66d6", "#d0658e"] },
+        { name: "Outrun Oscuro", accent: "base0D",     // Base16: outrun-dark
+          base: ["#00002a", "#20204a", "#30305a", "#50507a", "#b0b0da", "#d0d0fa", "#e0e0ff", "#f5f5ff",
+                 "#ff4242", "#fc8d28", "#f3e877", "#59f176", "#0ef0f0", "#66b0ff", "#f10596", "#f003ef"] },
+        { name: "Evenok Oscuro", accent: "base0D",     // Base16: evenok-dark
+          base: ["#000000", "#202020", "#303030", "#505050", "#b0b0b0", "#d0d0d0", "#e0e0e0", "#ffffff",
+                 "#f5708a", "#ee8122", "#b8a300", "#54bc5c", "#00bab3", "#00aff2", "#9095ff", "#d47ada"] }
     ]
 
     // Papeles de la barra a partir de los 16 colores de un tema

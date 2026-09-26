@@ -24,7 +24,7 @@ ColumnLayout {
         implicitWidth: 220
         implicitHeight: Math.min(360, listCol.implicitHeight + 16)
 
-        // Flickable en vez de Repeater suelto porque hay 35 temas: con
+        // Flickable en vez de Repeater suelto porque hay 45 temas: con
         // todos desplegados no cabrían en pantalla, así que se recorta a
         // 360px y se puede hacer scroll con la rueda del ratón.
         Flickable {

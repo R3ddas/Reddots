@@ -11,7 +11,10 @@ repiten los normales (Base16 no tiene más colores para diferenciarlos).
 Donde el reparto estándar se lee mal en algunos temas, se elige el color
 que más contraste:
   - Negro: en un tema oscuro, base01 (casi como el fondo, lo normal); en uno
-    claro tiene que ser oscuro de verdad (base05), o no se vería.
+    claro, base02: un gris claro que se distingue del fondo y sobre el que el
+    blanco (base05) se lee. El estándar pone base00 y el texto negro no se
+    vería; con base05 el negro sería igual que el blanco, y el texto blanco
+    sobre fondo negro (barras de estado, htop...) no se leería.
   - Negro brillante (comentarios, sugerencias de fish): base03 o base04, con
     el mismo criterio que el texto apagado de la barra (ver roles() en Theme.qml).
   - Blanco brillante: base05, base06 o base07, el que más se distinga del fondo
@@ -51,7 +54,7 @@ def main():
     b = sys.argv[1:]            # b[0] = base00 … b[15] = base0F
     bg, fg = b[0], b[5]
 
-    black = fg if is_light(bg) else b[1]
+    black = b[2] if is_light(bg) else b[1]
     muted_score = lambda c: min(contrast(c, bg), contrast(fg, c))
     bright_black = max(b[3], b[4], key=muted_score)
     bright_white = max(b[5], b[6], b[7], key=lambda c: contrast(c, bg))
