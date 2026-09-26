@@ -58,12 +58,16 @@ Singleton {
         watchChanges: true
         onFileChanged: reload()
         onAdapterUpdated: writeAdapter()
+        // Se lee ya al arrancar: HyprGeometry.qml calcula con borderRounding y borderThickness el
+        // redondeo de las ventanas, y si valiesen un instante los de por defecto, reescribiría
+        // shellOverrides.lua con un redondeo equivocado y justo después con el bueno
+        blockLoading: true
 
         JsonAdapter {
             id: adapter
             property int sidebarWidth: 32      // Ancho de la barra lateral (PanelWindow.implicitWidth y Border.margins.left deben coincidir)
             property int borderThickness: 6    // Grosor del marco que dibuja Border
-            property int borderRounding: 22    // Radio de las esquinas redondeadas de Border
+            property int borderRounding: 22    // Radio de las esquinas redondeadas de Border (del que sale también el de las ventanas, ver HyprGeometry.rounding)
             property int popupRounding: 16     // Radio de las esquinas de los desplegables de la barra
             property int popupBorderWidth: 2   // Grosor del borde de color de los desplegables y del lanzador (0 = sin borde)
         }

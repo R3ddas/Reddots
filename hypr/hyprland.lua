@@ -97,8 +97,12 @@ hl.config({
     },
 
     decoration = {
-        rounding       = 16, -- Igual que gaps_in/gaps_out/border_size arriba: solo el valor de arranque, sobrescrito por el panel/shellOverrides.lua
-        rounding_power = 2,
+        -- Solo el valor de arranque, como gaps_in/gaps_out/border_size arriba. No se elige en el
+        -- panel: quickshell/HyprGeometry.qml lo calcula para que las esquinas de las ventanas sean
+        -- concéntricas con las del marco (radio del marco 22 − (gaps_out 12 − grosor del marco 6)
+        -- − border_size 2 = 14) y lo guarda en shellOverrides.lua
+        rounding       = 14,
+        rounding_power = 2,  -- Esquinas circulares: con otro valor ya no encajarían con las del marco (Border.qml), que son arcos de circunferencia
 
         -- Transparencia de las ventanas
         active_opacity   = opacity,     -- Opacidad de la ventana activa
@@ -146,7 +150,7 @@ local function requireIfExists(name)
     end
 end
 
-requireIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding (decoration), desde el panel GeometrySettings.qml (quickshell/HyprGeometry.qml)
+requireIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general), desde el panel GeometrySettings.qml, y rounding (decoration), calculado a partir de ellos (quickshell/HyprGeometry.qml)
 requireIfExists("shellTheme")       -- col.active_border/inactive_border (general) y background_color (misc), según el tema elegido (quickshell/Theme.qml)
 
 -- Curvas y animaciones por defecto, ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
