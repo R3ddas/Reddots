@@ -3,7 +3,8 @@
 // monitor en la capa más baja (Background), por debajo de las ventanas y de la barra.
 // La imagen es la de Wallpaper.path (se elige en WallpaperSettings.qml); al cambiarla,
 // la nueva aparece con un fundido sobre la anterior.
-// Si Quickshell no está en marcha (p.ej. unos instantes al reiniciarlo), el fondo se ve negro.
+// Si Quickshell no está en marcha (p.ej. unos instantes al reiniciarlo), se ve el color de fondo
+// de Hyprland (misc.background_color), que Theme.qml pone también con el fondo del tema.
 
 import Quickshell
 import Quickshell.Wayland
@@ -14,7 +15,7 @@ PanelWindow {
 
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Ignore         // Ocupa toda la pantalla, también debajo de la barra
-    color: "black"                              // Lo que se ve mientras carga la primera imagen (o si no se encuentra)
+    color: Theme.background                     // Lo que se ve mientras carga la primera imagen (o si no se encuentra): el fondo del tema, el mismo que pinta Hyprland antes de que arranque Quickshell
     WlrLayershell.layer: WlrLayer.Background
     WlrLayershell.namespace: "reddots:background"
     mask: Region {}                             // No recoge clics (tampoco hay nada que pulsar)

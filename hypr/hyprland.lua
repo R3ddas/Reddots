@@ -83,8 +83,8 @@ hl.config({
         -- hypr/shellTheme.lua (ver el require() más abajo). Son los del tema
         -- "Gruvbox Claro", el que usa Theme.qml por defecto.
         col = {
-            active_border   = { colors = {0xee458588, 0xee3c3836}, angle = 45 },   -- Degradado textSelected -> textActive (base0D -> base05)
-            inactive_border = 0xaad5c4a1,                                          -- border (base02)
+            active_border   = 0xff458588,   -- El acento (base0D), liso y opaco como en Stylix
+            inactive_border = 0xffbdae93,   -- base03, como en Stylix
         },
 
         resize_on_border = false, -- A true permite redimensionar las ventanas arrastrando sus bordes y los huecos entre ellas
@@ -123,6 +123,14 @@ hl.config({
     animations = {
         enabled = true,
     },
+
+    misc = {
+        -- Color que pinta Hyprland donde no hay nada encima: solo se ve mientras Quickshell no
+        -- está en marcha (luego lo tapa el fondo de pantalla, quickshell/Background.qml).
+        -- Como los colores de los bordes de arriba, solo el valor de ARRANQUE: Theme.qml lo
+        -- sobrescribe con base00 del tema elegido vía hypr/shellTheme.lua. Es el de "Gruvbox Claro".
+        background_color = 0xfffbf1c7,  -- base00
+    },
 })
 
 -- Archivos que genera Quickshell en ~/.config/hypr (fuera del repo) para
@@ -139,7 +147,7 @@ local function requireIfExists(name)
 end
 
 requireIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding (decoration), desde el panel GeometrySettings.qml (quickshell/HyprGeometry.qml)
-requireIfExists("shellTheme")       -- col.active_border/inactive_border (general), según el tema elegido (quickshell/Theme.qml)
+requireIfExists("shellTheme")       -- col.active_border/inactive_border (general) y background_color (misc), según el tema elegido (quickshell/Theme.qml)
 
 -- Curvas y animaciones por defecto, ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
 hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })
@@ -213,7 +221,7 @@ hl.config({
 
 hl.config({
     input = {
-        kb_layout  = "es",              -- Teclado en espannol
+        kb_layout  = "es",              -- Teclado en español
         kb_variant = "",
         kb_model   = "",
         kb_options = "",

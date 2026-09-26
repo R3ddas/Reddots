@@ -211,7 +211,7 @@ PanelWindow {
                 visible: message !== ""
                 text: message
                 textFormat: Text.PlainText
-                color: isError ? "#ff0000" : Theme.textDisabled     // Rojo fijo, como el borde de las notificaciones críticas
+                color: isError ? Theme.error : Theme.textDisabled     // El rojo del tema, como el borde de las notificaciones críticas
                 font.pixelSize: 11
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true

@@ -99,7 +99,7 @@ Scope{
                     radius: 8
                     color: Theme.background
                     border.width: 2
-                    border.color: modelData.urgency === NotificationUrgency.Critical ? "#ff0000" : Theme.textSelected
+                    border.color: modelData.urgency === NotificationUrgency.Critical ? Theme.error : Theme.textSelected
 
                     Timer{
                         interval: card.timeout

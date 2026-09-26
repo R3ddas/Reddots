@@ -1,0 +1,4 @@
+# Caché de Python: se crea si alguien importa un script de quickshell/scripts (al
+# ejecutarlos normalmente no aparece). Como ~/.config/quickshell apunta al repo, acabaría aquí.
+__pycache__/
+*.pyc

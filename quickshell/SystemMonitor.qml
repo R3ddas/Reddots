@@ -23,7 +23,7 @@ Singleton {
     // Grados a partir de los que se avisa: cada pieza aguanta distinto. El orden de
     // aquí es también el orden en el que salen en el panel.
     readonly property var limits: ({ "Procesador": 85, "Gráfica": 90, "Disco": 70 })
-    readonly property color hotColor: "#ff0000"     // Rojo fijo, como el borde de las notificaciones críticas: se ve en todos los temas
+    readonly property color hotColor: Theme.error   // El rojo del tema, como el borde de las notificaciones críticas
 
     readonly property var hot: temps.filter(t => t.hot)
     readonly property bool overheating: hot.length > 0

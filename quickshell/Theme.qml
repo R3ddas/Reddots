@@ -219,7 +219,8 @@ Singleton {
             border:       b[2],     // Bordes y separadores
             textActive:   b[5],     // Texto normal
             textDisabled: mutedScore(b[4]) > mutedScore(b[3]) ? b[4] : b[3],
-            textSelected: b[parseInt(theme.accent.slice(4), 16)]   // Acento: "base0D" -> casilla 13
+            textSelected: b[parseInt(theme.accent.slice(4), 16)],  // Acento: "base0D" -> casilla 13
+            error:        b[8]      // Errores y avisos graves (base08, el rojo), como hace Stylix
         }
     }
 
@@ -252,6 +253,7 @@ Singleton {
     readonly property color surface:      current.surface
     readonly property color surfaceHover: current.surfaceHover
     readonly property color border:       current.border
+    readonly property color error:        current.error
 
     // Alacritty es un proceso aparte y no puede leer este QML directamente,
     // así que le regeneramos su colors.toml (ver alacritty/alacritty.toml,
@@ -264,13 +266,13 @@ Singleton {
     function syncAlacritty() {
         if (alacrittyTheme === activeTheme) return
         alacrittyTheme = activeTheme
-        const t = themeByName(activeTheme)  // Directo del tema, no de las propiedades derivadas (lo mismo que en hyprGeneralText())
+        const t = themeByName(activeTheme)  // Directo del tema, no de las propiedades derivadas (lo mismo que en hyprConfigText())
         alacrittySync.running = false
         alacrittySync.command = [Quickshell.shellPath("scripts/gen-alacritty-colors.py")].concat(t.base)   // Los 16 colores, base00 … base0F
         alacrittySync.running = true
     }
 
-    // Lo mismo para los bordes de las ventanas, que los pinta Hyprland: igual
+    // Lo mismo para los bordes de las ventanas y el color de fondo, que los pinta Hyprland: igual
     // que HyprGeometry.qml con las medidas, se aplican en caliente con
     // "hyprctl eval" y se regenera entero ~/.config/hypr/shellTheme.lua (fuera
     // del repo) para el siguiente arranque. hyprland.lua hace require() de ese
@@ -280,18 +282,25 @@ Singleton {
         return "0x" + alpha + c.toString().slice(1)     // "#rrggbb" -> 0xAARRGGBB, el formato de hyprland.lua
     }
 
-    // Tabla "general = {...}" que se pasa a hl.config(), en una línea (vale tanto para el archivo como para "hyprctl eval")
-    function hyprGeneralText() {
-        const t = roles(themeByName(activeTheme))       // Directo del tema, no de las propiedades derivadas: puede que aún no se hayan actualizado al saltar onActiveThemeChanged
+    // Tablas "general = {...}, misc = {...}" que se pasan a hl.config(), en una línea (vale tanto para el archivo como para "hyprctl eval")
+    // Colores como los pone Stylix (https://github.com/nix-community/stylix, módulo de Hyprland):
+    // bordes de color liso y opaco, sin degradado ni transparencia. Activo: el acento (en Stylix
+    // base0D, que es el acento de casi todos los temas de aquí). Inactivo: base03.
+    // Fondo (background_color): base00. Es lo que pinta Hyprland donde no hay nada encima, y
+    // solo se ve mientras Quickshell no está en marcha (al arrancar o al reiniciarlo), porque
+    // el resto del tiempo lo tapa el fondo de pantalla de Background.qml.
+    function hyprConfigText() {
+        const theme = themeByName(activeTheme)          // Directo del tema, no de las propiedades derivadas: puede que aún no se hayan actualizado al saltar onActiveThemeChanged
         return "general = { col = { "
-             + "active_border = { colors = {" + hyprColor(t.textSelected, "ee") + ", " + hyprColor(t.textActive, "ee") + "}, angle = 45 }, "  // Degradado, como el que había fijo en hyprland.lua
-             + "inactive_border = " + hyprColor(t.border, "aa")
-             + " } }"
+             + "active_border = " + hyprColor(roles(theme).textSelected, "ff") + ", "
+             + "inactive_border = " + hyprColor(theme.base[3], "ff")
+             + " } }, "
+             + "misc = { background_color = " + hyprColor(theme.base[0], "ff") + " }"
     }
 
     function hyprThemeText() {
         return "-- Generado por Theme.qml (quickshell). No editar a mano: se sobrescribe.\n"
-             + "hl.config({ " + hyprGeneralText() + " })\n"
+             + "hl.config({ " + hyprConfigText() + " })\n"
     }
 
     FileView {
@@ -305,7 +314,7 @@ Singleton {
         const text = hyprThemeText()
         if (hyprThemeFile.text() === text) return           // Si no ha cambiado nada no se toca (lo normal en cada arranque de Quickshell: Hyprland ya lo cargó con el require())
         hyprThemeFile.setText(text)                                                             // Para el siguiente arranque de Hyprland
-        Quickshell.execDetached(["hyprctl", "eval", "hl.config({ " + hyprGeneralText() + " })"])  // En caliente
+        Quickshell.execDetached(["hyprctl", "eval", "hl.config({ " + hyprConfigText() + " })"])  // En caliente
     }
 
     function syncAll() {
