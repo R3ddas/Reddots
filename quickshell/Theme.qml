@@ -277,7 +277,7 @@ Singleton {
     // "hyprctl eval" y se regenera entero ~/.config/hypr/shellTheme.lua (fuera
     // del repo) para el siguiente arranque. hyprland.lua hace require() de ese
     // archivo si existe. Sin "hyprctl reload", por lo mismo que en HyprGeometry.qml:
-    // desharía el panel apagado por lid-watcher.sh, el mirror de Super+M...
+    // desharía el mirror de Super+M...
     function hyprColor(c, alpha) {
         return "0x" + alpha + c.toString().slice(1)     // "#rrggbb" -> 0xAARRGGBB, el formato de hyprland.lua
     }

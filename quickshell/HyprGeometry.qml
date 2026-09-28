@@ -13,8 +13,7 @@ import QtQuick
 //     llamada a hl.config() con solo estas claves, no toca el resto de
 //     opciones de general/decoration.
 // No se usa "hyprctl reload": recargaría todo hyprland.lua y desharía lo que
-// se ha cambiado en caliente desde fuera (el panel del portátil apagado por
-// hypr/scripts/lid-watcher.sh, el mirror de Super+M...).
+// se ha cambiado en caliente desde fuera (el mirror de Super+M...).
 Singleton {
     id: root
 

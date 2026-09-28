@@ -24,16 +24,65 @@ hl.monitor({
 })
 
 -- El panel del portátil, si lo hay, siempre a la izquierda (0x0), con los externos a
--- su derecha. También cuando hypr/scripts/lid-watcher.sh lo apaga y lo vuelve a
--- encender al cerrar/abrir la tapa (allí se reactiva con estos mismos valores).
+-- su derecha. También cuando se vuelve a encender al abrir la tapa (ver más abajo).
 local internalPanel = monitors.internalPanel()
+local panelRule = {
+    output   = internalPanel,
+    disabled = false,       -- Explícito: si no, al reaplicar la regla se conserva el "disabled = true" de cerrar la tapa
+    mode     = "highres",
+    position = "0x0",
+    scale    = "1",
+}
 if internalPanel then
-    hl.monitor({
-        output   = internalPanel,
-        mode     = "highres",
-        position = "0x0",
-        scale    = "1",
-    })
+    hl.monitor(panelRule)
+end
+
+-- Tapa del portátil. Al cerrarla, si hay un monitor externo, el panel se desactiva y
+-- el externo se queda como único monitor (ventanas, workspaces y barra pasan a él).
+-- Sin monitor externo el panel solo se apaga (DPMS) y la sesión sigue igual.
+-- Al abrirla vuelve a como estaba.
+--
+-- Se usa el evento de la tapa del propio Hyprland ("switch:on/off:Lid Switch", de
+-- libinput) y no la señal PropertiesChanged de logind, que no llegaba de forma fiable.
+-- Además se vuelve a aplicar al enchufar/desenchufar un monitor con la tapa cerrada
+-- y tras recargar la config (la recarga vuelve a poner la regla del panel, encendido).
+if internalPanel then
+    local function logindLidClosed()     -- Solo para el estado inicial; luego manda el evento
+        local out = io.popen("busctl get-property org.freedesktop.login1 /org/freedesktop/login1"
+            .. " org.freedesktop.login1.Manager LidClosed 2>/dev/null")
+        if not out then return false end
+        local answer = out:read("a") or ""
+        out:close()
+        return answer:find("true") ~= nil
+    end
+    local lidClosed = logindLidClosed()
+
+    local function applyLid()
+        local panelOn, hasExternal = false, false
+        for _, mon in ipairs(hl.get_monitors()) do     -- Solo lista los monitores activos
+            if mon.name == internalPanel then panelOn = true else hasExternal = true end
+        end
+
+        if lidClosed and hasExternal then
+            if panelOn then hl.monitor({ output = internalPanel, disabled = true }) end
+        else
+            if not panelOn then hl.monitor(panelRule) end
+            hl.dispatch(hl.dsp.dpms({ action = lidClosed and "off" or "on", monitor = internalPanel }))
+        end
+    end
+
+    -- En diferido: se llama desde eventos de monitores y aplicar reglas ahí dentro
+    -- volvería a disparar esos mismos eventos
+    local function applyLidSoon()
+        hl.timer(applyLid, { timeout = 200, type = "oneshot" })
+    end
+
+    hl.bind("switch:on:Lid Switch",  function() lidClosed = true;  applyLid() end, { locked = true })
+    hl.bind("switch:off:Lid Switch", function() lidClosed = false; applyLid() end, { locked = true })
+    hl.on("monitor.added",   applyLidSoon)
+    hl.on("monitor.removed", applyLidSoon)
+    hl.on("config.reloaded", applyLidSoon)
+    hl.on("hyprland.start",  applyLidSoon)     -- Por si Hyprland arranca con la tapa ya cerrada
 end
 
 
@@ -46,8 +95,15 @@ end
 hl.on("hyprland.start", function ()
     hl.exec_cmd("quickshell")   -- La barra, las ventanas de la shell, el agente de polkit y el fondo de pantalla (quickshell/Background.qml)
 
-    hl.exec_cmd("bash ~/.config/hypr/scripts/lid-watcher.sh")  -- Apaga el panel del portátil al cerrar la tapa
     hl.exec_cmd("wl-paste --watch cliphist store")             -- Guarda en el historial todo lo que se copia (texto e imágenes); se ve con Super + V (quickshell/Clipboard.qml)
+
+    -- Al cerrar la tapa manda Hyprland (ver MONITORES), no logind: sin esto, sin monitor
+    -- externo logind suspendería el portátil (HandleLidSwitch=suspend). El bloqueo dura
+    -- lo que dure el "sleep", es decir, toda la sesión. No pide contraseña.
+    if internalPanel then
+        hl.exec_cmd("systemd-inhibit --what=handle-lid-switch --mode=block --who=Reddots"
+            .. " --why='Hyprland apaga el panel al cerrar la tapa' sleep infinity")
+    end
 end)
 
 ------------------------------

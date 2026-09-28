@@ -17,7 +17,7 @@ ShellRoot {
     id: root
 
     // Nombre del panel interno del portátil ("eDP-1"...), "" en un sobremesa. Lo averigua
-    // hypr/scripts/internal-panel.sh, el mismo que usan monitors.lua y lid-watcher.sh.
+    // hypr/scripts/internal-panel.sh, el mismo que usa monitors.lua.
     property string panelName: ""
     property bool panelKnown: false     // Ya ha respondido el script (hasta entonces no se crea la barra, ver laptopScreen)
 

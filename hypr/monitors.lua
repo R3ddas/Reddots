@@ -10,7 +10,7 @@ local M = {}
 
 -- Nombre del panel interno del portátil ("eDP-1", o "LVDS-1" en hardware más antiguo),
 -- o nil si no hay (PC de sobremesa). Lo averigua scripts/internal-panel.sh, el mismo
--- que usan lid-watcher.sh y la barra (quickshell/shell.qml). No vale hl.get_monitors():
+-- que usa la barra (quickshell/shell.qml). No vale hl.get_monitors():
 -- al cargar la config todavía está vacío, porque Hyprland crea los monitores después
 -- de leer las reglas.
 function M.internalPanel()
