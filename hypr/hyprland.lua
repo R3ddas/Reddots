@@ -12,13 +12,13 @@
 -- Nada de nombres de máquina ni de conector: valen igual en el portátil y en el sobremesa.
 local monitors = require("monitors")
 
--- Cualquier monitor: su resolución más alta y, dentro de esa, la mayor frecuencia
--- ("highres"). Así cada monitor va a su resolución nativa a máximo refresco sin
--- escribir su modo a mano ("preferred" dejaba el MSI del sobremesa a 60Hz en vez
--- de a 165Hz). "auto" coloca cada monitor a la derecha de los que ya hay.
+-- Cualquier monitor: de entrada su resolución nativa ("preferred", la que el monitor
+-- marca como suya). "auto" coloca cada monitor a la derecha de los que ya hay.
+-- No vale "highres" (la resolución más alta): el MSI anuncia 3840x2160 aunque su panel
+-- es de 2560x1440, y así se veía borroso (lo reescalaba él) y todo diminuto.
 hl.monitor({
     output   = "",
-    mode     = "highres",
+    mode     = "preferred",
     position = "auto",
     scale    = "1",
 })
@@ -29,13 +29,46 @@ local internalPanel = monitors.internalPanel()
 local panelRule = {
     output   = internalPanel,
     disabled = false,       -- Explícito: si no, al reaplicar la regla se conserva el "disabled = true" de cerrar la tapa
-    mode     = "highres",
+    mode     = "preferred",
     position = "0x0",
     scale    = "1",
 }
 if internalPanel then
     hl.monitor(panelRule)
 end
+
+-- "preferred" suele venir a 60Hz (el MSI se quedaba a 60 en vez de a 144/165Hz), así
+-- que en cuanto aparece cada monitor se sube a la mayor frecuencia que admita en esa
+-- misma resolución nativa. Solo se toca si no está ya así, para no repetir el cambio.
+local function bestModes()
+    for _, mon in ipairs(hl.get_monitors()) do     -- Solo los activos (no el panel con la tapa cerrada)
+        local native, best
+        for _, mode in ipairs(mon.available_modes) do
+            if mode.preferred then native = mode end
+        end
+        for _, mode in ipairs(mon.available_modes) do
+            if native and mode.width == native.width and mode.height == native.height
+                and (not best or mode.refresh_rate > best.refresh_rate) then
+                best = mode
+            end
+        end
+        if best and (mon.width ~= best.width or mon.height ~= best.height
+                     or math.abs(mon.refresh_rate - best.refresh_rate) > 0.5) then
+            hl.monitor({
+                output   = mon.name,
+                mode     = string.format("%dx%d@%.3f", best.width, best.height, best.refresh_rate),
+                position = mon.name == internalPanel and "0x0" or "auto",
+                scale    = "1",
+            })
+        end
+    end
+end
+local function bestModesSoon()      -- En diferido, por lo mismo que applyLidSoon (más abajo)
+    hl.timer(bestModes, { timeout = 200, type = "oneshot" })
+end
+hl.on("monitor.added",   bestModesSoon)
+hl.on("config.reloaded", bestModesSoon)
+hl.on("hyprland.start",  bestModesSoon)
 
 -- Tapa del portátil. Al cerrarla, si hay un monitor externo, el panel se desactiva y
 -- el externo se queda como único monitor (ventanas, workspaces y barra pasan a él).
