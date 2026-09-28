@@ -37,28 +37,34 @@ ColumnLayout{
 
     property string eapNetwork: ""               // Red empresarial a la que se está conectando
     property string eapError: ""                 // Mensaje del último intento fallido
+    property var eapUnverified: null             // Datos del intento rechazado por el certificado, por si se quiere conectar sin verificar
 
     function isEap(network) {                    // Redes WPA/WPA2-Enterprise (eduroam...): piden usuario además de contraseña
         return network.security === WifiSecurityType.Wpa2Eap || network.security === WifiSecurityType.WpaEap
     }
 
-    // Quickshell solo sabe conectar con PSK, así que el perfil 802.1X (PEAP + MSCHAPv2, lo habitual en eduroam)
-    // se crea con nmcli. Si no llega a conectar se borra, para poder reintentarlo con otros datos.
-    function tryConnectEap(network, identity, password) {
-        eapNetwork = network.name
+    // Quickshell solo sabe conectar con PSK, así que el perfil 802.1X lo crea el script con nmcli,
+    // verificando el certificado del servidor salvo que se pida lo contrario
+    function tryConnectEap(ssid, identity, password, verify) {
+        eapNetwork = ssid
         eapError = ""
-        eapProc.command = ["sh", "-c",
-            "nmcli connection add type wifi con-name \"$1\" ssid \"$1\" wifi-sec.key-mgmt wpa-eap"
-            + " 802-1x.eap peap 802-1x.phase2-auth mschapv2 802-1x.identity \"$2\" 802-1x.password \"$3\" >/dev/null"
-            + " && { nmcli connection up id \"$1\" >/dev/null || { nmcli connection delete id \"$1\" >/dev/null; exit 1; }; }",
-            "sh", network.name, identity, password]
+        eapUnverified = verify ? { ssid: ssid, identity: identity, password: password } : null
+        eapProc.command = [Quickshell.shellPath("scripts/wifi-eap-connect.sh"), ssid, identity, password]
+                          .concat(verify ? [] : ["--sin-verificar"])
         eapProc.running = true
         menu.expandedNetwork = null
     }
 
     Process {
         id: eapProc
-        onExited: exitCode => { if (exitCode !== 0) root.eapError = "No se pudo conectar a " + root.eapNetwork + ": revisa usuario y contraseña" }
+        onExited: exitCode => {
+            if (exitCode === 2) {
+                root.eapError = "No se pudo verificar el servidor de " + root.eapNetwork + ": podría ser una red falsa"
+                return                                                      // Se conservan los datos para "Conectar sin verificar"
+            }
+            root.eapUnverified = null
+            if (exitCode !== 0) root.eapError = "No se pudo conectar a " + root.eapNetwork + ": revisa usuario y contraseña"
+        }
     }
 
     BarIcon {
@@ -88,7 +94,7 @@ ColumnLayout{
 
         onVisibleChanged: {
             if (root.wifiDevice) root.wifiDevice.scannerEnabled = visible   // Escanea mientras está abierto: al abrir fuerza un escaneo y al cerrar deja de escanear (ahorra batería)
-            if (!visible) { expandedNetwork = null; root.eapError = "" }
+            if (!visible) { expandedNetwork = null; root.eapError = ""; root.eapUnverified = null }
         }
 
         ColumnLayout {
@@ -121,7 +127,7 @@ ColumnLayout{
 
                     function submit() {
                         if (eap) {
-                            root.tryConnectEap(modelData, userInput.text, pskInput.text)
+                            root.tryConnectEap(modelData.name, userInput.text, pskInput.text, true)
                             pskInput.text = ""           // Que la contraseña no se quede en el campo
                         } else {
                             root.tryConnect(modelData, pskInput.text)
@@ -253,6 +259,21 @@ ColumnLayout{
                 text: root.eapError
                 color: Theme.textDisabled
                 wrapMode: Text.Wrap
+            }
+
+            Text {
+                visible: root.eapUnverified !== null && !eapProc.running
+                text: "Conectar sin verificar"
+                color: Theme.textActive
+
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -4
+                    onClicked: {
+                        const d = root.eapUnverified
+                        root.tryConnectEap(d.ssid, d.identity, d.password, false)
+                    }
+                }
             }
         }
     }
