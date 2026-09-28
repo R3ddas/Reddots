@@ -7,6 +7,8 @@ import Quickshell
 import Quickshell.Io                // Para lanzar brightness-list.sh, brightnessctl y ddcutil
 import QtQuick
 import QtQuick.Layouts
+import qs.components
+import qs.services
 
 ColumnLayout {
     id: root

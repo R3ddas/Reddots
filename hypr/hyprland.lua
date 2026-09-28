@@ -126,9 +126,9 @@ end
 -- Ver https://wiki.hypr.land/Configuring/Basics/Autostart/
 
 hl.on("hyprland.start", function ()
-    hl.exec_cmd("quickshell")   -- La barra, las ventanas de la shell, el agente de polkit y el fondo de pantalla (quickshell/Background.qml)
+    hl.exec_cmd("quickshell")   -- La barra, las ventanas de la shell, el agente de polkit y el fondo de pantalla (quickshell/windows/Background.qml)
 
-    hl.exec_cmd("wl-paste --watch cliphist store")             -- Guarda en el historial todo lo que se copia (texto e imágenes); se ve con Super + V (quickshell/Clipboard.qml)
+    hl.exec_cmd("wl-paste --watch cliphist store")             -- Guarda en el historial todo lo que se copia (texto e imágenes); se ve con Super + V (quickshell/windows/Clipboard.qml)
 
     -- Al cerrar la tapa manda Hyprland (ver MONITORES), no logind: sin esto, sin monitor
     -- externo logind suspendería el portátil (HandleLidSwitch=suspend). El bloqueo dura
@@ -218,7 +218,7 @@ hl.config({
 
     misc = {
         -- Color que pinta Hyprland donde no hay nada encima: solo se ve mientras Quickshell no
-        -- está en marcha (luego lo tapa el fondo de pantalla, quickshell/Background.qml).
+        -- está en marcha (luego lo tapa el fondo de pantalla, quickshell/windows/Background.qml).
         -- Como los colores de los bordes de arriba, solo el valor de ARRANQUE: Theme.qml lo
         -- sobrescribe con base00 del tema elegido vía hypr/shellTheme.lua. Es el de "Gruvbox Claro".
         background_color = 0xfffbf1c7,  -- base00
@@ -238,8 +238,8 @@ local function requireIfExists(name)
     end
 end
 
-requireIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding + active/inactive/fullscreen_opacity (decoration), desde el panel GeometrySettings.qml (quickshell/HyprGeometry.qml)
-requireIfExists("shellTheme")       -- col.active_border/inactive_border (general) y background_color (misc), según el tema elegido (quickshell/Theme.qml)
+requireIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding + active/inactive/fullscreen_opacity (decoration), desde el panel GeometrySettings.qml (quickshell/services/HyprGeometry.qml)
+requireIfExists("shellTheme")       -- col.active_border/inactive_border (general) y background_color (misc), según el tema elegido (quickshell/services/Theme.qml)
 
 -- Curvas y animaciones por defecto, ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
 hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })

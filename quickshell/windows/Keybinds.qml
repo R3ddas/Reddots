@@ -12,6 +12,8 @@ import Quickshell.Io        // Para lanzar hyprctl
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
+import qs.components
+import qs.services
 
 OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.qml)
     id: root

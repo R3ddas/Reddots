@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Hyprland  // Para acceder a los WorkSpaces
 import QtQuick
 import QtQuick.Layouts      // Para usar RowLayout o ColumnLayout
+import qs.services
 
 Item{
     id: root

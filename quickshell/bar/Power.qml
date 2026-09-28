@@ -4,6 +4,8 @@ import Quickshell          // También para lanzar systemctl (execDetached)
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
+import qs.components
+import qs.services
 
 ColumnLayout {
     id: root

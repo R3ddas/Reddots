@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Widgets           // Para el IconImage
 import QtQuick
 import QtQuick.Layouts
+import qs.services
 
 Rectangle {
     id: row

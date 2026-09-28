@@ -13,6 +13,7 @@ import Quickshell.Wayland
 import Quickshell.Services.Polkit
 import QtQuick
 import QtQuick.Layouts
+import qs.services
 
 PanelWindow {
     id: root

@@ -6,6 +6,7 @@
 import Quickshell            // Para el LazyLoader
 import QtQuick
 import QtQuick.Layouts
+import qs.services
 
 Text {
     id: root

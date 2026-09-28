@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import QtQuick
 import QtQuick.Shapes
 import QtQuick.Effects
+import qs.services
 
 PanelWindow {
     id: root

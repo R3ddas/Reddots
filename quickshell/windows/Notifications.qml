@@ -16,6 +16,7 @@ import Quickshell.Services.Notifications
 import Quickshell.Wayland                // Para el namespace y la capa de la ventana
 import QtQuick
 import QtQuick.Layouts                  // Para usar RowLayout o ColumnLayout
+import qs.services
 
 Scope{
     id: root

@@ -5,6 +5,8 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import qs.components
+import qs.services
 
 ColumnLayout {
     id: root

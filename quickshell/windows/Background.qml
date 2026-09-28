@@ -9,6 +9,7 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
+import qs.services
 
 PanelWindow {
     id: root

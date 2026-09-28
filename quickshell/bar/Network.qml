@@ -6,6 +6,8 @@ import Quickshell.Networking  // Para la información de las conexiones
 import Quickshell.Io          // Para lanzar nmcli en las redes con usuario y contraseña
 import QtQuick
 import QtQuick.Layouts          // Para usar RowLayout o ColumnLayout
+import qs.components
+import qs.services
 
 ColumnLayout{
     id: root

@@ -11,6 +11,8 @@ import Quickshell.Wayland
 import Quickshell.Services.Pipewire   // Para leer el volumen
 import QtQuick
 import QtQuick.Layouts
+import qs.components
+import qs.services
 
 PanelWindow {
     id: root

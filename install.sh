@@ -44,14 +44,14 @@ pacman -Qq dolphin &>/dev/null && sudo pacman -Rns --noconfirm dolphin || true  
 pacman -Qq kitty &>/dev/null && sudo pacman -Rns --noconfirm kitty || true         # Quito Kitty porque uso Alacritty como terminal
 pacman -Qq meld &>/dev/null && sudo pacman -Rns --noconfirm meld || true           # Quito Meld porque no lo uso
 pacman -Qq firefox &>/dev/null && sudo pacman -Rns --noconfirm firefox || true     # Quito firefox porque instalo chrome y zen
-pacman -Qq hyprpaper &>/dev/null && sudo pacman -Rns --noconfirm hyprpaper || true # Quito hyprpaper porque el fondo lo pinta Quickshell (quickshell/Background.qml)
-pacman -Qq polkit-gnome &>/dev/null && sudo pacman -Rns --noconfirm polkit-gnome || true # Quito polkit-gnome: otro agente de polkit, y el que se usa es el de Quickshell (quickshell/PolkitDialog.qml)
+pacman -Qq hyprpaper &>/dev/null && sudo pacman -Rns --noconfirm hyprpaper || true # Quito hyprpaper porque el fondo lo pinta Quickshell (quickshell/windows/Background.qml)
+pacman -Qq polkit-gnome &>/dev/null && sudo pacman -Rns --noconfirm polkit-gnome || true # Quito polkit-gnome: otro agente de polkit, y el que se usa es el de Quickshell (quickshell/windows/PolkitDialog.qml)
 
 
 echo "Servicios"
 
 # El agente de polkit (la ventana que pide la contraseña al montar un disco, etc.) es
-# ahora quickshell/PolkitDialog.qml. Solo puede haber uno por sesión, y hyprpolkitagent
+# ahora quickshell/windows/PolkitDialog.qml. Solo puede haber uno por sesión, y hyprpolkitagent
 # viene instalado y activado de serie: arrancaría antes que Quickshell y le quitaría el
 # sitio. Se para y se desactiva antes de desinstalarlo, porque quitar el paquete no
 # detiene el que ya está en marcha en esta sesión.
@@ -92,7 +92,7 @@ ln -sfn "$DOTS/vscode/settings.json"       ~/.config/Code/User/settings.json  # 
 find ~/.config/hypr -maxdepth 1 -xtype l -lname "$DOTS/*" -delete
 
 # Archivos que generaba Quickshell y ya no se usan: shellWallpaper.conf era la config
-# de hyprpaper con el fondo elegido (ahora el fondo lo pinta quickshell/Background.qml)
+# de hyprpaper con el fondo elegido (ahora el fondo lo pinta quickshell/windows/Background.qml)
 rm -f ~/.config/hypr/shellWallpaper.conf
 
 # Restos de una config de Hyprland anterior (la que trae CachyOS, o archivos que
@@ -113,7 +113,7 @@ fi
 xdg-user-dirs-update
 pictures="$(xdg-user-dir PICTURES)"
 mkdir -p "$pictures"
-ln -sfn "$DOTS/Wallpapers"   "$pictures/Wallpapers"
+ln -sfn "$DOTS/wallpapers"   "$pictures/Wallpapers"
 
 # Antes se enlazaban en ~/Pictures aunque la carpeta de imágenes fuese otra: se quita
 # ese enlace viejo, y ~/Pictures también si se ha quedado vacía.

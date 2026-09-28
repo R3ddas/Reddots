@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Services.UPower  // Para la información de la batería
 import QtQuick
 import QtQuick.Layouts // Para usar RowLayout o ColumnLayout
+import qs.components
 
 ColumnLayout{
     id: root

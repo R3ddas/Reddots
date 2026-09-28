@@ -1,10 +1,10 @@
 # Los colores ya no van aquí: se generan en ~/.config/alacritty/colors.toml
-# a partir del tema activo en quickshell/Theme.qml (ver Theme.qml, sección
+# a partir del tema activo en quickshell/services/Theme.qml (ver Theme.qml, sección
 # alacrittySync). Cambia de tema desde el icono de la paleta en la barra y
 # Alacritty recarga solo (live_config_reload está activado por defecto).
 general.import = ["~/.config/alacritty/colors.toml"]
 
-# Colores fijos que había antes, sincronizados a mano con quickshell/Theme.qml
+# Colores fijos que había antes, sincronizados a mano con quickshell/services/Theme.qml
 # (tema "Original"), sustituidos por el colors.toml generado de arriba:
 #
 # [colors.primary]

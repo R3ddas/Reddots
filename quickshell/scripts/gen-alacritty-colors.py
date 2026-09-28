@@ -67,7 +67,7 @@ blue    = "{b[13]}"
 magenta = "{b[14]}"
 cyan    = "{b[12]}\""""
 
-    toml = f"""# Autogenerado por gen-alacritty-colors.py a partir de quickshell/Theme.qml
+    toml = f"""# Autogenerado por gen-alacritty-colors.py a partir de quickshell/services/Theme.qml
 # No editar a mano: se sobrescribe en cada cambio de tema.
 
 [colors.primary]

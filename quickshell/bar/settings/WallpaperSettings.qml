@@ -8,6 +8,8 @@ import Quickshell.Widgets           // Para el ClippingRectangle (miniaturas con
 import QtQuick
 import QtQuick.Layouts              // Para ColumnLayout y GridLayout
 import Qt.labs.folderlistmodel      // Para listar (y vigilar) la carpeta de fondos
+import qs.components
+import qs.services
 
 ColumnLayout {
     id: root

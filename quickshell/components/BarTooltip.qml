@@ -6,6 +6,7 @@
 // ni el foco ni los clics.
 import Quickshell
 import QtQuick
+import qs.services
 
 PopupWindow {
     id: root

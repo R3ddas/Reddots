@@ -3,6 +3,8 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts      // Para usar RowLayout o ColumnLayout
+import qs.components
+import qs.services
 
 ColumnLayout{
     id: root

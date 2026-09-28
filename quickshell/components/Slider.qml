@@ -6,6 +6,7 @@
 // avisa con moved() y quien la usa decide (y acota) el valor nuevo.
 import QtQuick
 import QtQuick.Layouts
+import qs.services
 
 RowLayout {
     id: root

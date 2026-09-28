@@ -10,6 +10,7 @@
 import Quickshell
 import Quickshell.Hyprland          // Para el HyprlandFocusGrab
 import QtQuick
+import qs.services
 
 PopupWindow {
     id: root

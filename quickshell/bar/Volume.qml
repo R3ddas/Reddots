@@ -4,6 +4,8 @@ import Quickshell.Io                  // Para consultar la disponibilidad real d
 import Quickshell.Widgets             // Para el IconImage de las aplicaciones
 import QtQuick
 import QtQuick.Layouts                // Para usar RowLayout o ColumnLayout
+import qs.components
+import qs.services
 
 // Icono de volumen en la barra + popup con tres partes: la salida (volumen y a qué
 // altavoz/auricular va), el micrófono (volumen y cuál se usa) y el volumen de cada

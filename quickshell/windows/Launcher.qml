@@ -9,6 +9,8 @@ import Quickshell.Wayland
 import Quickshell.Widgets  // Para el IconImage
 import QtQuick
 import QtQuick.Layouts     // Para RowLayout
+import qs.components
+import qs.services
 
 OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.qml)
     id: root

@@ -5,7 +5,7 @@ local terminal = programs.terminal
 local mainMod = "SUPER" -- La tecla "Windows" como modificador principal
 
 -- Cada atajo lleva una "description" con el formato "Sección: qué hace". Es lo que
--- muestra la chuleta de atajos de la barra (quickshell/Keybinds.qml), que la lee en
+-- muestra la chuleta de atajos de la barra (quickshell/windows/Keybinds.qml), que la lee en
 -- vivo con "hyprctl binds -j": un atajo nuevo aparece ahí solo con ponerle descripción.
 -- Los que comparten descripción salen juntos en una sola línea (p.ej. las flechas).
 
@@ -36,7 +36,7 @@ hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true, descr
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true, description = "Ventanas: Cambiar el tamaño de la ventana (arrastrando)" })
 
 -- Teclas multimedia del portátil: volumen y brillo de la pantalla
--- El "qs ipc call osd ..." de detrás muestra el indicador (quickshell/Osd.qml) con el nuevo valor
+-- El "qs ipc call osd ..." de detrás muestra el indicador (quickshell/windows/Osd.qml) con el nuevo valor
 local osdVolume     = " && qs ipc call osd volume"
 local osdBrightness = " && qs ipc call osd brightness"
 local osdMic        = " && qs ipc call osd mic"
@@ -59,7 +59,7 @@ hl.bind("SUPER + F", hl.dsp.window.fullscreen({ action = "toggle" }),           
 -- Al pulsar y soltar solo la tecla Super (sin combinar con otra), muestro/oculto el widget inferior
 hl.bind("SUPER + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { release = true, description = "Aplicaciones: Abrir / cerrar el lanzador" })
 
--- Historial del portapapeles (quickshell/Clipboard.qml)
+-- Historial del portapapeles (quickshell/windows/Clipboard.qml)
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("qs ipc call clipboard toggle"), { description = "Aplicaciones: Historial del portapapeles" })
 
 -- No hay un dispatcher (.dsp) para el mirror de los monitores, así que hay que crear una función.
