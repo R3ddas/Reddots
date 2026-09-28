@@ -3,6 +3,7 @@
 
 import Quickshell
 import Quickshell.Networking  // Para la información de las conexiones
+import Quickshell.Io          // Para lanzar nmcli en las redes con usuario y contraseña
 import QtQuick
 import QtQuick.Layouts          // Para usar RowLayout o ColumnLayout
 
@@ -34,6 +35,32 @@ ColumnLayout{
         menu.expandedNetwork = null
     }
 
+    property string eapNetwork: ""               // Red empresarial a la que se está conectando
+    property string eapError: ""                 // Mensaje del último intento fallido
+
+    function isEap(network) {                    // Redes WPA/WPA2-Enterprise (eduroam...): piden usuario además de contraseña
+        return network.security === WifiSecurityType.Wpa2Eap || network.security === WifiSecurityType.WpaEap
+    }
+
+    // Quickshell solo sabe conectar con PSK, así que el perfil 802.1X (PEAP + MSCHAPv2, lo habitual en eduroam)
+    // se crea con nmcli. Si no llega a conectar se borra, para poder reintentarlo con otros datos.
+    function tryConnectEap(network, identity, password) {
+        eapNetwork = network.name
+        eapError = ""
+        eapProc.command = ["sh", "-c",
+            "nmcli connection add type wifi con-name \"$1\" ssid \"$1\" wifi-sec.key-mgmt wpa-eap"
+            + " 802-1x.eap peap 802-1x.phase2-auth mschapv2 802-1x.identity \"$2\" 802-1x.password \"$3\" >/dev/null"
+            + " && { nmcli connection up id \"$1\" >/dev/null || { nmcli connection delete id \"$1\" >/dev/null; exit 1; }; }",
+            "sh", network.name, identity, password]
+        eapProc.running = true
+        menu.expandedNetwork = null
+    }
+
+    Process {
+        id: eapProc
+        onExited: exitCode => { if (exitCode !== 0) root.eapError = "No se pudo conectar a " + root.eapNetwork + ": revisa usuario y contraseña" }
+    }
+
     BarIcon {
         id: iconText
         text: root.icon
@@ -61,7 +88,7 @@ ColumnLayout{
 
         onVisibleChanged: {
             if (root.wifiDevice) root.wifiDevice.scannerEnabled = visible   // Escanea mientras está abierto: al abrir fuerza un escaneo y al cerrar deja de escanear (ahorra batería)
-            if (!visible) expandedNetwork = null
+            if (!visible) { expandedNetwork = null; root.eapError = "" }
         }
 
         ColumnLayout {
@@ -90,6 +117,16 @@ ColumnLayout{
                 delegate: ColumnLayout {
                     id: delegateRoot
                     required property var modelData
+                    readonly property bool eap: root.isEap(modelData)
+
+                    function submit() {
+                        if (eap) {
+                            root.tryConnectEap(modelData, userInput.text, pskInput.text)
+                            pskInput.text = ""           // Que la contraseña no se quede en el campo
+                        } else {
+                            root.tryConnect(modelData, pskInput.text)
+                        }
+                    }
 
                     Layout.fillWidth: true
                     spacing: 2
@@ -109,6 +146,7 @@ ColumnLayout{
                             Text {
                                 Layout.fillWidth: true
                                 text: (modelData.connected ? "✓ " : "") + modelData.name
+                                      + (eapProc.running && root.eapNetwork === modelData.name ? " · conectando…" : "")
                                 color: modelData.connected ? Theme.textSelected : Theme.textActive
                                 elide: Text.ElideRight
                             }
@@ -135,6 +173,34 @@ ColumnLayout{
                         }
                     }
 
+                    Rectangle {                          // Usuario: solo en redes empresariales
+                        Layout.fillWidth: true
+                        visible: menu.expandedNetwork === modelData && delegateRoot.eap
+                        implicitHeight: 22
+                        radius: 4
+                        color: Theme.background
+                        border.color: Theme.border
+
+                        TextInput {
+                            id: userInput
+                            anchors.fill: parent
+                            anchors.leftMargin: 6
+                            anchors.rightMargin: 6
+                            verticalAlignment: TextInput.AlignVCenter
+                            color: Theme.textActive
+                            focus: menu.expandedNetwork === modelData && delegateRoot.eap
+                            KeyNavigation.tab: pskInput
+                            onAccepted: pskInput.forceActiveFocus()
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: !parent.text
+                                text: "Usuario"
+                                color: Theme.textDisabled
+                            }
+                        }
+                    }
+
                     RowLayout {
                         Layout.fillWidth: true
                         visible: menu.expandedNetwork === modelData
@@ -155,8 +221,15 @@ ColumnLayout{
                                 verticalAlignment: TextInput.AlignVCenter
                                 color: Theme.textActive
                                 echoMode: TextInput.Password
-                                focus: menu.expandedNetwork === modelData
-                                onAccepted: root.tryConnect(modelData, text)
+                                focus: menu.expandedNetwork === modelData && !delegateRoot.eap
+                                onAccepted: delegateRoot.submit()
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    visible: delegateRoot.eap && !parent.text
+                                    text: "Contraseña"
+                                    color: Theme.textDisabled
+                                }
                             }
                         }
 
@@ -167,11 +240,19 @@ ColumnLayout{
                             MouseArea {
                                 anchors.fill: parent
                                 anchors.margins: -4
-                                onClicked: root.tryConnect(modelData, pskInput.text)
+                                onClicked: delegateRoot.submit()
                             }
                         }
                     }
                 }
+            }
+
+            Text {
+                Layout.fillWidth: true
+                visible: root.eapError !== ""
+                text: root.eapError
+                color: Theme.textDisabled
+                wrapMode: Text.Wrap
             }
         }
     }
