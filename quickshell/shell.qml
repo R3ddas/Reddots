@@ -111,6 +111,7 @@ ShellRoot {
                     ColumnLayout{
                         spacing: 5
                         Layout.alignment: Qt.AlignHCenter                // Sin esto el grupo queda pegado a la izquierda (es más estrecho que la barra) y sus iconos se descentran
+                        Layout.fillWidth: true                           // Ancho fijo (el de barLayout), para que un icono más ancho/estrecho (p.ej. el de wifi al cambiar de estado) no desplace a todos los demás al recalcular el ancho del grupo
                         Tray{Layout.alignment: Qt.AlignHCenter}         // Bandeja del sistema (iconos de Steam, Teams...); sin apps no ocupa sitio
                         Volume{Layout.alignment: Qt.AlignHCenter}       // Volumen
                         Network{Layout.alignment: Qt.AlignHCenter}      // Wifi
@@ -125,6 +126,7 @@ ShellRoot {
                             visible: settingsToggle.expanded                     // Oculto, el layout no le reserva hueco
                             spacing: 5
                             Layout.alignment: Qt.AlignHCenter
+                            Layout.fillWidth: true                               // Igual que el grupo de arriba: ancho fijo para que ningún icono de dentro desplace a los demás
                             SystemStats{Layout.alignment: Qt.AlignHCenter}       // Uso del sistema: procesador, memoria y temperaturas
                             Screenshot{Layout.alignment: Qt.AlignHCenter}        // Capturas de pantalla
                             Brightness{Layout.alignment: Qt.AlignHCenter}        // Brillo del portátil y de los monitores externos (DDC)
