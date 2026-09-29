@@ -32,14 +32,36 @@ ColumnLayout{
         return String.fromCodePoint(0xF091F + tier*3)
     }
 
+    property string connectError: ""             // Mensaje del último intento fallido (con contraseña o empresarial)
+    property string pskNetwork: ""               // Red a la que se acaba de mandar una contraseña desde el campo
+
     function tryConnect(network, psk) {          // Conecta con contraseña y cierra el campo de texto
+        connectError = ""
+        pskNetwork = network.name
         network.connectWithPsk(psk)
         menu.expandedNetwork = null
     }
 
+    // Un intento de conexión wifi ha fallado (lo avisa la propia red, ver el Connections del delegado).
+    // Con una contraseña recién escrita, lo normal es que esté mal. Si NetworkManager ya ha guardado
+    // el perfil con ella, la red pasaría a "conocida" y al pulsarla intentaría otra vez la misma sin
+    // volver a pedirla. Por eso se olvida (si llegó a guardarse) y se vuelve a abrir el campo.
+    function connectionFailed(network, reason) {
+        const fresh = network.name === pskNetwork
+        pskNetwork = ""
+        const why = reason === ConnectionFailReason.WifiAuthTimeout ? "no responde a tiempo"
+                  : reason === ConnectionFailReason.WifiNetworkLost ? "se ha perdido la señal"
+                  : "revisa la contraseña"                                  // NoSecrets, WifiClientFailed...: casi siempre la contraseña
+        connectError = "No se pudo conectar a " + network.name + ": " + why
+        if (fresh && reason !== ConnectionFailReason.WifiNetworkLost && reason !== ConnectionFailReason.WifiAuthTimeout) {
+            if (network.known) network.forget()
+            menu.expandedNetwork = network                                  // Para escribirla otra vez
+        }
+    }
+
     property string eapNetwork: ""               // Red empresarial a la que se está conectando
-    property string eapError: ""                 // Mensaje del último intento fallido
     property var eapUnverified: null             // Datos del intento rechazado por el certificado, por si se quiere conectar sin verificar
+    property string eapPassword: ""              // Contraseña a la espera de mandársela al script por la entrada estándar (ver eapProc)
 
     function isEap(network) {                    // Redes WPA/WPA2-Enterprise (eduroam...): piden usuario además de contraseña
         return network.security === WifiSecurityType.Wpa2Eap || network.security === WifiSecurityType.WpaEap
@@ -49,23 +71,32 @@ ColumnLayout{
     // verificando el certificado del servidor salvo que se pida lo contrario
     function tryConnectEap(ssid, identity, password, verify) {
         eapNetwork = ssid
-        eapError = ""
+        connectError = ""
         eapUnverified = verify ? { ssid: ssid, identity: identity, password: password } : null
-        eapProc.command = [Quickshell.shellPath("scripts/wifi-eap-connect.sh"), ssid, identity, password]
+        eapPassword = password
+        eapProc.command = [Quickshell.shellPath("scripts/wifi-eap-connect.sh"), ssid, identity]
                           .concat(verify ? [] : ["--sin-verificar"])
         eapProc.running = true
         menu.expandedNetwork = null
     }
 
+    // La contraseña no va en "command": los argumentos de un proceso los ve cualquiera con "ps"
+    // mientras dura. Se le escribe al script por la entrada estándar en cuanto arranca.
     Process {
         id: eapProc
+        stdinEnabled: true
+        onStarted: {
+            write(root.eapPassword + "\n")
+            root.eapPassword = ""
+        }
         onExited: exitCode => {
+            root.eapPassword = ""                                           // Por si no llegó a arrancar
             if (exitCode === 2) {
-                root.eapError = "No se pudo verificar el servidor de " + root.eapNetwork + ": podría ser una red falsa"
+                root.connectError = "No se pudo verificar el servidor de " + root.eapNetwork + ": podría ser una red falsa"
                 return                                                      // Se conservan los datos para "Conectar sin verificar"
             }
             root.eapUnverified = null
-            if (exitCode !== 0) root.eapError = "No se pudo conectar a " + root.eapNetwork + ": revisa usuario y contraseña"
+            if (exitCode !== 0) root.connectError = "No se pudo conectar a " + root.eapNetwork + ": revisa usuario y contraseña"
         }
     }
 
@@ -96,7 +127,7 @@ ColumnLayout{
 
         onVisibleChanged: {
             if (root.wifiDevice) root.wifiDevice.scannerEnabled = visible   // Escanea mientras está abierto: al abrir fuerza un escaneo y al cerrar deja de escanear (ahorra batería)
-            if (!visible) { expandedNetwork = null; root.eapError = ""; root.eapUnverified = null }
+            if (!visible) { expandedNetwork = null; root.connectError = ""; root.eapUnverified = null }
         }
 
         ColumnLayout {
@@ -128,12 +159,14 @@ ColumnLayout{
                     readonly property bool eap: root.isEap(modelData)
 
                     function submit() {
-                        if (eap) {
-                            root.tryConnectEap(modelData.name, userInput.text, pskInput.text, true)
-                            pskInput.text = ""           // Que la contraseña no se quede en el campo
-                        } else {
-                            root.tryConnect(modelData, pskInput.text)
-                        }
+                        if (eap) root.tryConnectEap(modelData.name, userInput.text, pskInput.text, true)
+                        else root.tryConnect(modelData, pskInput.text)
+                        pskInput.text = ""               // Que la contraseña no se quede en el campo (si falla, se vuelve a escribir)
+                    }
+
+                    Connections {                        // Avisa si falla la conexión (contraseña mal, red que no responde...)
+                        target: delegateRoot.modelData
+                        function onConnectionFailed(reason) { root.connectionFailed(delegateRoot.modelData, reason) }
                     }
 
                     Layout.fillWidth: true
@@ -154,7 +187,8 @@ ColumnLayout{
                             Text {
                                 Layout.fillWidth: true
                                 text: (modelData.connected ? "✓ " : "") + modelData.name
-                                      + (eapProc.running && root.eapNetwork === modelData.name ? " · conectando…" : "")
+                                      + ((eapProc.running && root.eapNetwork === modelData.name)
+                                         || (modelData.stateChanging && !modelData.connected) ? " · conectando…" : "")
                                 color: modelData.connected ? Theme.textSelected : Theme.textActive
                                 elide: Text.ElideRight
                             }
@@ -257,8 +291,8 @@ ColumnLayout{
 
             Text {
                 Layout.fillWidth: true
-                visible: root.eapError !== ""
-                text: root.eapError
+                visible: root.connectError !== ""
+                text: root.connectError
                 color: Theme.textDisabled
                 wrapMode: Text.Wrap
             }
