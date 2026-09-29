@@ -256,7 +256,7 @@ Singleton {
     readonly property color error:        current.error
 
     // Alacritty es un proceso aparte y no puede leer este QML directamente,
-    // así que le regeneramos su colors.toml (ver alacritty/alacritty.toml,
+    // así que le regeneramos su colors.toml (ver apps/alacritty/alacritty.toml,
     // que lo importa) cada vez que cambia el tema. Alacritty recarga solo
     // porque tiene live_config_reload activado por defecto.
     Process { id: alacrittySync }       // El comando se pone en syncAlacritty(), justo antes de lanzarlo

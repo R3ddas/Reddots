@@ -82,10 +82,12 @@ if [[ -d ~/.config/quickshell && ! -L ~/.config/quickshell ]]; then
 fi
 ln -sfn "$DOTS/quickshell"                 ~/.config/quickshell   # Incluye scripts/ (usado por Theme.qml para sincronizar Alacritty)
 ln -sfn "$DOTS"/hypr/*                     ~/.config/hypr/
-ln -sfn "$DOTS/fish/config.fish"           ~/.config/fish/config.fish
-ln -sfn "$DOTS/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
-ln -sfn "$DOTS/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
-ln -sfn "$DOTS/vscode/settings.json"       ~/.config/Code/User/settings.json  # Ajustes de Visual Studio Code
+# La configuración de cada programa vive en apps/. Antes cada carpeta estaba suelta en la raíz del
+# repo: los enlaces viejos apuntan a una ruta que ya no existe, y el -f de ln los sobrescribe.
+ln -sfn "$DOTS/apps/fish/config.fish"           ~/.config/fish/config.fish
+ln -sfn "$DOTS/apps/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
+ln -sfn "$DOTS/apps/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
+ln -sfn "$DOTS/apps/vscode/settings.json"       ~/.config/Code/User/settings.json  # Ajustes de Visual Studio Code
 
 # Enlaces a archivos que ya no están en el repo (p.ej. el antiguo hypr/hyprpaper.conf):
 # apuntan a la nada, se quitan. Solo los que apuntan al repo, no los de otras cosas.

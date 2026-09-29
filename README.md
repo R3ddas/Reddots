@@ -21,6 +21,6 @@ chmod +x install.sh
   - `services/`: singletons con el estado compartido (tema, medidas, fondo, uso del sistema...), sin nada visible.
   - `components/`: piezas comunes con las que se montan las demás (icono de la barra, desplegable, slider...).
   - `scripts/`: los scripts que lanza la interfaz.
-- `alacritty/`, `fish/`, `fastfetch/`, `vscode/`: configuración de cada programa.
+- `apps/`: configuración de cada programa, una carpeta por programa (`alacritty/`, `fish/`, `fastfetch/`, `vscode/`).
 - `wallpapers/`: los fondos de pantalla.
 - `packages.txt` y `hidden_apps.txt`: los paquetes que instala `install.sh` y las apps que se ocultan del lanzador.
