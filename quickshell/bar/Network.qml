@@ -34,10 +34,28 @@ ColumnLayout{
 
     property string connectError: ""             // Mensaje del último intento fallido (con contraseña o empresarial)
     property string pskNetwork: ""               // Red a la que se acaba de mandar una contraseña desde el campo
+    property string requestedNetwork: ""         // Red a la que se ha pedido conectar desde el menú (con o sin contraseña)
+
+    // Muestra el fallo en el menú y, si está cerrado (el fallo puede tardar unos segundos en
+    // llegar y para entonces ya se ha cerrado), también con una notificación. "hint" es lo que
+    // se puede hacer al abrir el menú, solo para la notificación.
+    function showError(message, hint) {
+        connectError = message
+        if (!menu.visible)
+            Quickshell.execDetached(["notify-send", "-u", "normal", "-a", "Wifi", "-i", "network-wireless-disconnected",
+                "No se pudo conectar", message + (hint ? ".\n" + hint : "")])
+    }
+
+    function connectKnown(network) {             // Red ya guardada (o abierta): conecta sin pedir nada
+        connectError = ""
+        requestedNetwork = network.name
+        network.connect()
+    }
 
     function tryConnect(network, psk) {          // Conecta con contraseña y cierra el campo de texto
         connectError = ""
         pskNetwork = network.name
+        requestedNetwork = network.name
         network.connectWithPsk(psk)
         menu.expandedNetwork = null
     }
@@ -46,17 +64,26 @@ ColumnLayout{
     // Con una contraseña recién escrita, lo normal es que esté mal. Si NetworkManager ya ha guardado
     // el perfil con ella, la red pasaría a "conocida" y al pulsarla intentaría otra vez la misma sin
     // volver a pedirla. Por eso se olvida (si llegó a guardarse) y se vuelve a abrir el campo.
+    //
+    // La señal también llega cuando falla una reconexión automática de NetworkManager (al
+    // arrancar, al volver de suspender...): esas se ven en el menú, pero no se notifican, para no
+    // llenar la pantalla de avisos que no se han pedido. Solo las que se han pedido desde el menú.
     function connectionFailed(network, reason) {
         const fresh = network.name === pskNetwork
-        pskNetwork = ""
+        const requested = network.name === requestedNetwork
+        if (fresh) pskNetwork = ""
+        if (requested) requestedNetwork = ""
         const why = reason === ConnectionFailReason.WifiAuthTimeout ? "no responde a tiempo"
                   : reason === ConnectionFailReason.WifiNetworkLost ? "se ha perdido la señal"
                   : "revisa la contraseña"                                  // NoSecrets, WifiClientFailed...: casi siempre la contraseña
-        connectError = "No se pudo conectar a " + network.name + ": " + why
-        if (fresh && reason !== ConnectionFailReason.WifiNetworkLost && reason !== ConnectionFailReason.WifiAuthTimeout) {
+        const message = "No se pudo conectar a " + network.name + ": " + why
+        const retype = fresh && reason !== ConnectionFailReason.WifiNetworkLost && reason !== ConnectionFailReason.WifiAuthTimeout
+        if (retype) {
             if (network.known) network.forget()
-            menu.expandedNetwork = network                                  // Para escribirla otra vez
+            menu.expandedNetwork = network                                  // Para escribirla otra vez (se ve al abrir el menú)
         }
+        if (requested) showError(message, retype ? "Abre el menú de wifi para escribir otra vez la contraseña." : "")
+        else connectError = message
     }
 
     property string eapNetwork: ""               // Red empresarial a la que se está conectando
@@ -92,11 +119,13 @@ ColumnLayout{
         onExited: exitCode => {
             root.eapPassword = ""                                           // Por si no llegó a arrancar
             if (exitCode === 2) {
-                root.connectError = "No se pudo verificar el servidor de " + root.eapNetwork + ": podría ser una red falsa"
+                root.showError("No se pudo verificar el servidor de " + root.eapNetwork + ": podría ser una red falsa",
+                               "Si confías en ella, abre el menú de wifi y pulsa «Conectar sin verificar».")
                 return                                                      // Se conservan los datos para "Conectar sin verificar"
             }
             root.eapUnverified = null
-            if (exitCode !== 0) root.connectError = "No se pudo conectar a " + root.eapNetwork + ": revisa usuario y contraseña"
+            if (exitCode !== 0) root.showError("No se pudo conectar a " + root.eapNetwork + ": revisa usuario y contraseña",
+                                               "Abre el menú de wifi para intentarlo otra vez.")
         }
     }
 
@@ -207,7 +236,7 @@ ColumnLayout{
                                 if (modelData.connected) {
                                     modelData.disconnect()
                                 } else if (modelData.known || modelData.security === WifiSecurityType.Open) {
-                                    modelData.connect()
+                                    root.connectKnown(modelData)
                                 } else {
                                     menu.expandedNetwork = (menu.expandedNetwork === modelData) ? null : modelData
                                 }

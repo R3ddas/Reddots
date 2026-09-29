@@ -30,23 +30,37 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         }
     }
 
-    // Aplicaciones instaladas (sin las ocultas), ordenadas por nombre
-    property var apps: {
-        let list = DesktopEntries.applications.values.filter(e => !e.noDisplay)
-        list.sort((a, b) => a.name.localeCompare(b.name))
-        return list
+    // Aplicaciones instaladas (sin las ocultas)
+    property var apps: DesktopEntries.applications.values.filter(e => !e.noDisplay)
+
+    // Qué tal coincide una app con lo escrito: cuanto más bajo, más arriba sale; -1 = no coincide.
+    //   0: el nombre empieza por lo escrito                     ("fi" -> "Firefox")
+    //   1: alguna palabra del nombre empieza por lo escrito     ("code" -> "Visual Studio Code")
+    //   2: el nombre lo contiene en medio
+    //   3: lo contiene el nombre genérico ("Navegador web") o las palabras clave del .desktop
+    function matchRank(entry, query) {
+        const name = Search.normalize(entry.name)
+        if (name.startsWith(query)) return 0
+        if (name.split(/[\s\-_.]+/).some(word => word.startsWith(query))) return 1
+        if (name.includes(query)) return 2
+        if (Search.normalize([entry.genericName, ...(entry.keywords || [])].join(" ")).includes(query)) return 3
+        return -1
     }
 
-    // Las que coinciden con lo escrito, buscando en el nombre, el nombre genérico
-    // ("Navegador web") y las palabras clave del .desktop
+    // Lo que se ve en la lista. Sin nada escrito: primero las más usadas (AppUsage.qml) y
+    // luego el resto por nombre. Escribiendo: por cómo coinciden (matchRank) y, dentro de
+    // cada grupo, igual: las más usadas primero y luego por nombre.
     property var filteredApps: {
         const query = Search.normalize(searchInput.text.trim())
-        if (query === "") return apps
-        return apps.filter(e => Search.normalize([e.name, e.genericName, ...(e.keywords || [])].join(" ")).includes(query))
+        const list = apps.map(e => ({ entry: e, rank: query === "" ? 0 : matchRank(e, query), uses: AppUsage.count(e) }))
+                         .filter(a => a.rank >= 0)
+        list.sort((a, b) => a.rank - b.rank || b.uses - a.uses || a.entry.name.localeCompare(b.entry.name))
+        return list.map(a => a.entry)
     }
 
     function launch(entry) {
         if (!entry) return
+        AppUsage.record(entry)                      // Para que la próxima vez salga más arriba
         entry.execute()
         root.visible = false
     }
