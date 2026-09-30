@@ -64,8 +64,20 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         if (!entry) return
         const index = list.currentIndex
         Quickshell.execDetached(["sh", "-c", "printf '%s\\n' \"$1\" | cliphist delete", "sh", entry.id])
+        if (entry.image) Quickshell.execDetached(["rm", "-f", "--", root.thumbDir + "/" + entry.id])   // Y su miniatura, si la tenía
         entries = entries.filter(e => e.id !== entry.id)            // Sin esperar a cliphist: desaparece ya de la lista
         list.currentIndex = Math.min(index, list.count - 1)
+    }
+
+    // Borra las miniaturas de imágenes que ya no están en el historial: las que cliphist
+    // quita solo al llenarse, o todas tras un "cliphist wipe". Se llama cada vez que se
+    // abre, con la lista recién leída. Los nombres de las miniaturas son los id de cliphist.
+    function pruneThumbs() {
+        const keep = entries.filter(e => e.image).map(e => e.id)
+        Quickshell.execDetached(["sh", "-c",
+            "cd \"$1\" 2>/dev/null || exit 0; shift; for f in *; do [ -e \"$f\" ] || continue; "
+            + "case \" $* \" in *\" $f \"*) ;; *) rm -f -- \"$f\" ;; esac; done",
+            "sh", thumbDir].concat(keep))
     }
 
     // "cliphist list": una línea por entrada, "id<TAB>vista previa". Los saltos de línea
@@ -82,10 +94,16 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                     const image = preview.match(/^\[\[ binary data (.+) \]\]$/)
                     return { id: line.slice(0, tab), text: preview, image: image !== null, info: image ? image[1] : "" }
                 })
+                root.pruneThumbs()
             }
         }
         // Si todavía no se ha copiado nada, cliphist sale con error y no escribe nada: la lista se queda vacía
-        onExited: code => { if (code !== 0) root.entries = [] }
+        onExited: code => {
+            if (code !== 0) {
+                root.entries = []
+                root.pruneThumbs()          // Sin historial (p.ej. tras "cliphist wipe"): fuera todas las miniaturas
+            }
+        }
     }
 
     Rectangle {

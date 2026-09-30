@@ -1,8 +1,8 @@
 // Icono en la barra + popup con un slider de brillo por cada pantalla que lo permita:
 // el panel del portátil (brightnessctl) y los monitores externos que respondan por
-// DDC/CI (ddcutil). Qué pantallas hay lo averigua scripts/brightness-list.sh, al
-// arrancar y cada vez que se abre el popup (por si se ha tocado desde los botones
-// del monitor o con las teclas de brillo).
+// DDC/CI (ddcutil). Qué pantallas hay lo averigua scripts/brightness-list.sh cada vez
+// que se abre el popup (así también se ve si se ha tocado desde los botones del monitor
+// o con las teclas de brillo).
 import Quickshell
 import Quickshell.Io                // Para lanzar brightness-list.sh, brightnessctl y ddcutil
 import QtQuick
@@ -16,8 +16,9 @@ ColumnLayout {
 
     ListModel { id: displays }      // Una fila por pantalla: kind, target, label, percent, max
 
-    Component.onCompleted: refresh()
-
+    // No se busca al arrancar Quickshell, solo al abrir el popup (ver onVisibleChanged, más
+    // abajo): "ddcutil detect" tarda y el brillo solo se ve ahí. La primera vez que se abre
+    // sale "Buscando pantallas…" un momento.
     function refresh() {
         listProc.running = false
         listProc.running = true
