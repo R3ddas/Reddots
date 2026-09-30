@@ -141,6 +141,9 @@ Scope{
                                 Layout.fillWidth: true
                                 visible: text !== ""        // Visible si no está vacío
                                 text: card.modelData.summary
+                                // PlainText: el texto viene de la app y no debe interpretarse como HTML (como en PolkitDialog.qml).
+                                // Sin esto Qt adivina si es texto enriquecido y un "<" puede cambiar cómo se pinta.
+                                textFormat: Text.PlainText
                                 color: Theme.textSelected
                                 font.bold: true
                                 wrapMode: Text.WordWrap
@@ -149,6 +152,9 @@ Scope{
                                 Layout.fillWidth: true
                                 visible: text !== ""        // Visible si no está vacío
                                 text: card.modelData.body
+                                // Igual que el título. El servidor no anuncia marcado (bodyMarkupSupported está a false
+                                // por defecto), pero la documentación de Quickshell avisa de que algunas apps lo mandan igual
+                                textFormat: Text.PlainText
                                 color: Theme.textActive
                                 wrapMode: Text.WordWrap
                                 maximumLineCount: 8         // Un mensaje larguísimo tampoco se sale de la pantalla
@@ -174,6 +180,7 @@ Scope{
                                             id: actionText
                                             anchors.centerIn: parent
                                             text: actionButton.modelData.text
+                                            textFormat: Text.PlainText      // También viene de la app
                                             color: Theme.textActive
                                             font.pixelSize: 11
                                         }
