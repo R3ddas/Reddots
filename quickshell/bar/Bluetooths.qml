@@ -59,6 +59,22 @@ ColumnLayout {
             root.repairNeeded = root.repairNeeded.filter(a => a !== address)  // igual: reasignar para notificar el cambio
     }
 
+    // --- Confianza automática al emparejar desde el widget ---
+    // Sin agente de BlueZ, un dispositivo emparejado pero no "trusted" no
+    // puede abrir perfiles por su cuenta (p.ej. los auriculares conectando el
+    // HFP): BlueZ no tiene a quién pedir autorización y lo rechaza, y el
+    // dispositivo acaba desconectándose. Por eso los que se emparejan desde
+    // aquí se marcan como de confianza. Solo los que pide el usuario desde el
+    // menú, no cualquiera que acabe emparejado: con AlwaysPairable un
+    // emparejamiento entrante ajeno no debe llevarse la confianza gratis.
+    property var pendingTrust: []   // addresses emparejándose desde el widget, a marcar como trusted cuando cuaje
+
+    function pairAndTrust(dev) {
+        if (!root.pendingTrust.includes(dev.address))
+            root.pendingTrust = [...root.pendingTrust, dev.address]
+        dev.pair()
+    }
+
     function checkDevices() {
         if (!root.adapter) return
         const now = Date.now()
@@ -66,9 +82,19 @@ ColumnLayout {
             const addr = dev.address
             let m = root.deviceMonitor[addr]
             if (!m) {
-                m = { prevState: dev.state, lastNotify: 0 }   // primera vez que vemos este dispositivo en este arranque
+                m = { prevState: dev.state, prevPairing: dev.pairing, lastNotify: 0 }   // primera vez que vemos este dispositivo en este arranque
                 root.deviceMonitor[addr] = m
             }
+
+            if (root.pendingTrust.includes(addr)) {
+                if (dev.paired) {
+                    dev.trusted = true                                              // emparejado desde el widget: de confianza
+                    root.pendingTrust = root.pendingTrust.filter(a => a !== addr)
+                } else if (m.prevPairing && !dev.pairing) {
+                    root.pendingTrust = root.pendingTrust.filter(a => a !== addr)   // el pairing terminó sin cuajar: se olvida el pendiente
+                }
+            }
+            m.prevPairing = dev.pairing
 
             if (m.prevState === BluetoothDeviceState.Connecting              // intentó conectar...
                 && dev.state === BluetoothDeviceState.Disconnected           // ...y volvió a desconectado sin pasar por Connected
@@ -111,7 +137,7 @@ ColumnLayout {
         property string address: ""
         onTriggered: {
             const dev = root.adapter?.devices.values.find(d => d.address === address)
-            if (dev) dev.pair()   // solo tiene éxito si el dispositivo sigue anunciándose (modo pairing)
+            if (dev) root.pairAndTrust(dev)   // solo tiene éxito si el dispositivo sigue anunciándose (modo pairing)
             pairWatch.address = address
             pairWatch.restart()
         }
@@ -211,7 +237,7 @@ ColumnLayout {
                             if (modelData.pairing) modelData.cancelPair()          // click durante el pairing = cancelarlo
                                 else if (modelData.connected) modelData.disconnect()
                                 else if (modelData.paired) modelData.connect()     // ya conocido: solo reconectar
-                                else modelData.pair()                              // desconocido: emparejar por primera vez
+                                else root.pairAndTrust(modelData)                  // desconocido: emparejar por primera vez (y marcar de confianza)
                         }
                     }
 
