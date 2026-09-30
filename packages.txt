@@ -28,7 +28,7 @@ cliphist                # Historial del portapapeles (Clipboard.qml; lo arranca 
 networkmanager          # Redes wifi y cable del widget de red (Network.qml: Quickshell.Networking habla con NetworkManager)
 bluez                   # El servicio de Bluetooth del que tira Bluetooths.qml (Quickshell.Bluetooth)
 upower                  # Datos de la batería (Battery.qml y shell.qml: Quickshell.Services.UPower)
-noto-fonts-emoji        # Emojis de la barra: el 🔒 de las redes con contraseña y el ⏳ al emparejar por Bluetooth
+noto-fonts-emoji        # Emojis de color para las apps (Chrome, Zen, Teams, Kate...). La barra ya no los usa: solo glifos de la Nerd Font
 
 # Del sistema, no de la barra
 xdg-desktop-portal-hyprland # Para compartir pantalla (Teams, Chrome...) y para las apps que piden hacer capturas

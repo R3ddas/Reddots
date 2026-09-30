@@ -223,7 +223,8 @@ ColumnLayout{
                             }
                             Text {
                                 visible: modelData.security !== WifiSecurityType.Open
-                                text: "🔒"
+                                text: String.fromCodePoint(0xF033E)    // lock (Nerd Font, con el color del tema; antes un emoji 🔒)
+                                color: modelData.connected ? Theme.textSelected : Theme.textActive   // Como el nombre de la red
                                 font.pixelSize: 11
                             }
                         }

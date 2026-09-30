@@ -239,7 +239,7 @@ ColumnLayout {
             Text {
                 Layout.fillWidth: true
                 visible: root.unbondedAddrs.length > 0   // solo si hay algún emparejamiento sin clave guardada
-                text: "⚠ Hay dispositivos emparejados sin clave guardada: olvídalos y vuelve a emparejarlos"
+                text: String.fromCodePoint(0xF0026) + " Hay dispositivos emparejados sin clave guardada: olvídalos y vuelve a emparejarlos"
                 wrapMode: Text.WordWrap
                 color: Theme.error
             }
@@ -265,7 +265,7 @@ ColumnLayout {
                         width: parent.width - 12 - (deviceRow.needsRepair || deviceRow.repairing ? repairLabel.width + 6 : 0)  // deja hueco al botón "reparar" si está visible
                         text: {
                             const icon = modelData.connected ? "󰂱  "     // auricular conectado
-                                : modelData.pairing ? "⏳  "             // emparejando
+                                : modelData.pairing ? "󰔟  "             // emparejando (timer-sand, 0xF051F; antes un emoji ⏳)
                                 : modelData.paired ? "󰂯  "              // emparejado pero desconectado
                                 : "󰂲  "                                 // dispositivo nuevo, sin emparejar
                             const suffix = modelData.paired ? "" : "  (nuevo)"

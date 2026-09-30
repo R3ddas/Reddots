@@ -13,12 +13,20 @@ local M = {}
 -- que usa la barra (quickshell/shell.qml). No vale hl.get_monitors():
 -- al cargar la config todavía está vacío, porque Hyprland crea los monitores después
 -- de leer las reglas.
+--
+-- El script se lanza una sola vez por carga de la config y el resultado se guarda
+-- aquí: hyprland.lua y keybinds.lua hacen require() de este mismo módulo, que Lua
+-- solo ejecuta una vez, así que los dos comparten "panel". El portátil no cambia de panel.
+local panel, panelChecked = nil, false     -- panelChecked: en un sobremesa el resultado es nil y también hay que recordarlo
+
 function M.internalPanel()
+    if panelChecked then return panel end
+    panelChecked = true
     local out = io.popen("bash " .. os.getenv("HOME") .. "/.config/hypr/scripts/internal-panel.sh")
     if not out then return nil end
-    local name = out:read("l")      -- nil si no ha escrito nada
+    panel = out:read("l")           -- nil si no ha escrito nada
     out:close()
-    return name
+    return panel
 end
 
 return M
