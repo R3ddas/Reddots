@@ -4,7 +4,6 @@
 // Al abrirse ya se puede escribir para filtrar: flechas para moverse, Intro para lanzar, Esc para cerrar
 
 import Quickshell
-import Quickshell.Io       // Para el IpcHandler
 import Quickshell.Wayland
 import Quickshell.Widgets  // Para el IconImage
 import QtQuick
@@ -174,11 +173,8 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         }
     }
 
-    IpcHandler {
-        target: "launcher"
-
-        function toggle(): void {
-            root.visible = !root.visible
-        }
+    Connections {                   // Super: "qs ipc call launcher toggle" (el IpcHandler está en services/ShellIpc.qml)
+        target: ShellIpc
+        function onLauncherToggled() { root.visible = !root.visible }
     }
 }

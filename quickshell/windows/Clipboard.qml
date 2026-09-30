@@ -9,7 +9,7 @@
 // cliphist no guarda lo que copian los gestores de contraseñas (lo marcan como sensible).
 
 import Quickshell
-import Quickshell.Io        // Para el IpcHandler y lanzar cliphist
+import Quickshell.Io        // Para lanzar cliphist
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
@@ -238,11 +238,8 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         }
     }
 
-    IpcHandler {
-        target: "clipboard"
-
-        function toggle(): void {
-            root.visible = !root.visible
-        }
+    Connections {                   // Super + V: "qs ipc call clipboard toggle" (el IpcHandler está en services/ShellIpc.qml)
+        target: ShellIpc
+        function onClipboardToggled() { root.visible = !root.visible }
     }
 }

@@ -21,23 +21,21 @@ import qs.services
 Scope{
     id: root
     property alias screen: panel.screen
+    // El servidor de notificaciones (el que las recibe por D-Bus) vive en shell.qml, fuera
+    // del Variants de la pantalla, como el agente de polkit: esta ventana se destruye y se
+    // vuelve a crear al cerrar la tapa del portátil o cambiar de monitor, y con él dentro
+    // se perdían las notificaciones que hubiese y el sistema se quedaba un momento sin
+    // servidor. Aquí solo se pintan.
+    property NotificationServer server: null
+    readonly property int count: server ? server.trackedNotifications.values.length : 0
     readonly property real defaultTimeout: 10   // Segundos en pantalla si la app no pide un tiempo concreto
     readonly property int maxVisible: 4         // Notificaciones que se ven a la vez; las demás esperan su turno
-    readonly property int hiddenCount: Math.max(0, server.trackedNotifications.values.length - maxVisible)
-    NotificationServer{
-        id:server
-        actionsSupported: true
-        bodySupported: true
-        imageSupported: true    // Sin esto, algunas apps (Teams, Chrome...) no mandan la imagen (avatar, foto) aunque la tengan
-
-        onNotification: n => {
-            n.tracked = true        }
-    }
+    readonly property int hiddenCount: Math.max(0, count - maxVisible)
     PanelWindow{
         id: panel
         // Sin notificaciones la ventana no existe: si no, quedaba una franja invisible
         // arriba a la derecha que se tragaba los clics
-        visible: server.trackedNotifications.values.length > 0
+        visible: root.count > 0
         anchors{top:true; right:true}
         margins{top:12; right:12}
         implicitWidth: 380
@@ -52,7 +50,7 @@ Scope{
             width: parent.width
             spacing: 10
             Repeater{
-                model: server.trackedNotifications
+                model: root.server ? root.server.trackedNotifications : null
                 delegate: Rectangle{
                     id: card
                     required property var modelData
@@ -223,7 +221,7 @@ Scope{
                     hoverEnabled: true
                     acceptedButtons: Qt.RightButton                 // Derecho, como para cerrar una sola: así no se borran todas por un clic sin querer
                     onClicked: {
-                        for (const n of server.trackedNotifications.values.slice()) n.dismiss()   // Copia de la lista: se va vaciando al cerrarlas
+                        for (const n of root.server.trackedNotifications.values.slice()) n.dismiss()   // Copia de la lista: se va vaciando al cerrarlas
                     }
                 }
             }

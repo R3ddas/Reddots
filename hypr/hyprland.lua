@@ -23,6 +23,20 @@ hl.monitor({
     scale    = "1",
 })
 
+-- Recargar sin apagar la pantalla
+-- Al recargar la config (hyprctl reload, editar un archivo de hypr/...) Hyprland borra
+-- todas las reglas de monitor y aplica las que se pongan aquí. Si la regla de un monitor
+-- no es idéntica a la última que se le aplicó, le cambia el modo y la pantalla se queda
+-- en negro unos segundos. Antes pasaba siempre: la recarga volvía a poner el monitor
+-- externo a "preferred" (60 Hz) y encendía el panel con la tapa cerrada, y 200 ms después
+-- bestModes y applyLid lo corregían (dos cambios de modo).
+-- Por eso, al recargar, se ponen ya desde aquí las mismas reglas que haya activas: la
+-- del panel apagado si la tapa está cerrada, y la de la mejor frecuencia (bestModes).
+-- Así Hyprland ve que no cambia nada y no toca los monitores.
+-- Al ARRANCAR Hyprland todavía no hay monitores (los crea después de leer la config), así
+-- que esta lista está vacía y todo funciona como siempre, con los eventos de más abajo.
+local activeMonitors = hl.get_monitors()   -- Solo los activos (no el panel con la tapa cerrada)
+
 -- El panel del portátil, si lo hay, siempre a la izquierda (0x0), con los externos a
 -- su derecha. También cuando se vuelve a encender al abrir la tapa (ver más abajo).
 local internalPanel = monitors.internalPanel()
@@ -33,14 +47,38 @@ local panelRule = {
     position = "0x0",
     scale    = "1",
 }
+
+-- Tapa cerrada o abierta al cargar la config, según logind. Solo para el estado
+-- inicial; luego manda el evento de la tapa (ver "Tapa del portátil", más abajo).
+local function logindLidClosed()
+    local out = io.popen("busctl get-property org.freedesktop.login1 /org/freedesktop/login1"
+        .. " org.freedesktop.login1.Manager LidClosed 2>/dev/null")
+    if not out then return false end
+    local answer = out:read("a") or ""
+    out:close()
+    return answer:find("true") ~= nil
+end
+local lidClosed = internalPanel ~= nil and logindLidClosed()
+
 if internalPanel then
-    hl.monitor(panelRule)
+    local hasExternal = false
+    for _, mon in ipairs(activeMonitors) do
+        if mon.name ~= internalPanel then hasExternal = true end
+    end
+    if lidClosed and hasExternal then
+        hl.monitor({ output = internalPanel, disabled = true })     -- Recarga con la tapa cerrada: la misma regla que pone applyLid
+    else
+        hl.monitor(panelRule)
+    end
 end
 
 -- "preferred" suele venir a 60Hz (el MSI se quedaba a 60 en vez de a 144/165Hz), así
 -- que en cuanto aparece cada monitor se sube a la mayor frecuencia que admita en esa
--- misma resolución nativa. Solo se toca si no está ya así, para no repetir el cambio.
-local function bestModes()
+-- misma resolución nativa. Si la nativa ya es la más rápida no hace falta regla: basta
+-- con "preferred". Tampoco se repite si el monitor ya está así, salvo con "force" (al
+-- recargar la config, ver "Recargar sin apagar la pantalla"): la regla tiene que volver
+-- a estar, y como es idéntica a la que ya tiene el monitor, no cambia nada.
+local function bestModes(force)
     for _, mon in ipairs(hl.get_monitors()) do     -- Solo los activos (no el panel con la tapa cerrada)
         local native, best
         for _, mode in ipairs(mon.available_modes) do
@@ -52,8 +90,10 @@ local function bestModes()
                 best = mode
             end
         end
-        if best and (mon.width ~= best.width or mon.height ~= best.height
-                     or math.abs(mon.refresh_rate - best.refresh_rate) > 0.5) then
+        local faster = best and math.abs(best.refresh_rate - native.refresh_rate) > 0.5
+        local already = best and mon.width == best.width and mon.height == best.height
+                        and math.abs(mon.refresh_rate - best.refresh_rate) <= 0.5
+        if faster and (force or not already) then
             hl.monitor({
                 output   = mon.name,
                 mode     = string.format("%dx%d@%.3f", best.width, best.height, best.refresh_rate),
@@ -63,6 +103,8 @@ local function bestModes()
         end
     end
 end
+bestModes(true)                     -- Solo hace algo al recargar (al arrancar aún no hay monitores)
+
 local function bestModesSoon()      -- En diferido, por lo mismo que applyLidSoon (más abajo)
     hl.timer(bestModes, { timeout = 200, type = "oneshot" })
 end
@@ -78,18 +120,10 @@ hl.on("hyprland.start",  bestModesSoon)
 -- Se usa el evento de la tapa del propio Hyprland ("switch:on/off:Lid Switch", de
 -- libinput) y no la señal PropertiesChanged de logind, que no llegaba de forma fiable.
 -- Además se vuelve a aplicar al enchufar/desenchufar un monitor con la tapa cerrada
--- y tras recargar la config (la recarga vuelve a poner la regla del panel, encendido).
+-- y tras recargar la config (por si acaso: la regla del panel ya se pone según la tapa
+-- al cargar, ver "Recargar sin apagar la pantalla"). El estado inicial de la tapa
+-- (lidClosed) se lee de logind más arriba.
 if internalPanel then
-    local function logindLidClosed()     -- Solo para el estado inicial; luego manda el evento
-        local out = io.popen("busctl get-property org.freedesktop.login1 /org/freedesktop/login1"
-            .. " org.freedesktop.login1.Manager LidClosed 2>/dev/null")
-        if not out then return false end
-        local answer = out:read("a") or ""
-        out:close()
-        return answer:find("true") ~= nil
-    end
-    local lidClosed = logindLidClosed()
-
     local function applyLid()
         local panelOn, hasExternal = false, false
         for _, mon in ipairs(hl.get_monitors()) do     -- Solo lista los monitores activos

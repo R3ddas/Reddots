@@ -84,7 +84,8 @@ if grep -q '^hypr/' <<< "$changed"; then
     echo
     echo "Recargando Hyprland (han cambiado archivos de hypr/)"
     # Ojo: el reload vuelve a aplicar hyprland.lua entero, así que deshace el mirror
-    # de Super+M y, con la tapa cerrada, probablemente vuelva a encender el panel del portátil.
+    # de Super+M. Los monitores no se tocan (ni se apagan ni se enciende el panel con la
+    # tapa cerrada): ver "Recargar sin apagar la pantalla" en hypr/hyprland.lua.
     # También reactiva la recarga automática que se pausó antes del pull.
     hyprctl reload >/dev/null
 elif $autoreloadPaused; then

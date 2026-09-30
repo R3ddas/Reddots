@@ -6,7 +6,7 @@
 // el slider de la barra.
 
 import Quickshell
-import Quickshell.Io                  // Para el IpcHandler y el Process de brightnessctl
+import Quickshell.Io                  // Para el Process de brightnessctl
 import Quickshell.Wayland
 import Quickshell.Services.Pipewire   // Para leer el volumen
 import QtQuick
@@ -111,20 +111,15 @@ PanelWindow {
         }
     }
 
-    IpcHandler {
-        target: "osd"
-
-        function volume(): void {
-            root.show("volume")             // El valor se lee en vivo de Pipewire, aunque llegue un poco después
-        }
-
-        function mic(): void {
-            root.show("mic")                // Como el volumen: el estado se lee en vivo de Pipewire
-        }
-
-        function brightness(): void {
-            brightnessProc.running = false
-            brightnessProc.running = true
+    Connections {                   // "qs ipc call osd ..." desde las teclas (el IpcHandler está en services/ShellIpc.qml)
+        target: ShellIpc
+        function onOsdRequested(mode) {
+            if (mode === "brightness") {    // El brillo hay que leerlo antes con brightnessctl, que luego lo muestra
+                brightnessProc.running = false
+                brightnessProc.running = true
+            } else {
+                root.show(mode)             // Volumen y micro: el valor se lee en vivo de Pipewire, aunque llegue un poco después
+            }
         }
     }
 
