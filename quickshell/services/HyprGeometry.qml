@@ -9,7 +9,7 @@ import QtQuick
 //   - En caliente, con "hyprctl eval" de la misma llamada a hl.config().
 //   - Para el siguiente arranque, en ~/.config/hypr/shellOverrides.lua (fuera
 //     del repo, generado por este archivo, igual que geometry.json).
-//     hyprland.lua hace require() de ese archivo si existe, y como es una
+//     hyprland.lua carga ese archivo (dofile) si existe, y como es una
 //     llamada a hl.config() con solo estas claves, no toca el resto de
 //     opciones de general/decoration.
 // No se usa "hyprctl reload": recargaría todo hyprland.lua y desharía lo que
@@ -71,7 +71,7 @@ Singleton {
 
     // Si shellOverrides.lua ya tiene estos valores no se hace nada: es lo que
     // pasa en casi todos los arranques de Quickshell, y Hyprland ya los cargó
-    // con el require().
+    // al arrancar (dofile en hyprland.lua).
     function sync() {
         const text = root.overridesText()
         if (overridesFile.text() === text) return

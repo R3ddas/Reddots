@@ -1,7 +1,7 @@
 -- Config principal de Hyprland (API Lua). Está repartida en varios archivos que
 -- se cargan con require(): monitors.lua (desde aquí y desde keybinds.lua), keybinds.lua,
--- programs.lua (desde keybinds.lua) y los que genera Quickshell fuera del repo (ver
--- requireIfExists, más abajo).
+-- programs.lua (desde keybinds.lua). Los que genera Quickshell fuera del repo se
+-- cargan con dofile() (ver loadIfExists, más abajo).
 
 
 -------------------
@@ -163,7 +163,7 @@ hl.config({
         -- ARRANQUE (para una instalación nueva, antes de tocar nada).
         -- En cuanto se cambia algo en el panel GeometrySettings.qml de
         -- Quickshell, HyprGeometry.qml los aplica en caliente (hyprctl eval)
-        -- y los guarda en hypr/shellOverrides.lua (ver el require() al final
+        -- y los guarda en hypr/shellOverrides.lua (ver loadIfExists al final
         -- de este hl.config, más abajo), que gana siempre a estos valores. Editar
         -- estas líneas a mano no tiene efecto una vez que existe ese archivo.
         gaps_in  = 5,       -- Distancia entre ventanas
@@ -172,7 +172,7 @@ hl.config({
 
         -- Igual que lo de arriba, solo el valor de ARRANQUE: en cuanto Quickshell
         -- arranca, Theme.qml los sobrescribe con los del tema elegido vía
-        -- hypr/shellTheme.lua (ver el require() más abajo). Son los del tema
+        -- hypr/shellTheme.lua (ver loadIfExists más abajo). Son los del tema
         -- "Gruvbox Claro", el que usa Theme.qml por defecto.
         col = {
             active_border   = 0xff458588,   -- El acento (base0D), liso y opaco como en Stylix
@@ -226,20 +226,29 @@ hl.config({
 })
 
 -- Archivos que genera Quickshell en ~/.config/hypr (fuera del repo) para
--- sobrescribir en caliente parte de lo de arriba. No existen hasta que
--- Quickshell los escribe por primera vez; en cuanto se crean, Hyprland los
--- deja bajo watch (por el require) y los recarga solo en cambios sucesivos,
--- sin que haga falta este chequeo otra vez.
-local function requireIfExists(name)
-    local file = io.open(os.getenv("HOME") .. "/.config/hypr/" .. name .. ".lua", "r")  -- Lua no tiene un "exists": se intenta abrir para saber si existe
+-- sobrescribir parte de lo de arriba. No existen hasta que Quickshell los
+-- escribe por primera vez.
+--
+-- Se cargan con dofile() y no con require() a propósito: Hyprland vigila los
+-- archivos que se cargan con require() y, cuando uno cambia, recarga TODA la
+-- config. Eso vuelve a aplicar las reglas de MONITORES (el monitor externo a
+-- "preferred" y el panel encendido aunque la tapa esté cerrada) y luego
+-- bestModes/applyLid lo corrigen: dos cambios de modo y la pantalla en negro
+-- unos segundos cada vez que se cambiaba de tema o de medidas. No hace falta
+-- recargar nada: Quickshell ya aplica esos cambios en caliente con "hyprctl
+-- eval" (Theme.qml, HyprGeometry.qml); los archivos solo sirven para el
+-- siguiente arranque, y eso lo hace el dofile().
+local function loadIfExists(name)
+    local path = os.getenv("HOME") .. "/.config/hypr/" .. name .. ".lua"
+    local file = io.open(path, "r")     -- Lua no tiene un "exists": se intenta abrir para saber si existe
     if file then
         file:close()
-        require(name)
+        dofile(path)
     end
 end
 
-requireIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding + active/inactive/fullscreen_opacity (decoration), desde el panel GeometrySettings.qml (quickshell/services/HyprGeometry.qml)
-requireIfExists("shellTheme")       -- col.active_border/inactive_border (general) y background_color (misc), según el tema elegido (quickshell/services/Theme.qml)
+loadIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding + active/inactive/fullscreen_opacity (decoration), desde el panel GeometrySettings.qml (quickshell/services/HyprGeometry.qml)
+loadIfExists("shellTheme")       -- col.active_border/inactive_border (general) y background_color (misc), según el tema elegido (quickshell/services/Theme.qml)
 
 -- Curvas y animaciones por defecto, ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
 hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })

@@ -336,7 +336,7 @@ Singleton {
     // Lo mismo para los bordes de las ventanas y el color de fondo, que los pinta Hyprland: igual
     // que HyprGeometry.qml con las medidas, se aplican en caliente con
     // "hyprctl eval" y se regenera entero ~/.config/hypr/shellTheme.lua (fuera
-    // del repo) para el siguiente arranque. hyprland.lua hace require() de ese
+    // del repo) para el siguiente arranque. hyprland.lua carga (dofile) ese
     // archivo si existe. Sin "hyprctl reload", por lo mismo que en HyprGeometry.qml:
     // desharía el mirror de Super+M...
     function hyprColor(c, alpha) {
@@ -373,7 +373,7 @@ Singleton {
 
     function syncHyprland() {
         const text = hyprThemeText()
-        if (hyprThemeFile.text() === text) return           // Si no ha cambiado nada no se toca (lo normal en cada arranque de Quickshell: Hyprland ya lo cargó con el require())
+        if (hyprThemeFile.text() === text) return           // Si no ha cambiado nada no se toca (lo normal en cada arranque de Quickshell: Hyprland ya lo cargó al arrancar)
         hyprThemeFile.setText(text)                                                             // Para el siguiente arranque de Hyprland
         Quickshell.execDetached(["hyprctl", "eval", "hl.config({ " + hyprConfigText() + " })"])  // En caliente
     }
