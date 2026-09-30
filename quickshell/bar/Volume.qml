@@ -1,15 +1,16 @@
 import Quickshell
 import Quickshell.Services.Pipewire   // Para el control de volumen (Pipewire)
 import Quickshell.Io                  // Para consultar la disponibilidad real de los puertos (Process/pactl)
-import Quickshell.Widgets             // Para el IconImage de las aplicaciones
+import Quickshell.Services.Mpris      // Para lo que se está reproduciendo (título, carátula, play/pausa...)
+import Quickshell.Widgets             // Para el IconImage de las aplicaciones y el ClippingRectangle de la carátula
 import QtQuick
 import QtQuick.Layouts                // Para usar RowLayout o ColumnLayout
 import qs.components
 import qs.services
 
-// Icono de volumen en la barra + popup con tres partes: la salida (volumen y a qué
-// altavoz/auricular va), el micrófono (volumen y cuál se usa) y el volumen de cada
-// aplicación que está sonando.
+// Icono de volumen en la barra + popup con cuatro partes: lo que se está reproduciendo
+// (solo si hay algún reproductor abierto), la salida (volumen y a qué altavoz/auricular
+// va), el micrófono (volumen y cuál se usa) y el volumen de cada aplicación que está sonando.
 ColumnLayout{
     id: root
     spacing: 6
@@ -140,6 +141,38 @@ ColumnLayout{
     }
     readonly property string micIcon: String.fromCodePoint(micMuted ? 0xF036D : 0xF036C)   // microphone-off / microphone
 
+    // --- Reproduciendo (MPRIS) -----------------------------------------------
+    // Los reproductores que se anuncian por MPRIS: Spotify, mpv, y Chrome/Zen con un vídeo o
+    // música en alguna pestaña (cada pestaña con algo sonando es un reproductor). Es lo mismo
+    // que usan las teclas multimedia (playerctl, en hypr/keybinds.lua).
+    // Se muestra el que haya elegido el usuario con "n/N" (si sigue abierto); si no, el que
+    // esté sonando, y si no suena ninguno, el primero.
+    readonly property var players: Mpris.players.values
+    property var chosenPlayer: null
+    readonly property var player: players.includes(chosenPlayer) ? chosenPlayer
+                                : players.find(p => p.isPlaying) ?? players[0] ?? null
+
+    function nextPlayer() {
+        chosenPlayer = players[(players.indexOf(player) + 1) % players.length]
+    }
+
+    // Segundos -> "3:07" o "1:02:03"
+    function formatTime(seconds) {
+        const s = Math.max(0, Math.floor(seconds))
+        const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = String(s % 60).padStart(2, "0")
+        return h > 0 ? h + ":" + String(m).padStart(2, "0") + ":" + sec : m + ":" + sec
+    }
+
+    // "position" no se actualiza sola (Quickshell lo evita para no gastar CPU sin que nadie
+    // mire): mientras el popup está abierto y suena algo, se le pide cada segundo, como
+    // indica su documentación
+    Timer {
+        running: menu.visible && root.player !== null && root.player.isPlaying && root.player.positionSupported
+        interval: 1000
+        repeat: true
+        onTriggered: root.player.positionChanged()
+    }
+
     // Icono en la barra: click izquierdo abre/cierra el menú, click derecho
     // silencia/desilencia directamente sin abrir nada.
     BarIcon {
@@ -150,6 +183,8 @@ ColumnLayout{
                : (root.muted ? "Silenciado" : "Volumen " + Math.round(Math.min(root.volume, 1) * 100) + " %")
                  + " · " + (root.sink.nickname || root.sink.description || root.sink.name)
                  + (root.source && root.micMuted ? "\nMicrófono silenciado" : "")
+                 + (root.player && root.player.isPlaying && root.player.trackTitle     // "Sonando: Canción · Artista"
+                    ? "\nSonando: " + root.player.trackTitle + (root.player.trackArtist ? " · " + root.player.trackArtist : "") : "")
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => {
             if (event.button === Qt.RightButton) {
@@ -220,6 +255,22 @@ ColumnLayout{
         }
     }
 
+    // Botón de los controles de reproducción (anterior, play/pausa, siguiente). Con
+    // enabled: false (el reproductor no lo permite) sale apagado y no responde
+    component MediaButton: Text {
+        id: mediaButton
+        signal clicked()
+        color: enabled ? Theme.textActive : Theme.textDisabled
+        font.pixelSize: 20
+        horizontalAlignment: Text.AlignHCenter
+        Layout.preferredWidth: 28
+        MouseArea {
+            anchors.fill: parent
+            anchors.margins: -4
+            onClicked: mediaButton.clicked()
+        }
+    }
+
     component Separator: Rectangle {
         Layout.fillWidth: true
         Layout.topMargin: 4
@@ -244,6 +295,132 @@ ColumnLayout{
             anchors.fill: parent
             anchors.margins: 8
             spacing: 4
+
+            // --- Reproduciendo (solo si hay algún reproductor abierto) ---
+            // Todo va comprobando root.player !== null: aunque la parte esté oculta, sus
+            // bindings se siguen calculando, y sin reproductor darían error.
+            ColumnLayout {
+                visible: root.player !== null
+                Layout.fillWidth: true
+                spacing: 6
+
+                RowLayout {                         // Título con el nombre del reproductor + "1/2 ›" para cambiar de uno a otro
+                    Layout.fillWidth: true
+                    SectionTitle {
+                        text: "Reproduciendo" + (root.player && root.player.identity ? " · " + root.player.identity : "")
+                        elide: Text.ElideRight
+                    }
+                    Text {
+                        visible: root.players.length > 1
+                        text: (root.players.indexOf(root.player) + 1) + "/" + root.players.length + " ›"
+                        color: Theme.textActive
+                        font.pixelSize: 11
+                        MouseArea {
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            onClicked: root.nextPlayer()
+                        }
+                    }
+                }
+
+                Item {                              // Carátula + título y artista; al pulsar, trae el reproductor al frente
+                    Layout.fillWidth: true
+                    implicitHeight: trackRow.implicitHeight
+
+                    RowLayout {
+                        id: trackRow
+                        anchors.fill: parent
+                        spacing: 8
+
+                        ClippingRectangle {         // Carátula (con esquinas redondeadas); sin ella, una nota musical
+                            implicitWidth: 44
+                            implicitHeight: 44
+                            radius: 6
+                            color: Theme.background
+
+                            Text {
+                                anchors.centerIn: parent
+                                visible: art.status !== Image.Ready
+                                text: String.fromCodePoint(0xF075A)      // music-note
+                                color: Theme.textDisabled
+                                font.pixelSize: 20
+                            }
+                            Image {
+                                id: art
+                                anchors.fill: parent
+                                source: root.player ? root.player.trackArtUrl : ""
+                                fillMode: Image.PreserveAspectCrop
+                                sourceSize.width: 88                     // Se decodifica ya reducida (al doble, para que se vea nítida)
+                                sourceSize.height: 88
+                                asynchronous: true
+                            }
+                        }
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 1
+                            Text {
+                                text: root.player ? (root.player.trackTitle || "Sin título") : ""
+                                textFormat: Text.PlainText                // Viene de la app (como en Notifications.qml)
+                                color: Theme.textActive
+                                font.bold: true
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                            }
+                            Text {
+                                visible: text !== ""
+                                text: root.player ? (root.player.trackArtist || root.player.trackAlbum) : ""
+                                textFormat: Text.PlainText
+                                color: Theme.textDisabled
+                                font.pixelSize: 11
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                            }
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: root.player !== null && root.player.canRaise
+                        onClicked: {
+                            root.player.raise()
+                            menu.visible = false
+                        }
+                    }
+                }
+
+                // Avance de la canción: se puede arrastrar o usar la rueda si el reproductor lo permite
+                Slider {
+                    visible: root.player !== null && root.player.lengthSupported && root.player.length > 0
+                    interactive: root.player !== null && root.player.canSeek && root.player.positionSupported
+                    barHeight: 8
+                    value: root.player && root.player.length > 0 ? root.player.position / root.player.length : 0
+                    label: root.player ? root.formatTime(root.player.position) + " / " + root.formatTime(root.player.length) : ""
+                    onMoved: v => root.player.position = Math.max(0, Math.min(1, v)) * root.player.length
+                }
+
+                RowLayout {                         // Anterior · play/pausa · siguiente
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 16
+                    MediaButton {
+                        text: String.fromCodePoint(0xF04AE)             // skip-previous
+                        enabled: root.player !== null && root.player.canGoPrevious
+                        onClicked: root.player.previous()
+                    }
+                    MediaButton {
+                        text: String.fromCodePoint(root.player && root.player.isPlaying ? 0xF03E4 : 0xF040A)   // pause / play
+                        enabled: root.player !== null && root.player.canTogglePlaying
+                        onClicked: root.player.togglePlaying()
+                    }
+                    MediaButton {
+                        text: String.fromCodePoint(0xF04AD)             // skip-next
+                        enabled: root.player !== null && root.player.canGoNext
+                        onClicked: root.player.next()
+                    }
+                }
+            }
+
+            Separator { visible: root.player !== null }
 
             // --- Salida ---
             SectionTitle { text: "Salida" }
