@@ -65,19 +65,44 @@ ColumnLayout {
     // HFP): BlueZ no tiene a quién pedir autorización y lo rechaza, y el
     // dispositivo acaba desconectándose. Por eso los que se emparejan desde
     // aquí se marcan como de confianza. Solo los que pide el usuario desde el
-    // menú, no cualquiera que acabe emparejado: con AlwaysPairable un
+    // menú, no cualquiera que acabe emparejado: con el adaptador siempre en
+    // modo pairable (ver ensurePairable) un
     // emparejamiento entrante ajeno no debe llevarse la confianza gratis.
     property var pendingTrust: []   // addresses emparejándose desde el widget, a marcar como trusted cuando cuaje
 
     function pairAndTrust(dev) {
         if (!root.pendingTrust.includes(dev.address))
             root.pendingTrust = [...root.pendingTrust, dev.address]
+        root.ensurePairable()   // por si el timer aún no lo ha reimpuesto: sin esto la clave no se guardaría
         dev.pair()
     }
 
+    // --- Adaptador siempre en modo "pairable" ---
+    // Si el adaptador no está en modo "pairable" (BlueZ lo deja así cuando no
+    // hay ningún agente registrado, y Quickshell no registra ninguno), el
+    // pairing sale adelante pero sin guardar la clave: el dispositivo queda
+    // Paired pero no Bonded. Funciona mientras dura la conexión, pero al
+    // desconectarse BlueZ lo olvida y ya no se puede reconectar. Equivale a
+    // AlwaysPairable = true en /etc/bluetooth/main.conf, pero sin tocar
+    // archivos del sistema: la propiedad Pairable del adaptador se puede
+    // cambiar sin root. BlueZ la vuelve a poner a false al reiniciar el
+    // servicio o el adaptador, por eso se reimpone en cada pasada.
+    function ensurePairable() {
+        if (root.adapter && root.adapter.enabled && !root.adapter.pairable)
+            root.adapter.pairable = true
+    }
+
+    // --- Aviso de emparejamientos que BlueZ no guarda ---
+    // Con ensurePairable() no debería volver a pasar, pero si algo lo impide
+    // (o el dispositivo se emparejó antes de este arreglo) se avisa: el botón
+    // "reparar" no sirve aquí, lo que hace falta es olvidarlo y re-emparejar.
+    property var unbondedAddrs: []   // addresses emparejadas sin clave guardada (Paired sin Bonded)
+
     function checkDevices() {
         if (!root.adapter) return
+        root.ensurePairable()
         const now = Date.now()
+        const unbondedNow = []   // se recalcula entero en cada pasada (así los que desaparecen salen solos de la lista)
         for (const dev of root.adapter.devices.values) {
             const addr = dev.address
             let m = root.deviceMonitor[addr]
@@ -96,6 +121,20 @@ ColumnLayout {
             }
             m.prevPairing = dev.pairing
 
+            // Paired sin Bonded en dos pasadas seguidas (4 s), para no saltar
+            // en el instante justo en que termina el pairing
+            const unbonded = dev.paired && !dev.bonded
+            if (unbonded && m.prevUnbonded) {
+                unbondedNow.push(addr)
+                if (!m.warnedUnbonded) {                                     // una sola notificación por dispositivo y arranque
+                    m.warnedUnbonded = true
+                    Quickshell.execDetached(["notify-send", "-u", "normal", "-a", "Bluetooth",
+                        "Bluetooth: emparejamiento no guardado",
+                        dev.name + " se ha emparejado sin guardar la clave: al desconectarse se olvidará y no podrá reconectarse. Olvídalo y vuelve a emparejarlo desde el menú."])
+                }
+            }
+            m.prevUnbonded = unbonded
+
             if (m.prevState === BluetoothDeviceState.Connecting              // intentó conectar...
                 && dev.state === BluetoothDeviceState.Disconnected           // ...y volvió a desconectado sin pasar por Connected
                 && dev.paired) {                                             // solo nos interesa si ya estaba emparejado (key vieja)
@@ -107,6 +146,8 @@ ColumnLayout {
             if (dev.state === BluetoothDeviceState.Connected) root.clearRepairNeeded(addr)  // se arregló solo (o ya no hace falta avisar)
             m.prevState = dev.state
         }
+        if (unbondedNow.join() !== root.unbondedAddrs.join())   // reasignar solo si cambió, para no redibujar el menú cada 2 s
+            root.unbondedAddrs = unbondedNow
     }
 
     // Disparado a mano desde el botón "Reparar": olvida el dispositivo y
@@ -193,6 +234,14 @@ ColumnLayout {
                 visible: root.visibleDevices.length === 0   // placeholder solo cuando la lista filtrada está vacía
                 text: root.powered ? (root.adapter?.discovering ? "Buscando…" : "Sin dispositivos") : "Bluetooth apagado"
                 color: Theme.textDisabled
+            }
+
+            Text {
+                Layout.fillWidth: true
+                visible: root.unbondedAddrs.length > 0   // solo si hay algún emparejamiento sin clave guardada
+                text: "⚠ Hay dispositivos emparejados sin clave guardada: olvídalos y vuelve a emparejarlos"
+                wrapMode: Text.WordWrap
+                color: Theme.error
             }
 
             Repeater {
