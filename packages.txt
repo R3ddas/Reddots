@@ -22,7 +22,6 @@ papirus-icon-theme      # Tema de iconos de Quickshell: lanzador, notificaciones
 libnotify               # Trae notify-send, para los avisos de batería baja y de Bluetooth
 libpulse                # Trae pactl, para saber qué salidas de audio tienen algo enchufado (Volume.qml)
 xdg-utils               # Trae xdg-open, para el botón "Abrir carpeta" de los fondos de pantalla
-python                  # Para generar los colores de Alacritty según el tema (scripts/gen-alacritty-colors.py)
 git                     # Para el botón de actualizar Reddots (scripts/update-reddots.sh)
 pacman-contrib          # Trae checkupdates, para el contador de actualizaciones pendientes (Updates.qml)
 cliphist                # Historial del portapapeles (Clipboard.qml; lo arranca hypr/hyprland.lua con wl-paste de wl-clipboard)

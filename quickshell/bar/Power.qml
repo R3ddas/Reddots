@@ -63,8 +63,8 @@ ColumnLayout {
         // el "pkill" mata los cmatrix de los demás monitores, lo que a su vez hace que sus Alacritty también se cierren
         const matrix = "cmatrix -bsu 10"    // Una sola vez: el pkill tiene que buscar exactamente lo mismo que se lanza (el -u es la velocidad)
         // cmatrix no deja el fondo por defecto de la terminal: lo pinta con el color "negro"
-        // (\e[40m). En colors.toml ese negro no es el fondo (gen-alacritty-colors.py pone
-        // base01 en los temas oscuros, que casi no se distingue, y base02 en los claros, un
+        // (\e[40m). En colors.toml ese negro no es el fondo (alacrittyText() de Theme.qml
+        // pone base01 en los temas oscuros, que casi no se distingue, y base02 en los claros, un
         // gris que canta), así que solo para este Alacritty se sobrescribe con base00: el
         // salvapantallas queda con el fondo del tema, sea claro u oscuro, sin tocar el
         // negro del resto de terminales.

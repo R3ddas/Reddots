@@ -80,7 +80,7 @@ if [[ -d ~/.config/quickshell && ! -L ~/.config/quickshell ]]; then
         echo "Aviso: ~/.config/quickshell tenía archivos propios, movidos a $backup"
     fi
 fi
-ln -sfn "$DOTS/quickshell"                 ~/.config/quickshell   # Incluye scripts/ (usado por Theme.qml para sincronizar Alacritty)
+ln -sfn "$DOTS/quickshell"                 ~/.config/quickshell   # Incluye scripts/ (los que lanza la barra)
 ln -sfn "$DOTS"/hypr/*                     ~/.config/hypr/
 # La configuración de cada programa vive en apps/. Antes cada carpeta estaba suelta en la raíz del
 # repo: los enlaces viejos apuntan a una ruta que ya no existe, y el -f de ln los sobrescribe.
