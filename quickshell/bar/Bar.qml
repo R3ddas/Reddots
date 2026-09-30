@@ -43,6 +43,7 @@ PanelWindow {
             spacing: 5
             Layout.alignment: Qt.AlignHCenter                // Sin esto el grupo queda pegado a la izquierda (es más estrecho que la barra) y sus iconos se descentran
             Layout.fillWidth: true                           // Ancho fijo (el de barLayout), para que un icono más ancho/estrecho (p.ej. el de wifi al cambiar de estado) no desplace a todos los demás al recalcular el ancho del grupo
+            Layout.maximumWidth: Infinity                    // Sin esto fillWidth no hace nada: el máximo de un layout es el ancho de su hijo más ancho (los hijos sin fillWidth no crecen), así que el grupo seguía midiendo lo que su icono más ancho y al cambiar este se movía todo 1 px por redondeo
             Tray{Layout.alignment: Qt.AlignHCenter}         // Bandeja del sistema (iconos de Steam, Teams...); sin apps no ocupa sitio
             Volume{Layout.alignment: Qt.AlignHCenter}       // Volumen
             Network{Layout.alignment: Qt.AlignHCenter}      // Wifi
@@ -58,6 +59,7 @@ PanelWindow {
                 spacing: 5
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillWidth: true                               // Igual que el grupo de arriba: ancho fijo para que ningún icono de dentro desplace a los demás
+                Layout.maximumWidth: Infinity                        // Igual que arriba: sin esto fillWidth queda limitado al ancho del icono más ancho
                 SystemStats{Layout.alignment: Qt.AlignHCenter}       // Uso del sistema: procesador, memoria y temperaturas
                 Screenshot{Layout.alignment: Qt.AlignHCenter}        // Capturas de pantalla
                 Brightness{Layout.alignment: Qt.AlignHCenter}        // Brillo del portátil y de los monitores externos (DDC)
