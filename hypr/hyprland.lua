@@ -438,3 +438,20 @@ hl.window_rule({
     float  = true,
     center = true,
 })
+
+-- Vídeo flotante (Picture-in-Picture) de los navegadores: en vez de entrar en el mosaico
+-- como una ventana más, flota abajo a la derecha, en todos los workspaces (pin), opaco
+-- como los demás vídeos (ver "opaque-media") y sin quitar el foco a lo que se esté usando.
+-- Chrome lo titula "Picture in picture" y Zen (Firefox) "Picture-in-Picture".
+hl.window_rule({
+    name  = "picture-in-picture",
+    match = { title = "^Picture[- ]in[- ][Pp]icture$" },
+
+    float             = true,
+    pin               = true,
+    keep_aspect_ratio = true,       -- Al cambiarle el tamaño con Super + clic derecho no se deforma el vídeo
+    no_initial_focus  = true,
+    opaque            = true,
+    size              = { "monitor_w*0.25", "monitor_h*0.25" },                 -- Un cuarto de la pantalla (con su misma proporción)
+    move              = { "monitor_w-window_w-24", "monitor_h-window_h-24" },   -- Esquina inferior derecha, a 24 px de los bordes
+})
