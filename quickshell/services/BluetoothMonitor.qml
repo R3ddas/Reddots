@@ -9,12 +9,28 @@ import QtQuick
 // icono porque la barra se destruye y se vuelve a crear al cerrar la tapa o cambiar de
 // monitor: con todo esto dentro se perdía el historial de cada dispositivo y se cortaba
 // una reparación o un emparejamiento a medias.
+//
+// No se repasan los dispositivos cada pocos segundos: cada uno avisa de sus cambios
+// (ver "Avisos de cada dispositivo", al final) y se reacciona en el momento.
 Singleton {
     id: root
 
     readonly property var adapter: Bluetooth.defaultAdapter               // null si el equipo no tiene Bluetooth
     readonly property bool powered: adapter ? adapter.enabled : false     // radio encendida/apagada
     property bool menuOpen: false       // El menú de Bluetooth de la barra está abierto (y escaneando); lo pone bar/Bluetooths.qml
+
+    // Historial de cada dispositivo (address -> { prevState, prevPairing, lastNotify, warnedUnbonded }):
+    // el estado anterior, para saber de dónde viene cada cambio
+    property var deviceMonitor: ({})
+
+    function monitorFor(dev) {
+        let m = root.deviceMonitor[dev.address]
+        if (!m) {
+            m = { prevState: dev.state, prevPairing: dev.pairing, lastNotify: 0 }   // primera vez que vemos este dispositivo en este arranque
+            root.deviceMonitor[dev.address] = m
+        }
+        return m
+    }
 
     // --- Aviso + reparación manual de dispositivos con key desincronizada ---
     // Si un dispositivo ya emparejado falla al conectar (pasa a Connecting y
@@ -26,7 +42,6 @@ Singleton {
     // dispositivo en modo pairing, en vez de reintentar a ciegas en segundo
     // plano avisamos por notificación y dejamos un botón "Reparar" en el
     // menú para dispararlo en el momento justo.
-    property var deviceMonitor: ({})   // address -> { prevState, lastNotify }, historial interno para detectar el fallo
     property var repairNeeded: []      // addresses con el botón "Reparar" visible
     property var repairingAddrs: []    // addresses con una reparación en curso ahora mismo
 
@@ -43,6 +58,23 @@ Singleton {
             root.repairNeeded = root.repairNeeded.filter(a => a !== address)  // igual: reasignar para notificar el cambio
     }
 
+    // Ha cambiado el estado de conexión de un dispositivo. Como llega cada cambio (no una
+    // foto cada 2 s, como antes), tampoco se escapa un intento fallido que dure muy poco.
+    function stateChanged(dev) {
+        const m = root.monitorFor(dev)
+        if (m.prevState === BluetoothDeviceState.Connecting                  // intentó conectar...
+            && dev.state === BluetoothDeviceState.Disconnected               // ...y volvió a desconectado sin pasar por Connected
+            && dev.paired) {                                                 // solo nos interesa si ya estaba emparejado (key vieja)
+            const now = Date.now()
+            if (now - m.lastNotify > 5 * 60 * 1000) {                         // cooldown de 5 min para no spamear notificaciones
+                m.lastNotify = now
+                root.flagRepairNeeded(dev)
+            }
+        }
+        if (dev.state === BluetoothDeviceState.Connected) root.clearRepairNeeded(dev.address)  // se arregló solo (o ya no hace falta avisar)
+        m.prevState = dev.state
+    }
+
     // --- Confianza automática al emparejar desde el widget ---
     // Sin agente de BlueZ, un dispositivo emparejado pero no "trusted" no
     // puede abrir perfiles por su cuenta (p.ej. los auriculares conectando el
@@ -57,8 +89,38 @@ Singleton {
     function pairAndTrust(dev) {
         if (!root.pendingTrust.includes(dev.address))
             root.pendingTrust = [...root.pendingTrust, dev.address]
-        root.ensurePairable()   // por si el timer aún no lo ha reimpuesto: sin esto la clave no se guardaría
+        root.ensurePairable()   // por si BlueZ lo acaba de quitar: sin esto la clave no se guardaría
         dev.pair()
+    }
+
+    // Ha cambiado "paired" o "pairing" de un dispositivo
+    function pairingChanged(dev) {
+        const m = root.monitorFor(dev)
+        if (root.pendingTrust.includes(dev.address)) {
+            if (dev.paired) {
+                dev.trusted = true                                          // emparejado desde el widget: de confianza
+                root.pendingTrust = root.pendingTrust.filter(a => a !== dev.address)
+            } else if (m.prevPairing && !dev.pairing) {
+                pendingCheck.restart()                                      // el pairing ha terminado sin emparejar... de momento (ver pendingCheck)
+            }
+        }
+        m.prevPairing = dev.pairing
+        unbondedCheck.restart()
+    }
+
+    // Al terminar un pairing, "pairing" y "paired" pueden llegar por separado: si llega
+    // primero el fin del pairing, parecería que ha fallado. Se espera un momento y solo
+    // entonces se olvidan los pendientes que de verdad no se han emparejado.
+    Timer {
+        id: pendingCheck
+        interval: 1500
+        onTriggered: {
+            const devices = root.adapter ? root.adapter.devices.values : []
+            root.pendingTrust = root.pendingTrust.filter(addr => {
+                const dev = devices.find(d => d.address === addr)
+                return dev && (dev.pairing || dev.paired)                   // el pairing terminó sin cuajar: se olvida el pendiente
+            })
+        }
     }
 
     // --- Adaptador siempre en modo "pairable" ---
@@ -70,10 +132,18 @@ Singleton {
     // AlwaysPairable = true en /etc/bluetooth/main.conf, pero sin tocar
     // archivos del sistema: la propiedad Pairable del adaptador se puede
     // cambiar sin root. BlueZ la vuelve a poner a false al reiniciar el
-    // servicio o el adaptador, por eso se reimpone en cada pasada.
+    // servicio o el adaptador, por eso se reimpone cada vez que cambia.
     function ensurePairable() {
         if (root.adapter && root.adapter.enabled && !root.adapter.pairable)
             root.adapter.pairable = true
+    }
+
+    Component.onCompleted: ensurePairable()
+    onAdapterChanged: ensurePairable()              // Aparece el adaptador (al arrancar, o al reiniciar el servicio de Bluetooth)
+    Connections {
+        target: root.adapter
+        function onEnabledChanged() { root.ensurePairable() }      // Se enciende la radio
+        function onPairableChanged() { root.ensurePairable() }     // BlueZ lo ha quitado
     }
 
     // --- Aviso de emparejamientos que BlueZ no guarda ---
@@ -82,34 +152,18 @@ Singleton {
     // "reparar" no sirve aquí, lo que hace falta es olvidarlo y re-emparejar.
     property var unbondedAddrs: []   // addresses emparejadas sin clave guardada (Paired sin Bonded)
 
-    function checkDevices() {
-        if (!root.adapter) return
-        root.ensurePairable()
-        const now = Date.now()
-        const unbondedNow = []   // se recalcula entero en cada pasada (así los que desaparecen salen solos de la lista)
-        for (const dev of root.adapter.devices.values) {
-            const addr = dev.address
-            let m = root.deviceMonitor[addr]
-            if (!m) {
-                m = { prevState: dev.state, prevPairing: dev.pairing, lastNotify: 0 }   // primera vez que vemos este dispositivo en este arranque
-                root.deviceMonitor[addr] = m
-            }
-
-            if (root.pendingTrust.includes(addr)) {
-                if (dev.paired) {
-                    dev.trusted = true                                              // emparejado desde el widget: de confianza
-                    root.pendingTrust = root.pendingTrust.filter(a => a !== addr)
-                } else if (m.prevPairing && !dev.pairing) {
-                    root.pendingTrust = root.pendingTrust.filter(a => a !== addr)   // el pairing terminó sin cuajar: se olvida el pendiente
-                }
-            }
-            m.prevPairing = dev.pairing
-
-            // Paired sin Bonded en dos pasadas seguidas (4 s), para no saltar
-            // en el instante justo en que termina el pairing
-            const unbonded = dev.paired && !dev.bonded
-            if (unbonded && m.prevUnbonded) {
-                unbondedNow.push(addr)
+    // Paired sin Bonded durante 4 s seguidos sin más cambios, para no saltar en el instante
+    // justo en que termina el pairing (la clave se guarda un poco después de emparejar).
+    // Se vuelve a contar desde cero con cada cambio de paired/bonded de cualquier dispositivo.
+    Timer {
+        id: unbondedCheck
+        interval: 4000
+        onTriggered: {
+            const unbondedNow = []   // se recalcula entero (así los que desaparecen salen solos de la lista)
+            for (const dev of (root.adapter ? root.adapter.devices.values : [])) {
+                if (!dev.paired || dev.bonded) continue
+                unbondedNow.push(dev.address)
+                const m = root.monitorFor(dev)
                 if (!m.warnedUnbonded) {                                     // una sola notificación por dispositivo y arranque
                     m.warnedUnbonded = true
                     Quickshell.execDetached(["notify-send", "-u", "normal", "-a", "Bluetooth",
@@ -117,23 +171,12 @@ Singleton {
                         dev.name + " se ha emparejado sin guardar la clave: al desconectarse se olvidará y no podrá reconectarse. Olvídalo y vuelve a emparejarlo desde el menú."])
                 }
             }
-            m.prevUnbonded = unbonded
-
-            if (m.prevState === BluetoothDeviceState.Connecting              // intentó conectar...
-                && dev.state === BluetoothDeviceState.Disconnected           // ...y volvió a desconectado sin pasar por Connected
-                && dev.paired) {                                             // solo nos interesa si ya estaba emparejado (key vieja)
-                if (now - m.lastNotify > 5 * 60 * 1000) {                     // cooldown de 5 min para no spamear notificaciones
-                    m.lastNotify = now
-                    root.flagRepairNeeded(dev)
-                }
-            }
-            if (dev.state === BluetoothDeviceState.Connected) root.clearRepairNeeded(addr)  // se arregló solo (o ya no hace falta avisar)
-            m.prevState = dev.state
+            if (unbondedNow.join() !== root.unbondedAddrs.join())   // reasignar solo si cambió, para no redibujar el menú
+                root.unbondedAddrs = unbondedNow
         }
-        if (unbondedNow.join() !== root.unbondedAddrs.join())   // reasignar solo si cambió, para no redibujar el menú cada 2 s
-            root.unbondedAddrs = unbondedNow
     }
 
+    // --- Reparación ---
     // Disparado a mano desde el botón "Reparar": olvida el dispositivo y
     // re-empareja. Solo puede tener éxito si el dispositivo ya está
     // anunciándose (por eso hace falta ponerlo en modo pairing antes).
@@ -146,14 +189,6 @@ Singleton {
         dev.forget()                      // borra el link key viejo; dispara repairTimer para reintentar el pairing
         repairTimer.address = address
         repairTimer.restart()
-    }
-
-    Timer {
-        id: watchTimer
-        interval: 2000        // cada 2s es suficiente para pillar el Connecting->Disconnected sin gastar CPU
-        running: root.powered
-        repeat: true
-        onTriggered: root.checkDevices()
     }
 
     Timer {
@@ -177,7 +212,28 @@ Singleton {
             if (dev && dev.paired) dev.connect()                 // el pairing sí cuajó: ya se puede conectar
             if (root.adapter) root.adapter.discovering = root.menuOpen  // deja el escaneo como estaba según el menú
             root.repairingAddrs = root.repairingAddrs.filter(a => a !== pairWatch.address)
-            root.clearRepairNeeded(pairWatch.address)   // se intentó; si falló, checkDevices lo volverá a marcar
+            root.clearRepairNeeded(pairWatch.address)   // se intentó; si falló, stateChanged() lo volverá a marcar
+        }
+    }
+
+    // --- Avisos de cada dispositivo ---
+    // Un Connections por cada dispositivo que conoce el adaptador: el Instantiator crea uno
+    // al aparecer un dispositivo y lo quita al desaparecer. Sustituye al Timer que repasaba
+    // todos los dispositivos cada 2 s mientras la radio estaba encendida.
+    Instantiator {
+        model: root.adapter ? root.adapter.devices : []
+        delegate: Connections {
+            required property BluetoothDevice modelData
+            target: modelData
+
+            Component.onCompleted: {                    // Dispositivo nuevo (o todos, al arrancar)
+                root.monitorFor(modelData)
+                unbondedCheck.restart()
+            }
+            function onStateChanged() { root.stateChanged(modelData) }
+            function onPairedChanged() { root.pairingChanged(modelData) }
+            function onPairingChanged() { root.pairingChanged(modelData) }
+            function onBondedChanged() { unbondedCheck.restart() }
         }
     }
 }
