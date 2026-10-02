@@ -147,6 +147,8 @@ code --list-extensions | grep -qi '^bbenoist.QML$' \
     || code --install-extension bbenoist.QML                                # Extensión para QML en Visual Studio Code
 code --list-extensions | grep -qi '^James-Yu.latex-workshop$' \
     || code --install-extension James-Yu.latex-workshop                     # Extensión para LaTeX en Visual Studio Code
+code --list-extensions | grep -qi '^ms-python.python$' \
+    || code --install-extension ms-python.python                            # Extensión para Python en Visual Studio Code
 
 echo "Reloj (dual boot con Windows)"
 
