@@ -13,7 +13,7 @@ echo "Actualizando el sistema"
 # Si la actualización falla por alguna dependencia de toolkit, puede arreglarse con sudo pacman -Syu extra/hyprtoolkit
 # Esto fuerza a que tanto hyprland como hyprtoolkit se saquen del repositorio "extra"
 
-paru -Syu           # Actualiza el sistema por completo antes de instalar (repos oficiales + AUR)
+paru -Syu --noconfirm   # Actualiza el sistema por completo antes de instalar (repos oficiales + AUR)
 
 
 echo "Instalando paquetes (via pacman)"
