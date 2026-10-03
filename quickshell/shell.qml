@@ -8,7 +8,6 @@
 import Quickshell
 import QtQuick
 import Quickshell.Services.Polkit   // Agente de polkit: pide la contraseña cuando una app necesita permisos (windows/PolkitDialog.qml)
-import Quickshell.Services.Notifications   // Servidor de notificaciones (las pinta windows/Notifications.qml)
 import Quickshell.Io                // Para lanzar hypr/scripts/internal-panel.sh
 // Las piezas de la interfaz, por carpetas: bar/ (la barra), windows/ (ventanas y capas),
 // services/ (singletons con el estado: tema, medidas...) y components/ (piezas comunes)
@@ -54,18 +53,12 @@ ShellRoot {
     // (install.sh lo para y lo desinstala).
     PolkitAgent { id: polkitAgent }
 
-    // Servidor de notificaciones: el que las recibe de las apps por D-Bus. Aquí por lo
-    // mismo que el agente de polkit: dentro del Variants se destruía con la pantalla (al
-    // cerrar la tapa con un monitor externo) y se perdían las notificaciones abiertas.
-    // La ventana que las pinta (windows/Notifications.qml) sí va con la pantalla.
-    NotificationServer {
-        id: notificationServer
-        actionsSupported: true
-        bodySupported: true
-        imageSupported: true    // Sin esto, algunas apps (Teams, Chrome...) no mandan la imagen (avatar, foto) aunque la tengan
-
-        onNotification: n => n.tracked = true     // Se queda en la lista hasta que caduca o se cierra
-    }
+    // Servidor de notificaciones: vive en services/NotificationCenter.qml, fuera del Variants
+    // de abajo por lo mismo que el agente de polkit (si no, se perdían las notificaciones al
+    // cerrar la tapa). Un singleton no existe hasta que alguien lo usa, y las ventanas que lo
+    // usan esperan a saber cuál es la pantalla: nombrarlo aquí lo crea ya al arrancar, para
+    // que el sistema no se quede sin servidor ese rato.
+    readonly property var notificationCenter: NotificationCenter
 
     // Fondo de pantalla (windows/Background.qml): en todos los monitores, no solo en el de la
     // barra, así que va en su propio Variants. Se crea y se quita solo al enchufar o
@@ -94,7 +87,7 @@ ShellRoot {
                 frameColor: Theme.background
             }
             Launcher{screen: screenScope.modelData}    // Widget que se abre/cierra con Super, abajo-derecha
-            Notifications{screen: screenScope.modelData; server: notificationServer}
+            Notifications{screen: screenScope.modelData}   // Tarjetas emergentes arriba a la derecha (todas, en el popup de SystemStats)
             Osd{screen: screenScope.modelData}         // Indicador de volumen/brillo al usar las teclas multimedia
             Keybinds{id: keybinds; screen: screenScope.modelData}   // Chuleta de atajos, se abre desde el menú de Reddots
             Clipboard{screen: screenScope.modelData}   // Historial del portapapeles, se abre con Super + V

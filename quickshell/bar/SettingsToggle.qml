@@ -20,13 +20,15 @@ ColumnLayout {
     BarIcon {
         text: String.fromCodePoint(0xf01d8)                                 // Mismo icono plegado y desplegado: el estado se nota por el color
         // Con el color de acento mientras está desplegado. Plegado, en rojo si hay alguna temperatura
-        // alta (SystemMonitor.qml): el icono del chip, que es el que avisa, está dentro del grupo
+        // alta (SystemMonitor.qml) o alguna notificación crítica sin descartar (NotificationCenter.qml):
+        // el icono del chip, que es el que avisa, está dentro del grupo
         color: root.owner.expanded ? Theme.textSelected
-             : SystemMonitor.overheating ? SystemMonitor.hotColor
+             : SystemMonitor.overheating || NotificationCenter.hasCritical ? SystemMonitor.hotColor
              : Theme.textActive
         tooltip: root.owner.expanded ? "Ocultar los ajustes"
                : "Mostrar los ajustes"                  // Sin las actualizaciones: van en el tooltip del logo de Reddots (Reddots.qml)
                  + (SystemMonitor.overheating ? "\nTemperatura alta: " + SystemMonitor.warning : "")
+                 + (NotificationCenter.hasCritical ? "\nHay una notificación crítica" : "")
         onClicked: root.owner.expanded = !root.owner.expanded               // Muestra/oculta el grupo
     }
 }

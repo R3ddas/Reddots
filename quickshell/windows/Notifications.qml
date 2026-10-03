@@ -2,8 +2,10 @@
 // En el video también enseña como ahcer que se queden ahí y poner botones para quitrlas
 // Se pueden generar notificaciones desde terminal con: notify-send "Titulo" "Contenido"
 // Pueden ser críticas con: notify-send -u critical "Titulo" "Contenido"
-// Se van solas a los 10 s (defaultTimeout) o al tiempo que pida la app (notify-send -t 3000 = 3 s; -t 0 = nunca).
-// Las críticas no se van solas. Con el ratón encima no se van.
+// Se ocultan solas a los 10 s (defaultTimeout) o al tiempo que pida la app (notify-send -t 3000 = 3 s; -t 0 = nunca).
+// Ocultarse no es cerrarse: siguen en el popup de SystemStats (bar/SystemStats.qml) hasta
+// que se descartan; ver services/NotificationCenter.qml. Las transitorias sí se cierran.
+// Las críticas no se ocultan solas. Con el ratón encima, tampoco.
 // Clic izquierdo: la acción principal de la app si la tiene (si no, la cierra). Clic derecho: la cierra.
 // Con acciones se pintan botones: notify-send -A si=Sí -A no=No "Titulo" "Contenido"
 // Como mucho se ven maxVisible a la vez (las más antiguas); el resto espera en cola,
@@ -16,18 +18,17 @@ import Quickshell.Services.Notifications
 import Quickshell.Wayland                // Para el namespace y la capa de la ventana
 import QtQuick
 import QtQuick.Layouts                  // Para usar RowLayout o ColumnLayout
+import qs.components
 import qs.services
 
 Scope{
     id: root
     property alias screen: panel.screen
-    // El servidor de notificaciones (el que las recibe por D-Bus) vive en shell.qml, fuera
-    // del Variants de la pantalla, como el agente de polkit: esta ventana se destruye y se
-    // vuelve a crear al cerrar la tapa del portátil o cambiar de monitor, y con él dentro
-    // se perdían las notificaciones que hubiese y el sistema se quedaba un momento sin
-    // servidor. Aquí solo se pintan.
-    property NotificationServer server: null
-    readonly property int count: server ? server.trackedNotifications.values.length : 0
+    // El servidor de notificaciones (el que las recibe por D-Bus) y qué se enseña como tarjeta
+    // viven en services/NotificationCenter.qml, fuera del Variants de la pantalla: esta ventana
+    // se destruye y se vuelve a crear al cerrar la tapa del portátil o cambiar de monitor, y con
+    // ellos dentro se perdían las notificaciones que hubiese. Aquí solo se pintan.
+    readonly property int count: NotificationCenter.popups.length
     readonly property real defaultTimeout: 10   // Segundos en pantalla si la app no pide un tiempo concreto
     readonly property int maxVisible: 4         // Notificaciones que se ven a la vez; las demás esperan su turno
     readonly property int hiddenCount: Math.max(0, count - maxVisible)
@@ -49,35 +50,27 @@ Scope{
             id: column
             width: parent.width
             spacing: 10
+            // Recorre todas las activas, no solo las emergentes: las ocultas se quedan sin pintar
+            // (visible: false). Así, al ocultarse o cerrarse una, las demás no se recrean.
             Repeater{
-                model: root.server ? root.server.trackedNotifications : null
+                model: NotificationCenter.server.trackedNotifications
                 delegate: Rectangle{
                     id: card
                     required property var modelData
                     required property int index
 
+                    // Puesto entre las emergentes, en el orden en que se pintan (-1 = oculta, solo en SystemStats)
+                    readonly property int popupRank: {
+                        const popups = NotificationCenter.popups
+                        if (!popups.includes(modelData.id)) return -1
+                        const before = NotificationCenter.active.slice(0, index)
+                        return before.filter(n => popups.includes(n.id)).length
+                    }
+
                     // Las que no caben esperan ocultas (el layout no les deja hueco). Se hace
                     // así, y no recortando el modelo, para que las que ya se ven no se
                     // recreen (y vuelvan a empezar su cuenta) cada vez que llega otra.
-                    visible: index < root.maxVisible
-
-                    // appIcon puede venir como nombre de icono del tema ("firefox"), como ruta
-                    // ("/usr/share/...") o como URL ("file:///..."). Solo el nombre hay que
-                    // buscarlo en el tema de iconos; con "true" devuelve "" si no existe.
-                    function iconSource(appIcon) {
-                        if (!appIcon) return ""
-                        if (appIcon.startsWith("/")) return "file://" + appIcon
-                        if (appIcon.includes("://")) return appIcon
-                        return Quickshell.iconPath(appIcon, true)
-                    }
-
-                    // "notify-send -i" llega por image como "image://icon/<nombre o ruta>", y si
-                    // ese icono no existe se pinta un damero magenta. Se comprueba igual que appIcon.
-                    function imageSource(image) {
-                        if (!image) return ""
-                        if (image.startsWith("image://icon/")) return iconSource(image.slice(13).split("?")[0])
-                        return image
-                    }
+                    visible: popupRank >= 0 && popupRank < root.maxVisible
 
                     // Milisegundos que se queda en pantalla. La app lo pide en expireTimeout, en milisegundos
                     // (la documentación de Quickshell dice segundos, pero "notify-send -t 3000" llega como 3000):
@@ -88,9 +81,8 @@ Scope{
                                                   : modelData.expireTimeout
 
                     // La acción "default" no es un botón: es la que se lanza al hacer clic en la
-                    // notificación (p.ej. abrir el chat de Teams). El resto sí se pintan como botones.
+                    // notificación (p.ej. abrir el chat de Teams). El resto se pintan como botones.
                     readonly property var defaultAction: modelData.actions.find(a => a.identifier === "default") ?? null
-                    readonly property var buttonActions: modelData.actions.filter(a => a.identifier !== "default")
 
                     Layout.fillWidth: true
                     Layout.preferredHeight: layout.implicitHeight +20
@@ -103,7 +95,7 @@ Scope{
                     Timer{
                         interval: card.timeout
                         running: card.visible && card.timeout > 0 && !hover.hovered     // Con el ratón encima no se va (al quitarlo, la cuenta empieza de nuevo). En cola, tampoco
-                        onTriggered: card.modelData.expire()            // Le dice a la app que ha caducado (no que la haya cerrado el usuario)
+                        onTriggered: NotificationCenter.hidePopup(card.modelData)   // Se quita de la pantalla, pero sigue en SystemStats
                     }
 
                     HoverHandler{ id: hover }                           // HoverHandler y no MouseArea: se entera también con el ratón sobre los botones
@@ -123,13 +115,13 @@ Scope{
                         anchors.fill: parent
                         anchors.margins: 10
                         spacing: 10
-                        Image{
-                            Layout.preferredWidth: 36
-                            Layout.preferredHeight: 36
+                        NotificationIcon{               // La imagen de la app o, si no se puede abrir, el icono de la app
+                            size: 36
                             Layout.alignment: Qt.AlignTop
-                            fillMode: Image.PreserveAspectFit
-                            visible: source.toString() !== "" && status !== Image.Error   // Sin hueco si no hay icono o la ruta no se puede abrir
-                            source: card.imageSource(card.modelData.image) || card.iconSource(card.modelData.appIcon)
+                            image: card.modelData.image
+                            appIcon: card.modelData.appIcon
+                            desktopEntry: card.modelData.desktopEntry
+                            appName: card.modelData.appName
                         }
                         ColumnLayout{
                             Layout.fillWidth: true
@@ -158,39 +150,10 @@ Scope{
                                 maximumLineCount: 8         // Un mensaje larguísimo tampoco se sale de la pantalla
                                 elide: Text.ElideRight
                             }
-                            Flow{                           // Botones de las acciones (si no caben en una fila, pasan a la siguiente)
+                            NotificationActions{            // Botones de las acciones
                                 Layout.fillWidth: true
                                 Layout.topMargin: 6
-                                visible: card.buttonActions.length > 0
-                                spacing: 6
-                                Repeater{
-                                    model: card.buttonActions
-                                    delegate: Rectangle{
-                                        id: actionButton
-                                        required property var modelData
-                                        implicitWidth: actionText.implicitWidth + 16
-                                        implicitHeight: actionText.implicitHeight + 8
-                                        radius: 6
-                                        color: actionMouse.containsMouse ? Theme.surfaceHover : Theme.surface
-                                        border.color: Theme.border
-
-                                        Text{
-                                            id: actionText
-                                            anchors.centerIn: parent
-                                            text: actionButton.modelData.text
-                                            textFormat: Text.PlainText      // También viene de la app
-                                            color: Theme.textActive
-                                            font.pixelSize: 11
-                                        }
-
-                                        MouseArea{
-                                            id: actionMouse
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            onClicked: actionButton.modelData.invoke()   // La cierra sola, salvo que la app pida que se quede
-                                        }
-                                    }
-                                }
+                                notification: card.modelData
                             }
                         }
                     }
@@ -220,9 +183,7 @@ Scope{
                     anchors.fill: parent
                     hoverEnabled: true
                     acceptedButtons: Qt.RightButton                 // Derecho, como para cerrar una sola: así no se borran todas por un clic sin querer
-                    onClicked: {
-                        for (const n of root.server.trackedNotifications.values.slice()) n.dismiss()   // Copia de la lista: se va vaciando al cerrarlas
-                    }
+                    onClicked: NotificationCenter.dismissPopups()   // Las de la pantalla; las que ya solo están en SystemStats, no
                 }
             }
         }
