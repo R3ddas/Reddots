@@ -3,11 +3,11 @@ import Quickshell
 import Quickshell.Io                // Para lanzar scripts/check-updates.sh y el IpcHandler
 import QtQuick
 
-// Actualizaciones pendientes del sistema (repos oficiales y AUR), para el contador de
-// la barra (Reddots.qml). Las mira
-// scripts/check-updates.sh solo al desplegar el grupo de ajustes del engranaje
-// (SettingsToggle.qml llama a refresh()), que es donde está el contador: sin
-// consultas de fondo mientras no se mira. También con "qs ipc call updates refresh",
+// Actualizaciones pendientes del sistema (repos oficiales y AUR), para el tooltip y el
+// menú de Reddots.qml. Las mira
+// scripts/check-updates.sh solo al pasar el ratón por el logo de Reddots (Reddots.qml
+// llama a refresh()), que es cuando se van a leer: sin consultas de fondo mientras
+// no se mira. También con "qs ipc call updates refresh",
 // que lanza update-reddots.sh al terminar.
 Singleton {
     id: root

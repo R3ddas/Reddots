@@ -27,6 +27,11 @@ PanelWindow {
         anchors.leftMargin: 6 + Geometry.borderThickness / 2   // Le sumo la mitad del borde que añade "Border"
         anchors.rightMargin: 6 - Geometry.borderThickness / 2  // Le resto la mitad del borde que añade "Border"
 
+        Reddots{                                            // Logo arriba del todo, siempre visible: chuleta de atajos y actualizar Reddots
+            Layout.alignment: Qt.AlignHCenter
+            Layout.bottomMargin: 4                          // Algo de aire entre el logo y los workspaces
+            onKeybindsRequested: root.keybindsRequested()
+        }
         Workspaces{Layout.alignment: Qt.AlignHCenter}       // Cambiador de Workspaces
         Item {                                              // Hueco entre los workspaces y el grupo inferior (lo empuja hacia abajo); el reloj va dentro
             id: clockSpace
@@ -66,10 +71,6 @@ PanelWindow {
                 GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Editor de Geometry.qml (ancho barra, grosor/redondeo borde)
                 ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
                 WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)
-                Reddots{                                             // Lo relativo al repo: chuleta de atajos y actualizar Reddots
-                    Layout.alignment: Qt.AlignHCenter
-                    onKeybindsRequested: root.keybindsRequested()
-                }
                 SettingsToggle{controls: settingsToggle; Layout.alignment: Qt.AlignHCenter}  // Copia del engranaje al final del grupo: se oculta con él y hace lo mismo
             }
         }

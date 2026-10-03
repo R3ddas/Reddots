@@ -4,9 +4,10 @@
 //   - Actualizar Reddots: baja los cambios del repo (git pull) y ejecuta install.sh, en
 //     un Alacritty para que sudo pueda pedir la contraseña y paru hacer sus preguntas.
 //     El trabajo lo hace scripts/update-reddots.sh; esto solo lo lanza.
-// Va dentro del grupo del engranaje (SettingsToggle) y con un paso más (el popup)
-// para no lanzar sin querer una actualización de todo el sistema.
+// Va arriba del todo de la barra, encima de los workspaces (Bar.qml), y con un paso más
+// (el popup) para no lanzar sin querer una actualización de todo el sistema.
 import Quickshell
+import Quickshell.Io           // Para el FileView que lee el SVG del logo
 import QtQuick
 import QtQuick.Layouts
 import qs.components
@@ -18,25 +19,57 @@ ColumnLayout {
 
     signal keybindsRequested()      // Se ha pulsado "Atajos de teclado"
 
-    BarIcon {
-        id: iconText
-        text: String.fromCodePoint(0xF06B0)  // update
-        tooltip: menu.visible ? "" : "Reddots: atajos de teclado y actualizar" + (Updates.count > 0 ? "\n" + Updates.summary : "")
-        onClicked: menu.toggle()
+    // El logo de Reddots (assets/ReddotsIcon.svg) en vez de un glifo de la Nerd Font, así que
+    // no es un BarIcon: la zona de clic y el tooltip van aquí, igual que en BarIcon.qml / Tray.qml.
+    // El SVG es de un solo color (blanco) y un Image no se puede teñir sin un efecto de
+    // shader, así que se lee el archivo, se le cambia el relleno por el azul del tema (base0D,
+    // el último color de la muestra de cada tema en ThemeSettings.qml) y se
+    // le pasa al Image ya coloreado. Al cambiar de tema se vuelve a pintar solo.
+    FileView {
+        id: logoFile
+        path: Quickshell.shellPath("assets/ReddotsIcon.svg")
+        blockLoading: true                  // Es pequeño: así el icono sale ya en el primer fotograma
     }
 
-    Text {                                  // Actualizaciones pendientes (Updates.qml), en pequeño como el % de la batería
-        visible: Updates.count > 0
-        text: Updates.count > 99 ? "99+" : Updates.count
-        color: Theme.textSelected
-        font.pixelSize: 10
-        font.bold: true
+    Image {
+        id: logo
+        Layout.preferredWidth: 18           // Lo que mide un glifo de BarIcon (font.pixelSize: 18)
+        Layout.preferredHeight: 18
+        sourceSize: Qt.size(36, 36)         // SVG rasterizado al doble para que no salga borroso al escalar
+        source: "data:image/svg+xml;utf8," + encodeURIComponent(
+                    logoFile.text().replace(/fill="[^"]*"/g, `fill="${Theme.base[13]}"`))
         Layout.alignment: Qt.AlignHCenter
+
+        MouseArea {
+            anchors.fill: parent
+            anchors.margins: -4                             // Zona de clic algo más grande que el icono, como en BarIcon.qml
+            hoverEnabled: true                              // Para el tooltip
+            onClicked: {
+                logoTooltip.active = false                  // Al pulsar se quita (y no vuelve hasta salir y entrar otra vez)
+                menu.toggle()
+            }
+            onContainsMouseChanged: {
+                logoTooltip.active = containsMouse
+                // Updates.qml no mira por su cuenta: se consulta al acercar el ratón, y el
+                // tooltip (y el aviso del menú) se actualizan solos cuando llega el resultado
+                if (containsMouse) Updates.refresh()
+            }
+        }
+
+        LazyLoader {                                        // Solo existe mientras el ratón está encima
+            id: logoTooltip
+            active: false
+            BarTooltip {
+                anchorItem: logo
+                text: menu.visible ? "" : "Reddots: atajos de teclado y actualizar" + (Updates.count > 0 ? "\n" + Updates.summary : "")
+                hovered: true
+            }
+        }
     }
 
     BarPopup {
         id: menu
-        anchorItem: iconText
+        anchorItem: logo
         implicitWidth: 240
         implicitHeight: listCol.implicitHeight + 16
 

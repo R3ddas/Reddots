@@ -94,8 +94,8 @@ elif $autoreloadPaused; then
     hyprctl eval 'hl.config({ misc = { disable_autoreload = false } })' >/dev/null
 fi
 
-# Que el contador de actualizaciones de la barra (Updates.qml) vuelva a mirar, ahora
-# que ya se ha actualizado. Si Quickshell se acaba de reiniciar, ya mirará cuando se despliegue el engranaje.
+# Que la lista de actualizaciones de la barra (Updates.qml) vuelva a mirar, ahora
+# que ya se ha actualizado. Si Quickshell se acaba de reiniciar, ya mirará al pasar el ratón por el logo.
 qs ipc call updates refresh >/dev/null 2>&1
 
 # El terminal no se cierra al terminar: se queda con tu shell abierta en el repo,
