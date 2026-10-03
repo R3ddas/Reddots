@@ -19,7 +19,7 @@ args=(type wifi con-name "$ssid" ssid "$ssid" wifi-sec.key-mgmt wpa-eap
       802-1x.identity "$identity")
 
 # Verificación del servidor: certificado firmado por una CA del sistema y a nombre del dominio
-# del usuario (jailopez@ing.uc3m.es -> uc3m.es), para no entregar la contraseña a una red falsa
+# del usuario (xxx@ing.uc3m.es -> uc3m.es), para no entregar la contraseña a una red falsa
 if [[ $3 != --sin-verificar ]]; then
     args+=(802-1x.system-ca-certs yes)
     if [[ $identity == *@* ]]; then
