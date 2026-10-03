@@ -1,0 +1,4 @@
+# Paquetes opcionales: install.sh pregunta antes de instalarlos (todos, ninguno o uno a uno).
+# Los que ya están instalados no se preguntan. Van con paru, así que pueden ser de los repos o de AUR.
+steam           # Juegos (repo multilib)
+teams-for-linux # Microsoft Teams

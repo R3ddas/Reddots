@@ -21,21 +21,53 @@ echo "Instalando paquetes (via pacman)"
 sed 's/#.*//' packages.txt | grep -v '^\s*$' \
 | xargs -r sudo pacman -S --needed  --noconfirm
 
-#Si quisiera separar Steam (o cualquier otro paquete)
-#echo "Steam"
-#sed 's/#.*//' packages.txt | grep -v '^\s*$' | grep -vw 'steam' \
-#| xargs -r sudo pacman -S --needed --noconfirm
-#read -r -p "¿Instalar steam? [s/N] " respuesta
-#if [[ "$respuesta" =~ ^[sS]$ ]]; then
-#    sudo pacman -S --needed steam
-#fi
-
 echo "Instalando paquetes (via paru)"
 
 paru -S --needed --noconfirm visual-studio-code-bin   # Visual code
 paru -S --needed --noconfirm claude-desktop           # Claude
 paru -S --needed --noconfirm google-chrome            # Chrome
 paru -S --needed --noconfirm zen-browser-bin          # Zen
+
+echo "Paquetes opcionales"
+
+# Los de packages_opt.txt que aún no están instalados: los que ya están no se preguntan
+# (ni se reinstalan), así que al actualizar con update-reddots.sh solo se pregunta por los que faltan
+optional=()
+while read -r pkg; do
+    pacman -Qq "$pkg" &>/dev/null || optional+=("$pkg")
+done < <(awk '{ sub(/#.*/, ""); if ($1 != "") print $1 }' packages_opt.txt)   # Sin comentarios ni líneas vacías
+
+chosen=()   # Los que se van a instalar
+if (( ${#optional[@]} == 0 )); then
+    echo "Todos los opcionales están ya instalados"
+elif [[ ! -t 0 ]]; then
+    # Sin terminal (lanzado desde otro script sin entrada) read no puede preguntar y,
+    # con set -e, cortaría la instalación: se sigue sin instalar ninguno
+    echo "Sin terminal para preguntar: no se instala ninguno (${optional[*]})"
+else
+    echo "Sin instalar: ${optional[*]}"
+    while true; do      # Se repite hasta una respuesta válida; Intro a secas = ninguno, como el [s/N] de abajo
+        read -r -p "¿Instalarlos? [t]odos, [N]inguno o [u]no a uno: " mode
+        case "$mode" in
+            [tT]) chosen=("${optional[@]}"); break ;;
+            [nN]|"") break ;;
+            [uU])
+                for pkg in "${optional[@]}"; do
+                    read -r -p "¿Instalar $pkg? [s/N] " answer
+                    # Con if y no con "[[ ]] && ...": con set -e, un "no" en el último paquete
+                    # dejaría el bucle con código 1 y cortaría el script
+                    if [[ "$answer" =~ ^[sS]$ ]]; then chosen+=("$pkg"); fi
+                done
+                break ;;
+            *) echo "Responde t, n o u" ;;
+        esac
+    done
+fi
+
+# Con paru y no con pacman: así un opcional puede ser tanto de los repos como de AUR
+if (( ${#chosen[@]} > 0 )); then
+    paru -S --needed --noconfirm "${chosen[@]}"
+fi
 
 echo "Paquetes no utilizados"
 

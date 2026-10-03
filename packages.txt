@@ -45,7 +45,3 @@ xdg-user-dirs   # Trae xdg-user-dir, para guardar en la carpeta de imágenes (~/
 texlive-basic       # Lo básico de LaTeX (antes se llamaba texlive-core)
 texlive-latexextra  # Paquetes de LaTeX adicionales
 texlive-binextra    # Programas auxiliares (latexmk, que usa LaTeX Workshop para compilar)
-
-# Por esto igual debería preguntar independientemente
-steam           # Para este debería preguntar
-teams-for-linux # Para este debería preguntar
