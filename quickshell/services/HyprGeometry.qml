@@ -23,14 +23,14 @@ Singleton {
     property alias rounding: adapter.rounding
     property alias windowOpacity: adapter.windowOpacity
 
-    readonly property var editable: [
-        { target: root, key: "gapsIn",     label: "Espacio entre ventanas",        min: 0, max: 40, step: 1 },
-        { target: root, key: "gapsOut",    label: "Espacio con borde de pantalla", min: 0, max: 60, step: 1 },
-        { target: root, key: "borderSize", label: "Grosor borde de ventana",       min: 0, max: 10, step: 1 },
-        { target: root, key: "rounding",   label: "Redondeo de ventanas",          min: 0, max: 40, step: 1 },
+    readonly property var editable: [     // Todas en la sección "Ventanas" del panel (ver "group" en Geometry.qml)
+        { target: root, group: "Ventanas", key: "gapsIn",     label: "Espacio entre ventanas",   min: 0, max: 40, step: 1 },
+        { target: root, group: "Ventanas", key: "gapsOut",    label: "Espacio con el borde",     min: 0, max: 60, step: 1 },
+        { target: root, group: "Ventanas", key: "borderSize", label: "Grosor del borde",         min: 0, max: 10, step: 1 },
+        { target: root, group: "Ventanas", key: "rounding",   label: "Redondeo",                 min: 0, max: 40, step: 1 },
         // Mínimo 10 %: por debajo las ventanas son prácticamente invisibles y
         // costaría encontrar el panel para volver a subirla
-        { target: root, key: "windowOpacity", label: "Opacidad de ventanas",       min: 10, max: 100, step: 5, unit: "%" }
+        { target: root, group: "Ventanas", key: "windowOpacity", label: "Opacidad",              min: 10, max: 100, step: 5, unit: "%" }
     ]
 
     // En el JSON va en % (entero, para que el stepper no acumule decimales);

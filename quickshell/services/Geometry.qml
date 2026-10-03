@@ -28,16 +28,18 @@ Singleton {
     // panel iterando esta lista (concatenada con la de HyprGeometry.qml), así
     // que añadir aquí una entrada es lo único que hace falta para que
     // aparezca un nuevo control en el panel. "target" indica en qué singleton
-    // vive de verdad la propiedad (aquí o en HyprGeometry). "unit" es
+    // vive de verdad la propiedad (aquí o en HyprGeometry). "group" es la
+    // sección del panel en la que sale (las secciones van en el orden en que
+    // aparecen aquí; con un nombre nuevo, sale una sección nueva). "unit" es
     // opcional: lo que se muestra tras el número (si falta, "px").
     readonly property var editable: [
-        { target: root, key: "sidebarWidth",    label: "Ancho barra lateral",  min: 16, max: 80, step: 1 },
-        { target: root, key: "borderThickness", label: "Grosor del borde",     min: 0,  max: 20, step: 1 },
-        { target: root, key: "borderRounding",  label: "Redondeo de esquinas", min: 0,  max: 40, step: 1 },
-        { target: root, key: "borderShadow",    label: "Sombra del borde",     min: 0,  max: 40, step: 1 },
-        { target: root, key: "borderShadowOpacity", label: "Opacidad de la sombra", min: 0, max: 100, step: 5, unit: "%" },
-        { target: root, key: "popupRounding",   label: "Redondeo desplegables", min: 0, max: 40, step: 1 },
-        { target: root, key: "popupBorderWidth", label: "Borde desplegables",   min: 0, max: 10, step: 1 }
+        { target: root, group: "Barra lateral",        key: "sidebarWidth",        label: "Ancho",                 min: 16, max: 80,  step: 1 },
+        { target: root, group: "Borde de la pantalla", key: "borderThickness",     label: "Grosor",                min: 0,  max: 20,  step: 1 },
+        { target: root, group: "Borde de la pantalla", key: "borderRounding",      label: "Redondeo de esquinas",  min: 0,  max: 40,  step: 1 },
+        { target: root, group: "Borde de la pantalla", key: "borderShadow",        label: "Sombra",                min: 0,  max: 40,  step: 1 },
+        { target: root, group: "Borde de la pantalla", key: "borderShadowOpacity", label: "Opacidad de la sombra", min: 0,  max: 100, step: 5, unit: "%" },
+        { target: root, group: "Desplegables",         key: "popupRounding",       label: "Redondeo",              min: 0,  max: 40,  step: 1 },
+        { target: root, group: "Desplegables",         key: "popupBorderWidth",    label: "Grosor del borde",      min: 0,  max: 10,  step: 1 }
     ]
 
     // "anchor.rect.y" (relativo a "item") para un popup de altura "popupHeight"
