@@ -84,12 +84,13 @@ ColumnLayout {
         model: NotificationCenter.history
         delegate: NotificationCard {                            // Copias: sin "notification", ni acciones ni clic izquierdo
             required property var modelData
+            required property int index
             Layout.fillWidth: true
             compact: true
             dimmed: true
             entry: modelData
             time: modelData.time
-            onCloseRequested: NotificationCenter.removeFromHistory(modelData)
+            onCloseRequested: NotificationCenter.removeFromHistory(index)
         }
     }
 }

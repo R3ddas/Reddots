@@ -71,7 +71,10 @@ Singleton {
         showPopup(n)
     }
 
-    function removeFromHistory(entry) { history = history.filter(e => e !== entry) }
+    // Por su posición en la lista y no por el objeto: la fila que la pinta (un Repeater sobre
+    // este array) recibe una copia de la entrada, que nunca es === a la de aquí, y así no se
+    // quitaba nada al pulsar la ✕
+    function removeFromHistory(index) { history = history.filter((e, i) => i !== index) }
 
     // --- Avisos propios ----------------------------------------------------------
 
