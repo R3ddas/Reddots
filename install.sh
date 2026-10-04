@@ -137,18 +137,31 @@ ln -sfn "$DOTS/wallpapers"   "$pictures/Wallpapers"
 
 echo "Escondiendo aplicaciones del launcher"
 
-mkdir -p ~/.local/share/applications
+apps="$HOME/.local/share/applications"
+mkdir -p "$apps"
 
-sed 's/#.*//' hidden_apps.txt | grep -v '^\s*$' | while read -r app; do
-    src="/usr/share/applications/$app.desktop"
-    dest="$HOME/.local/share/applications/$app.desktop"
-    if [[ -f "$src" ]]; then
-        # Un .desktop mínimo con el mismo nombre, no una copia del del sistema: al estar en
-        # ~/.local gana al de /usr/share, y como no lleva Exec ni nada más, no se queda
-        # desfasado cuando el paquete se actualiza.
-        printf '[Desktop Entry]\nType=Application\nName=%s\nNoDisplay=true\n' "$app" > "$dest"
+# El .desktop que oculta una app: uno mínimo con el mismo nombre, no una copia del del
+# sistema. Al estar en ~/.local gana al de /usr/share, y como no lleva Exec ni nada más,
+# no se queda desfasado cuando el paquete se actualiza.
+hiddenDesktop() { printf '[Desktop Entry]\nType=Application\nName=%s\nNoDisplay=true\n' "$1"; }
+
+mapfile -t hidden < <(sed 's/#.*//' hidden_apps.txt | awk 'NF { print $1 }')   # Sin comentarios, líneas vacías ni espacios
+for app in "${hidden[@]}"; do
+    if [[ -f "/usr/share/applications/$app.desktop" ]]; then
+        hiddenDesktop "$app" > "$apps/$app.desktop"
     else
-        echo "Aviso: no se encontró $src, se omite $app"
+        echo "Aviso: no se encontró /usr/share/applications/$app.desktop, se omite $app"
+    fi
+done
+
+# Las que se han quitado de hidden_apps.txt vuelven a verse: se borra el .desktop que las
+# ocultaba. Solo los que son exactamente uno de los de arriba (ningún .desktop de verdad
+# es así, sin Exec), nunca otro .desktop que haya en esa carpeta.
+for file in "$apps"/*.desktop; do
+    app="$(basename "$file" .desktop)"
+    if [[ -f "$file" && " ${hidden[*]} " != *" $app "* && "$(< "$file")" == "$(hiddenDesktop "$app")" ]]; then
+        rm "$file"
+        echo "Ya no se oculta: $app"
     fi
 done
 

@@ -74,6 +74,9 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
     function buildSections(binds) {
         const sections = []
         for (const b of binds) {
+            // Los interruptores (la tapa del portátil, en hypr/hyprland.lua) no son atajos que
+            // se pulsen: sin esto saldrían en "Otros" como "(sin descripción)"
+            if (b.key.startsWith("switch:")) continue
             const desc = b.description || ""
             const sep = desc.indexOf(": ")
             const sectionName = sep > 0 ? desc.slice(0, sep) : "Otros"                     // Sin "Sección: " va al final
