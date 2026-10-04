@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Uso del sistema para SystemStats.qml, que lo lanza cada 2 s mientras su panel está abierto:
+# Uso del sistema para services/SystemMonitor.qml, que lo lanza cada 15 s (cada 2 s mientras el
+# panel de SystemStats.qml está abierto):
 #   cpu <user> <nice> <system> <idle> <iowait> <irq> <softirq> <steal>   (contadores de /proc/stat:
-#        el % de uso sale de la diferencia entre dos lecturas, eso lo calcula SystemStats.qml)
+#        el % de uso sale de la diferencia entre dos lecturas, eso lo calcula SystemMonitor.qml)
 #   mem <total> <disponible>          (kB, de /proc/meminfo)
 #   swap <total> <libre>              (kB)
 #   temp|<nombre>|<milésimas de °C>   (una por sensor encontrado)

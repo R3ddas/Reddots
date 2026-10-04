@@ -10,6 +10,6 @@
     "editor.autoClosingOvertype": "never",      // no "salta" sobre el ) de cierre al teclearlo
     "editor.wordWrap": "on",                    // activo el word wrap por defecto (se activa/desactiva con alt+z)
     "editor.minimap.enabled": false             // Quito el minimapa
-    //"[markdown]": { "editor.wordWrap": "on" },    // Puedo ahcer las cosas por lenguaje si quisiera
+    //"[markdown]": { "editor.wordWrap": "on" },    // Puedo hacer las cosas por lenguaje si quisiera
     //"[latex]": { "editor.wordWrap": "on" }
 }

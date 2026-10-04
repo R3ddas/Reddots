@@ -56,7 +56,7 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = tr
 hl.bind("SUPER + I", hl.dsp.window.set_prop({ prop = "opaque", value = "toggle" }), { dont_inhibit = true, description = "Ventanas: Quitar / poner la transparencia" })  -- dont_inhibit intenta (mal) arreglar el comportamiento en fullscreen
 hl.bind("SUPER + F", hl.dsp.window.fullscreen({ action = "toggle" }),               { description = "Ventanas: Pantalla completa" })
 
--- Al pulsar y soltar solo la tecla Super (sin combinar con otra), muestro/oculto el widget inferior
+-- Al pulsar y soltar solo la tecla Super (sin combinar con otra), abro/cierro el lanzador (quickshell/windows/Launcher.qml)
 hl.bind("SUPER + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { release = true, description = "Aplicaciones: Abrir / cerrar el lanzador" })
 
 -- Historial del portapapeles (quickshell/windows/Clipboard.qml)

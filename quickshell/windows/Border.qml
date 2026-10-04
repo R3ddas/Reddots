@@ -1,5 +1,7 @@
-
 // Border.qml
+// Marco redondeado alrededor de la pantalla, del color de la barra, con una sombra
+// hacia dentro. Va a la derecha de la barra (empieza donde ella acaba) y no recoge
+// clics. Grosor, redondeo y sombra salen de Geometry.qml (editables en GeometrySettings.qml).
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
@@ -15,7 +17,7 @@ PanelWindow {
     property color frameColor: Theme.background
 
     // Sombra que el propio marco proyecta hacia adentro: se genera a partir
-    // del alfa del marco (sus 6px), difuminado. blurMax controla cuánto se
+    // del alfa del marco (sus "thickness" px), difuminado. blurMax controla cuánto se
     // "estira" hacia el interior; valores grandes diluyen la opacidad y la
     // hacen invisible, así que se mantiene moderado para que quede pegada
     // al borde en vez de invadir el resto de la pantalla.

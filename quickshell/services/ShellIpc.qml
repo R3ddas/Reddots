@@ -12,6 +12,9 @@ import QtQuick
 // handlers para el mismo target (el aviso "Handler was registered but will not be used"
 // del log) y la orden podía llegar a la ventana que se estaba yendo. Aquí hay uno solo,
 // que avisa con una señal; cada ventana la escucha con un Connections.
+//
+// No están todos: "qs ipc call updates refresh" (lo manda scripts/update-reddots.sh) vive
+// en services/Updates.qml. Allí no hay ese problema, porque ya es un singleton.
 Singleton {
     id: root
 

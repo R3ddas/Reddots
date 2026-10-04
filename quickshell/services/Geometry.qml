@@ -4,7 +4,7 @@ import Quickshell.Io
 import QtQuick
 
 // Medidas compartidas de la "carcasa" de la interfaz (barra lateral + borde),
-// para que Border.qml y shell.qml no dupliquen los mismos números y puedan
+// para que Border.qml y Bar.qml no dupliquen los mismos números y puedan
 // desincronizarse entre sí. Editable en caliente desde GeometrySettings.qml
 // y persistida en disco (fuera del repo, en el directorio de estado de
 // Quickshell) para que los ajustes sobrevivan a un reinicio.

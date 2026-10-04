@@ -1,5 +1,8 @@
+// Icono de batería en la barra, según la carga (y uno propio mientras carga). Solo existe
+// en equipos con batería (lo decide el Loader de Bar.qml).
+//   Ratón encima: % y tiempo que queda (o hasta llenarse)
+//   Clic derecho: muestra/oculta el % debajo del icono
 // Recursos: https://www.youtube.com/watch?v=Vlpyz4c4Xdw
-
 
 import Quickshell
 import Quickshell.Services.UPower  // Para la información de la batería

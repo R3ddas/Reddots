@@ -1,5 +1,5 @@
 // Recursos: https://www.youtube.com/watch?v=leCzeCeNxas&t=268s
-// En el video también enseña como ahcer que se queden ahí y poner botones para quitrlas
+// En el vídeo también enseña cómo hacer que se queden ahí y poner botones para quitarlas
 // Se pueden generar notificaciones desde terminal con: notify-send "Titulo" "Contenido"
 // Pueden ser críticas con: notify-send -u critical "Titulo" "Contenido"
 // Se ocultan solas a los 10 s (defaultTimeout) o al tiempo que pida la app (notify-send -t 3000 = 3 s; -t 0 = nunca).

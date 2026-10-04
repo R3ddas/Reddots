@@ -19,7 +19,7 @@ ColumnLayout {
     id: root
     spacing: 8
     visible: icons.count > 0
-    Layout.fillWidth: true   // Ancho fijo (el del grupo que lo contiene en shell.qml): que un icono más ancho/estrecho que otro no desplace al resto de la bandeja
+    Layout.fillWidth: true   // Ancho fijo (el del grupo que lo contiene en Bar.qml): que un icono más ancho/estrecho que otro no desplace al resto de la bandeja
 
     // Algunas apps (Steam, apps de Electron...) mandan el icono como "nombre?path=carpeta"
     // en vez de un nombre del tema de iconos, y así no se encuentra: se convierte en la ruta del archivo

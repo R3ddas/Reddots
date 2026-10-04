@@ -1,3 +1,8 @@
+// Reloj de la barra (horas encima de minutos), centrado en la pantalla (ver Bar.qml).
+//   Ratón encima de la hora: la fecha completa
+//   Clic derecho: muestra/oculta la fecha (día y mes) debajo de la hora
+//   Clic izquierdo en la fecha: abre/cierra el calendario (con números de semana; la
+//   rueda cambia de mes y un clic en el título vuelve al mes actual)
 // Recursos: https://www.youtube.com/watch?v=Vlpyz4c4Xdw
 
 import Quickshell

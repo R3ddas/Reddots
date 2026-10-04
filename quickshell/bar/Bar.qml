@@ -5,7 +5,7 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts              // Para usar RowLayout o ColumnLayout
-import Quickshell.Services.UPower   // Para detectar si hay bateria o no (y no mostrar el icono en un PC de mesa)
+import Quickshell.Services.UPower   // Para detectar si hay batería o no (y no mostrar el icono en un PC de mesa)
 import qs.bar.settings
 import qs.services
 

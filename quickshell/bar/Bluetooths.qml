@@ -1,10 +1,15 @@
+// Icono de Bluetooth en la barra: apagado, encendido o con algo conectado.
+//   Clic izquierdo: menú con los dispositivos (busca mientras está abierto). Pulsar uno
+//   lo conecta o desconecta, empareja uno nuevo o cancela un emparejamiento en curso;
+//   "reparar" sale en los que han perdido la clave
+//   Clic derecho: enciende/apaga la radio
+// El estado y los avisos los lleva services/BluetoothMonitor.qml; aquí solo se pinta.
 import Quickshell
 import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
 import qs.components
 import qs.services
-
 
 ColumnLayout {
     id: root

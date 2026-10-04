@@ -1,3 +1,8 @@
+// Números de los workspaces 1 a 6 en la barra (seis a propósito, aunque haya atajos hasta el 10).
+// Con el color de acento el actual, normal los que tienen ventanas y apagados los vacíos;
+// parpadea el que tiene una ventana pidiendo atención.
+//   Clic en un número: va a ese workspace
+//   Rueda: recorre los workspaces que existen
 import Quickshell
 import Quickshell.Hyprland  // Para acceder a los WorkSpaces
 import QtQuick
@@ -44,7 +49,7 @@ Item{
                 //Si pide atención, con el color de acento y parpadeando (así se distingue en todos los temas)
                 color: (isActive || isUrgent) ? Theme.textSelected : (ws ? Theme.textActive : Theme.textDisabled)
                 font { pixelSize: 15; bold: true }
-                Layout.alignment: Qt.AlignHCenter // Centro verticalemente los números
+                Layout.alignment: Qt.AlignHCenter // Centro horizontalmente los números
 
                 SequentialAnimation on opacity {  // Parpadeo mientras pide atención
                     running: wsText.isUrgent

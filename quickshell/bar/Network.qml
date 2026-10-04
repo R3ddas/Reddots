@@ -1,3 +1,9 @@
+// Icono de red en la barra: cable, o wifi con la intensidad de la señal.
+//   Clic izquierdo: menú con las redes wifi (busca mientras está abierto). Pulsar una red
+//   conecta (o desconecta la actual); las que piden contraseña o usuario abren el campo
+//   para escribirlos
+//   Clic derecho: enciende/apaga el wifi
+// Las conexiones las lleva services/NetworkMonitor.qml; aquí solo se pinta.
 // Recursos: https://www.youtube.com/watch?v=Vlpyz4c4Xdw
 // https://www.nerdfonts.com/
 
