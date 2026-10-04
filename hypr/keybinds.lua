@@ -1,6 +1,4 @@
-local programs = require("programs")
-local monitors = require("monitors")
-local terminal = programs.terminal
+local terminal = "alacritty"   -- El de Super + T. La barra también lo lanza por su nombre (Power.qml, Reddots.qml)
 
 local mainMod = "SUPER" -- La tecla "Windows" como modificador principal
 
@@ -62,32 +60,5 @@ hl.bind("SUPER + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { rel
 -- Historial del portapapeles (quickshell/windows/Clipboard.qml)
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("qs ipc call clipboard toggle"), { description = "Aplicaciones: Historial del portapapeles" })
 
--- No hay un dispatcher (.dsp) para el mirror de los monitores, así que hay que crear una función.
--- En vez de llevar la cuenta en una variable, se mira el estado real cada vez: así acierta
--- aunque el mirror se haya activado desde hyprland.lua o desde otro sitio.
-local function isMirroring()
-    for _, mon in ipairs(hl.get_monitors()) do
-        if mon.is_mirror or #mon.mirrors > 0 then return true end  -- Vale tanto el que copia como el copiado (por si get_monitors() no lista al que copia)
-    end
-    return false
-end
-
--- Monitor que copian los demás: el panel del portátil si lo hay; si no (sobremesa
--- con varios monitores), el que tiene el foco.
-local internalPanel = monitors.internalPanel()      -- Una sola vez: el portátil no cambia de panel
-
-local function mirrorSource()
-    if internalPanel then return internalPanel end
-    for _, mon in ipairs(hl.get_monitors()) do
-        if mon.focused then return mon.name end
-    end
-    return ""
-end
-
-hl.bind("SUPER + M", function()
-    if not isMirroring() and #hl.get_monitors() < 2 then return end   -- Con un solo monitor no hay nada que copiar (se copiaría a sí mismo)
-    hl.monitor({
-        output   = "",                                          -- A todos los monitores
-        mirror   = isMirroring() and "" or mirrorSource(),      -- Si ya hay mirror lo quita; si no, todos copian el de mirrorSource()
-    })
-end, { description = "Monitores: Duplicar las pantallas (activar / desactivar)" })
+-- Super + M (duplicar las pantallas) no está aquí sino en hyprland.lua, justo después del
+-- require("keybinds"): necesita saber cuál es el panel del portátil (ver MONITORES allí).

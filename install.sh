@@ -99,35 +99,26 @@ mkdir -p ~/.config/hypr ~/.config/fish ~/.config/alacritty ~/.config/fastfetch ~
 
 # Quickshell se enlaza como carpeta entera (no archivo a archivo) para que los
 # widgets nuevos que se añadan al repo aparezcan solos, sin volver a ejecutar esto.
-# Si ya existe como carpeta de verdad (instalaciones anteriores enlazaban archivo
-# a archivo), se quita antes: si solo tiene enlaces se borra, y si tiene algo más
-# se aparta a una copia por si acaso. Lo que guarda Quickshell (tema, fondo,
-# medidas...) no vive aquí sino en ~/.local/state/quickshell, así que no se pierde.
+# Si ya existe como carpeta de verdad (la config de otra shell de Quickshell), ln
+# metería el enlace dentro en vez de sustituirla: se aparta antes a una copia. Lo que
+# guarda Quickshell (tema, fondo, medidas...) no vive aquí sino en
+# ~/.local/state/quickshell, así que no se pierde.
 if [[ -d ~/.config/quickshell && ! -L ~/.config/quickshell ]]; then
-    if [[ -z "$(find ~/.config/quickshell -mindepth 1 -maxdepth 1 ! -type l)" ]]; then   # Solo contiene enlaces
-        rm -r ~/.config/quickshell
-    else
-        backup=~/.config/quickshell.bak-$(date +%Y%m%d-%H%M%S)
-        mv ~/.config/quickshell "$backup"
-        echo "Aviso: ~/.config/quickshell tenía archivos propios, movidos a $backup"
-    fi
+    backup=~/.config/quickshell.bak-$(date +%Y%m%d-%H%M%S)
+    mv ~/.config/quickshell "$backup"
+    echo "Aviso: ~/.config/quickshell era una carpeta propia, movida a $backup"
 fi
 ln -sfn "$DOTS/quickshell"                 ~/.config/quickshell   # Incluye scripts/ (los que lanza la barra)
 ln -sfn "$DOTS"/hypr/*                     ~/.config/hypr/
-# La configuración de cada programa vive en apps/. Antes cada carpeta estaba suelta en la raíz del
-# repo: los enlaces viejos apuntan a una ruta que ya no existe, y el -f de ln los sobrescribe.
 ln -sfn "$DOTS/apps/fish/config.fish"           ~/.config/fish/config.fish
 ln -sfn "$DOTS/apps/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
 ln -sfn "$DOTS/apps/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
 ln -sfn "$DOTS/apps/vscode/settings.json"       ~/.config/Code/User/settings.json  # Ajustes de Visual Studio Code
 
-# Enlaces a archivos que ya no están en el repo (p.ej. el antiguo hypr/hyprpaper.conf):
-# apuntan a la nada, se quitan. Solo los que apuntan al repo, no los de otras cosas.
+# Enlaces a archivos que ya no están en el repo (p.ej. los antiguos hypr/monitors.lua y
+# hypr/programs.lua): apuntan a la nada, se quitan. Solo los que apuntan al repo, no los
+# de otras cosas.
 find ~/.config/hypr -maxdepth 1 -xtype l -lname "$DOTS/*" -delete
-
-# Archivos que generaba Quickshell y ya no se usan: shellWallpaper.conf era la config
-# de hyprpaper con el fondo elegido (ahora el fondo lo pinta quickshell/windows/Background.qml)
-rm -f ~/.config/hypr/shellWallpaper.conf
 
 # Restos de una config de Hyprland anterior (la que trae CachyOS, o archivos que
 # ya no están en el repo): se apartan a una copia para que no se mezclen con la
@@ -148,13 +139,6 @@ xdg-user-dirs-update
 pictures="$(xdg-user-dir PICTURES)"
 mkdir -p "$pictures"
 ln -sfn "$DOTS/wallpapers"   "$pictures/Wallpapers"
-
-# Antes se enlazaban en ~/Pictures aunque la carpeta de imágenes fuese otra: se quita
-# ese enlace viejo, y ~/Pictures también si se ha quedado vacía.
-if [[ "$pictures" != "$HOME/Pictures" && -L ~/Pictures/Wallpapers ]]; then
-    rm ~/Pictures/Wallpapers
-    rmdir --ignore-fail-on-non-empty ~/Pictures
-fi
 
 echo "Escondiendo aplicaciones del launcher"
 

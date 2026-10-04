@@ -1,7 +1,6 @@
--- Config principal de Hyprland (API Lua). Está repartida en varios archivos que
--- se cargan con require(): monitors.lua (desde aquí y desde keybinds.lua), keybinds.lua,
--- programs.lua (desde keybinds.lua). Los que genera Quickshell fuera del repo se
--- cargan con dofile() (ver loadIfExists, más abajo).
+-- Config principal de Hyprland (API Lua). Los atajos de teclado van aparte, en
+-- keybinds.lua (se carga con require(), ver ATAJOS DE TECLADO). Los archivos que genera
+-- Quickshell fuera del repo se cargan con dofile() (ver loadIfExists, más abajo).
 
 
 -------------------
@@ -10,7 +9,20 @@
 
 -- Ver https://wiki.hypr.land/Configuring/Basics/Monitors/
 -- Nada de nombres de máquina ni de conector: valen igual en el portátil y en el sobremesa.
-local monitors = require("monitors")
+
+-- Nombre del panel interno del portátil ("eDP-1", o "LVDS-1" en hardware más antiguo),
+-- o nil si no hay (PC de sobremesa). Lo averigua scripts/internal-panel.sh, el mismo
+-- que usa la barra (quickshell/shell.qml). No vale hl.get_monitors(): al cargar la
+-- config todavía está vacío, porque Hyprland crea los monitores después de leer las
+-- reglas. Se pregunta una sola vez por carga: el portátil no cambia de panel.
+local function readInternalPanel()
+    local out = io.popen("bash " .. os.getenv("HOME") .. "/.config/hypr/scripts/internal-panel.sh")
+    if not out then return nil end
+    local name = out:read("l")      -- nil si no ha escrito nada
+    out:close()
+    return name
+end
+local internalPanel = readInternalPanel()
 
 -- Cualquier monitor: de entrada su resolución nativa ("preferred", la que el monitor
 -- marca como suya). "auto" coloca cada monitor a la derecha de los que ya hay.
@@ -39,7 +51,6 @@ local activeMonitors = hl.get_monitors()   -- Solo los activos (no el panel con 
 
 -- El panel del portátil, si lo hay, siempre a la izquierda (0x0), con los externos a
 -- su derecha. También cuando se vuelve a encender al abrir la tapa (ver más abajo).
-local internalPanel = monitors.internalPanel()
 local panelRule = {
     output   = internalPanel,
     disabled = false,       -- Explícito: si no, al reaplicar la regla se conserva el "disabled = true" de cerrar la tapa
@@ -381,6 +392,39 @@ hl.gesture({                            -- Puedo cambiar entre workspaces con 3 
 ---- ATAJOS DE TECLADO ----
 ---------------------------
 require("keybinds")
+
+-- Super + M: duplicar las pantallas. Está aquí y no en keybinds.lua porque usa
+-- internalPanel (ver MONITORES). Va justo después del require() para que en la chuleta
+-- de atajos (quickshell/windows/Keybinds.qml, que los pinta en el orden en que se
+-- definen) la sección "Monitores" siga saliendo después de las de keybinds.lua.
+--
+-- No hay un dispatcher (.dsp) para el mirror de los monitores, así que hay que crear una función.
+-- En vez de llevar la cuenta en una variable, se mira el estado real cada vez: así acierta
+-- aunque el mirror se haya activado desde otro sitio.
+local function isMirroring()
+    for _, mon in ipairs(hl.get_monitors()) do
+        if mon.is_mirror or #mon.mirrors > 0 then return true end  -- Vale tanto el que copia como el copiado (por si get_monitors() no lista al que copia)
+    end
+    return false
+end
+
+-- Monitor que copian los demás: el panel del portátil si lo hay; si no (sobremesa
+-- con varios monitores), el que tiene el foco.
+local function mirrorSource()
+    if internalPanel then return internalPanel end
+    for _, mon in ipairs(hl.get_monitors()) do
+        if mon.focused then return mon.name end
+    end
+    return ""
+end
+
+hl.bind("SUPER + M", function()
+    if not isMirroring() and #hl.get_monitors() < 2 then return end   -- Con un solo monitor no hay nada que copiar (se copiaría a sí mismo)
+    hl.monitor({
+        output   = "",                                          -- A todos los monitores
+        mirror   = isMirroring() and "" or mirrorSource(),      -- Si ya hay mirror lo quita; si no, todos copian el de mirrorSource()
+    })
+end, { description = "Monitores: Duplicar las pantallas (activar / desactivar)" })
 
 
 -------------------------------

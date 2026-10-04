@@ -6,7 +6,7 @@ import QtQuick
 // Servidor de notificaciones (el que las recibe de las apps por D-Bus) y su estado:
 //   - Activas: las que no se han cerrado. Al acabar su tiempo en pantalla no se cierran,
 //     solo se ocultan ("caducar = ocultar"): siguen en el popup de SystemStats
-//     (bar/SystemStats.qml, lista en components/NotificationList.qml), con sus botones de
+//     (bar/settings/SystemStats.qml, lista en components/NotificationList.qml), con sus botones de
 //     acción funcionando, hasta que se descartan a mano. Así no se pierde una que llegó
 //     sin estar mirando.
 //   - Emergentes ("popups"): las activas que se están enseñando como tarjeta arriba a la

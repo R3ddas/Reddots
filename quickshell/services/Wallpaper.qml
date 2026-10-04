@@ -37,15 +37,7 @@ Singleton {
         blockLoading: true                              // Es un archivo diminuto: se lee ya al arrancar
         onAdapterUpdated: writeAdapter()                // Solo salta al cambiar "path", no al cargar el JSON
         onLoadFailed: root.ready = true                 // Aún no existe: se usa el de por defecto
-        onLoaded: {
-            // Antes los fondos se enlazaban siempre en ~/Pictures/Wallpapers, aunque la carpeta de
-            // imágenes fuese otra (~/Imágenes): si la ruta guardada es de ahí, se pasa a la de ahora.
-            // Al cambiar "path" salta onAdapterUpdated, que lo guarda.
-            const oldFolder = Quickshell.env("HOME") + "/Pictures/Wallpapers/"
-            if (root.path.startsWith(oldFolder) && root.folder + "/" !== oldFolder)
-                root.path = root.folder + "/" + root.path.slice(oldFolder.length)
-            root.ready = true
-        }
+        onLoaded: root.ready = true
 
         JsonAdapter {
             id: adapter

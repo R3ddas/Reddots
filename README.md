@@ -1,22 +1,26 @@
 # Reddots
 
-Primero hay que instalar Cachyos con Hyprland (sin Noctalia)
+Primero hay que instalar CachyOS con Hyprland (sin Noctalia).
 
 Para descargarlo:
 
+```bash
 git clone https://github.com/R3ddas/Reddots.git ~/Reddots
+```
 
 Para instalarlo:
 
+```bash
 cd ~/Reddots
 chmod +x install.sh
 ./install.sh
+```
 
 ## Qué hay en cada carpeta
 
-- `hypr/`: configuración de Hyprland (en Lua) y sus scripts.
+- `hypr/`: configuración de Hyprland (en Lua: `hyprland.lua` y los atajos en `keybinds.lua`) y sus scripts.
 - `quickshell/`: la interfaz (barra, lanzador, notificaciones, fondo...). Todo arranca en `shell.qml`.
-  - `bar/`: la barra lateral (`Bar.qml`) y sus widgets; en `bar/settings/`, los ajustes del engranaje.
+  - `bar/`: la barra lateral (`Bar.qml`) y sus widgets; en `bar/settings/`, el engranaje y todo lo que se pliega con él (uso del sistema, capturas, brillo, medidas, tema y fondo).
   - `windows/`: ventanas y capas sueltas: fondo, borde, lanzador, portapapeles, notificaciones...
   - `services/`: singletons con el estado compartido (tema, medidas, fondo, uso del sistema...), sin nada visible.
   - `components/`: piezas comunes con las que se montan las demás (icono de la barra, desplegable, slider...).

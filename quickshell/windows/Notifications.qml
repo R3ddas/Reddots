@@ -3,7 +3,7 @@
 // Se pueden generar notificaciones desde terminal con: notify-send "Titulo" "Contenido"
 // Pueden ser críticas con: notify-send -u critical "Titulo" "Contenido"
 // Se ocultan solas a los 10 s (defaultTimeout) o al tiempo que pida la app (notify-send -t 3000 = 3 s; -t 0 = nunca).
-// Ocultarse no es cerrarse: siguen en el popup de SystemStats (bar/SystemStats.qml) hasta
+// Ocultarse no es cerrarse: siguen en el popup de SystemStats (bar/settings/SystemStats.qml) hasta
 // que se descartan; ver services/NotificationCenter.qml. Las transitorias sí se cierran.
 // Las críticas no se ocultan solas. Con el ratón encima, tampoco.
 // Clic izquierdo: la acción principal de la app si la tiene (si no, la cierra). Clic derecho: la cierra.
