@@ -115,11 +115,6 @@ ln -sfn "$DOTS/apps/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.to
 ln -sfn "$DOTS/apps/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
 ln -sfn "$DOTS/apps/vscode/settings.json"       ~/.config/Code/User/settings.json  # Ajustes de Visual Studio Code
 
-# Enlaces a archivos que ya no están en el repo (p.ej. los antiguos hypr/monitors.lua y
-# hypr/programs.lua): apuntan a la nada, se quitan. Solo los que apuntan al repo, no los
-# de otras cosas.
-find ~/.config/hypr -maxdepth 1 -xtype l -lname "$DOTS/*" -delete
-
 # Restos de una config de Hyprland anterior (la que trae CachyOS, o archivos que
 # ya no están en el repo): se apartan a una copia para que no se mezclen con la
 # de verdad. Se queda lo que es un enlace (lo de arriba) y lo que genera
