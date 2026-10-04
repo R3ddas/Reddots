@@ -1,5 +1,6 @@
-// Icono en la barra + popup con el uso del sistema: procesador, memoria (y swap) y las
-// temperaturas del procesador, la gráfica y el disco. Los datos los lee SystemMonitor.qml
+// Icono en la barra + popup con el uso del sistema: procesador, memoria (y swap), gráfica
+// (uso y memoria de vídeo, solo con una AMD: ver SystemMonitor.qml) y las temperaturas del
+// procesador, la gráfica y el disco. Los datos los lee SystemMonitor.qml
 // (cada 15 s, y cada 2 s mientras este popup está abierto). Si alguna temperatura pasa
 // de su umbral, el icono se pone en rojo (y el engranaje, ver SettingsToggle.qml).
 // Debajo, las notificaciones: las activas y las últimas descartadas
@@ -83,6 +84,18 @@ ColumnLayout {
             value: root.gib(SystemMonitor.swapUsed) + " / " + root.gib(SystemMonitor.swapTotal) + " GiB"
         }
         Slider { visible: SystemMonitor.swapTotal > 0; interactive: false; value: SystemMonitor.swapTotal ? SystemMonitor.swapUsed / SystemMonitor.swapTotal : 0 }
+
+        // La gráfica, como el procesador y la memoria. Sin datos (no es una AMD) no se pinta
+        StatLine { visible: SystemMonitor.gpu >= 0; Layout.topMargin: 4; label: "Gráfica"; value: "" }
+        Slider { visible: SystemMonitor.gpu >= 0; interactive: false; value: Math.max(0, SystemMonitor.gpu) }
+
+        StatLine {
+            visible: SystemMonitor.vramTotal > 0
+            Layout.topMargin: 4
+            label: "Memoria de vídeo"
+            value: root.gib(SystemMonitor.vramUsed) + " / " + root.gib(SystemMonitor.vramTotal) + " GiB"
+        }
+        Slider { visible: SystemMonitor.vramTotal > 0; interactive: false; value: SystemMonitor.vramTotal ? SystemMonitor.vramUsed / SystemMonitor.vramTotal : 0 }
 
         Separator {                                     // Antes de las temperaturas
             visible: SystemMonitor.temps.length > 0

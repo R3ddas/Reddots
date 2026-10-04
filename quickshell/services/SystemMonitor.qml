@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io                // FileView para leer /proc y los sensores; Process para buscar los sensores
 import QtQuick
 
-// Uso del sistema (procesador, memoria, swap y temperaturas), para el panel de
+// Uso del sistema (procesador, memoria, swap, gráfica y temperaturas), para el panel de
 // SystemStats.qml y para el aviso de temperatura alta, que pone en rojo el icono del
 // chip y, con el grupo plegado, el engranaje (SettingsToggle.qml). Se lee cada 15 s, y
 // cada 2 s mientras el panel está abierto ("fast").
@@ -11,7 +11,7 @@ import QtQuick
 // Los datos se leen directamente de /proc y /sys con FileView, sin lanzar ningún
 // proceso en cada lectura (antes era un script con bash y awk cada vez, y es lo único
 // de la barra que se repite siempre, se mire o no). Solo para saber DÓNDE están los
-// sensores de temperatura se lanza scripts/temp-sensors.sh, una vez al arrancar.
+// sensores (temperaturas y uso de la gráfica) se lanza scripts/sensors.sh, una vez al arrancar.
 //
 // Ojo: tras reload(), text() aún devuelve la lectura anterior; la nueva llega en
 // onLoaded. Por eso cada archivo se procesa en su onLoaded y no justo después de reload().
@@ -27,12 +27,42 @@ Singleton {
     property real swapTotal: 0
     property real swapUsed: 0
 
+    // La gráfica: solo con una AMD, que lo da en archivos (ver scripts/sensors.sh). En los
+    // demás equipos (NVIDIA, Intel) se quedan en -1 / 0 y el panel no pinta esas líneas.
+    // gpu_busy_percent es el uso en ese instante, no una media: con una lectura cada 2 s
+    // con el panel abierto basta para ver si está trabajando.
+    //
+    // NVIDIA (la del portátil) no está hecho a propósito. Con el driver propietario no hay
+    // archivos que leer: todo pasa por nvidia-smi (viene con nvidia-utils, que ya instala el
+    // driver). Si algún día se quiere, los pasos serían:
+    //   1. En scripts/sensors.sh, si no ha encontrado una AMD y existe nvidia-smi
+    //      (command -v nvidia-smi), escribir una línea "gpu|nvidia|" para que esto lo sepa.
+    //   2. Aquí, un Process con:
+    //        nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu
+    //                   --format=csv,noheader,nounits
+    //      Escribe una línea como "12, 1024, 8192, 45": uso en %, memoria en MiB (×1024 para
+    //      pasarla a kB, como vramUsed/vramTotal) y temperatura en °C (con el driver
+    //      propietario la gráfica no sale en /sys/class/hwmon, así que tampoco hay
+    //      temperatura de "Gráfica" por la otra vía: habría que meterla en "readings").
+    //      Se parsea en su StdioCollector, como hace Updates.qml con check-updates.sh.
+    //   3. Lanzarlo desde update() solo con el panel abierto ("fast"): cada lectura es un
+    //      proceso que además despierta la gráfica, y en un portátil eso gasta batería si se
+    //      hace cada 15 s aunque nadie mire. Por eso con el panel cerrado no se sabría la
+    //      temperatura de la gráfica ni avisaría si se calienta.
+    //   Otra forma, sin un proceso por lectura: dejar en marcha mientras el panel está
+    //   abierto "nvidia-smi --query-gpu=... --format=csv,noheader,nounits -lms 2000", que
+    //   escribe una línea cada 2 s, leerlas con un SplitParser y pararlo al cerrar el panel.
+    property var gpuFiles: ({})     // { busy, vramUsed, vramTotal }: rutas que da sensors.sh (vacío si no hay)
+    property real gpu: -1           // Uso, de 0 a 1 (-1 = no se sabe)
+    property real vramTotal: 0      // kB, como la memoria (para que SystemStats.qml la escriba igual)
+    property real vramUsed: 0
+
     // Grados a partir de los que se avisa: cada pieza aguanta distinto. El orden de
     // aquí es también el orden en el que salen en el panel.
     readonly property var limits: ({ "Procesador": 85, "Gráfica": 90, "Disco": 70 })
     readonly property color hotColor: Theme.error   // El rojo del tema, como el borde de las notificaciones críticas
 
-    property var sensors: []        // [{ name, path }] que da temp-sensors.sh, en el orden de "limits"
+    property var sensors: []        // [{ name, path }] de las temperaturas que da sensors.sh, en el orden de "limits"
     property var readings: ({})     // nombre -> °C de la última lectura de cada sensor
 
     readonly property var temps: sensors.filter(s => readings[s.name] !== undefined).map(s => ({   // [{ name, celsius, hot }]
@@ -68,6 +98,7 @@ Singleton {
         statFile.reload()
         memFile.reload()
         for (let i = 0; i < sensorFiles.count; i++) sensorFiles.objectAt(i).reload()
+        for (const f of [gpuBusyFile, vramUsedFile, vramTotalFile]) if (f.path !== "") f.reload()
     }
 
     // Se leen solos una vez al crearse: esa primera lectura del procesador solo sirve de
@@ -88,14 +119,16 @@ Singleton {
     // Una sola vez: los sensores no cambian mientras el equipo está encendido
     Process {
         running: true
-        command: [Quickshell.shellPath("scripts/temp-sensors.sh")]
+        command: [Quickshell.shellPath("scripts/sensors.sh")]
         stdout: StdioCollector {
             onStreamFinished: {
+                const lines = text.split("\n").filter(l => l.includes("|")).map(l => l.split("|"))   // [tipo, nombre, ruta]
                 const order = Object.keys(root.limits)
-                root.sensors = text.split("\n").filter(l => l.includes("|")).map(l => {
-                    const [name, path] = l.split("|")
-                    return { name: name, path: path }
-                }).sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name))
+                root.sensors = lines.filter(f => f[0] === "temp").map(f => ({ name: f[1], path: f[2] }))
+                                    .sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name))
+                const gpu = {}
+                for (const f of lines.filter(f => f[0] === "gpu")) gpu[f[1]] = f[2]
+                root.gpuFiles = gpu
             }
         }
     }
@@ -115,6 +148,25 @@ Singleton {
                 root.readings = next
             }
         }
+    }
+
+    // La gráfica: un archivo por dato, como los sensores. Sin ruta (no es una AMD) no se leen
+    FileView {
+        id: gpuBusyFile
+        path: root.gpuFiles.busy ?? ""
+        onLoaded: root.gpu = Number(text()) / 100
+    }
+
+    FileView {
+        id: vramUsedFile
+        path: root.gpuFiles.vramUsed ?? ""
+        onLoaded: root.vramUsed = Number(text()) / 1024         // Bytes -> kB
+    }
+
+    FileView {
+        id: vramTotalFile
+        path: root.gpuFiles.vramTotal ?? ""
+        onLoaded: root.vramTotal = Number(text()) / 1024
     }
 
     Timer {
