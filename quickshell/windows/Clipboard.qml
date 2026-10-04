@@ -36,9 +36,9 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
             searchInput.text = ""                       // Cada vez que se abre empieza sin filtro
             list.currentIndex = 0
             reload()
-            searchInput.forceActiveFocus()
+            searchInput.input.forceActiveFocus()
         } else {
-            searchInput.focus = false                   // Nada con foco mientras está cerrada (ver Keybinds.qml)
+            searchInput.input.focus = false                 // Nada con foco mientras está cerrada (ver Keybinds.qml)
         }
     }
 
@@ -106,54 +106,24 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         }
     }
 
-    Rectangle {
+    Frame {                                         // Mismo estilo que los desplegables de la barra
         anchors.fill: parent
-        color: Theme.surface
-        radius: Geometry.popupRounding              // Mismo estilo que los desplegables de la barra
-        border.color: Theme.textSelected
-        border.width: Geometry.popupBorderWidth
 
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 12
             spacing: 8
 
-            Rectangle {                             // Campo de búsqueda (como el del Launcher)
-                Layout.fillWidth: true
-                implicitHeight: 36
-                radius: 8
-                color: Theme.background
-                border.color: Theme.border
-
-                TextInput {
-                    id: searchInput
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    verticalAlignment: TextInput.AlignVCenter
-                    color: Theme.textActive
-                    selectionColor: Theme.surfaceHover
-                    clip: true
-
-                    onTextChanged: list.currentIndex = 0   // Al filtrar, se selecciona el primer resultado
-
-                    Keys.onDownPressed: list.currentIndex = Math.min(list.currentIndex + 1, list.count - 1)
-                    Keys.onUpPressed: list.currentIndex = Math.max(list.currentIndex - 1, 0)
-                    Keys.onReturnPressed: root.copy(root.filteredEntries[list.currentIndex])
-                    Keys.onEnterPressed: root.copy(root.filteredEntries[list.currentIndex])    // Intro del teclado numérico
-                    Keys.onEscapePressed: root.visible = false
-                    Keys.onPressed: event => {
-                        if (event.key === Qt.Key_Delete && (event.modifiers & Qt.ShiftModifier)) {   // Supr sola borra letras del buscador
-                            root.remove(root.filteredEntries[list.currentIndex])
-                            event.accepted = true
-                        }
-                    }
-
-                    Text {                          // Texto de ayuda mientras el campo está vacío
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: searchInput.text === ""
-                        text: "Buscar en el portapapeles…"
-                        color: Theme.textDisabled
+            InputField {                            // Campo de búsqueda (como el del Launcher): ↑ ↓ mueven la selección de la lista
+                id: searchInput
+                placeholder: "Buscar en el portapapeles…"
+                list: list
+                onAccepted: root.copy(root.filteredEntries[list.currentIndex])
+                onEscapePressed: root.visible = false
+                onKeyPressed: event => {
+                    if (event.key === Qt.Key_Delete && (event.modifiers & Qt.ShiftModifier)) {   // Supr sola borra letras del buscador
+                        root.remove(root.filteredEntries[list.currentIndex])
+                        event.accepted = true
                     }
                 }
             }

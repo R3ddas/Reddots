@@ -108,12 +108,8 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
 
     // --- Ventana -----------------------------------------------------------------
 
-    Rectangle {
+    Frame {                                         // Mismo estilo que los desplegables de la barra
         anchors.fill: parent
-        color: Theme.surface
-        radius: Geometry.popupRounding              // Mismo estilo que los desplegables de la barra
-        border.color: Theme.textSelected
-        border.width: Geometry.popupBorderWidth
 
         Flickable {
             id: flick
@@ -164,17 +160,9 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                         Layout.fillWidth: true
                         spacing: 4
 
-                        Text {                      // Nombre de la sección
+                        SectionTitle {              // Nombre de la sección, con la letra normal
                             text: section.modelData.name
-                            color: Theme.textSelected
-                            font.bold: true
-                            Layout.bottomMargin: 2
-                        }
-
-                        Rectangle {                 // Línea bajo el nombre
-                            Layout.fillWidth: true
-                            implicitHeight: 1
-                            color: Theme.border
+                            spacing: 6
                             Layout.bottomMargin: 4
                         }
 

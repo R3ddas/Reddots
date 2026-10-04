@@ -42,31 +42,17 @@ ColumnLayout {
             source: root.iconSource(modelData.icon)
             Layout.alignment: Qt.AlignHCenter
 
-            MouseArea {
-                id: trayMouse
-                anchors.fill: parent
-                anchors.margins: -4
-                hoverEnabled: true                      // Para el tooltip
+            TooltipArea {                               // Con el nombre de la app al dejar el ratón encima
+                tooltip: trayIcon.modelData.tooltipTitle || trayIcon.modelData.title
+                popup: menu
                 acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                onContainsMouseChanged: trayTooltip.active = containsMouse
                 onClicked: event => {
-                    trayTooltip.active = false          // Al pulsar se quita, como en BarIcon.qml
                     const item = trayIcon.modelData
                     if (event.button === Qt.MiddleButton) item.secondaryActivate()
                     else if (event.button === Qt.RightButton || item.onlyMenu) menu.openFor(item, trayIcon)
                     else item.activate()
                 }
                 onWheel: wheel => trayIcon.modelData.scroll(wheel.angleDelta.y, false)
-            }
-
-            LazyLoader {                                // Nombre de la app al dejar el ratón encima (solo existe mientras tanto)
-                id: trayTooltip
-                active: false
-                BarTooltip {
-                    anchorItem: trayIcon
-                    text: menu.visible ? "" : (trayIcon.modelData.tooltipTitle || trayIcon.modelData.title)
-                    hovered: true
-                }
             }
         }
     }
@@ -110,8 +96,8 @@ ColumnLayout {
             depth = 0
         }
 
-        implicitWidth: Math.min(Math.max(180, listCol.implicitWidth + 16), 340)
-        implicitHeight: listCol.implicitHeight + 16
+        implicitWidth: Math.min(Math.max(180, contentWidth + padding * 2), 340)    // Lo que pida el texto más largo, con límites
+        spacing: 2
 
         onVisibleChanged: if (!visible) closeAll()
 
@@ -121,49 +107,42 @@ ColumnLayout {
         QsMenuOpener { id: level2 }
         QsMenuOpener { id: level3 }
 
-        ColumnLayout {
-            id: listCol
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 2
+        MenuRow {                                   // Solo dentro de un submenú
+            visible: menu.depth > 0
+            icon: "‹"
+            text: "Atrás"
+            onClicked: menu.back()
+        }
 
-            MenuRow {                                   // Solo dentro de un submenú
-                visible: menu.depth > 0
-                icon: "‹"
-                text: "Atrás"
-                onClicked: menu.back()
-            }
+        Repeater {
+            model: menu.current.children
 
-            Repeater {
-                model: menu.current.children
+            delegate: Item {
+                id: entryItem
+                required property QsMenuEntry modelData
 
-                delegate: Item {
-                    id: entryItem
-                    required property QsMenuEntry modelData
+                Layout.fillWidth: true
+                implicitWidth: modelData.isSeparator ? 0 : row.implicitWidth
+                implicitHeight: modelData.isSeparator ? 9 : row.implicitHeight
 
-                    Layout.fillWidth: true
-                    implicitWidth: modelData.isSeparator ? 0 : row.implicitWidth
-                    implicitHeight: modelData.isSeparator ? 9 : row.implicitHeight
+                Rectangle {                         // Separador
+                    visible: entryItem.modelData.isSeparator
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width
+                    height: 1
+                    color: Theme.border
+                }
 
-                    Rectangle {                         // Separador
-                        visible: entryItem.modelData.isSeparator
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width
-                        height: 1
-                        color: Theme.border
-                    }
-
-                    EntryRow {
-                        id: row
-                        visible: !entryItem.modelData.isSeparator
-                        width: parent.width
-                        entry: entryItem.modelData
-                        onClicked: {
-                            if (entry.hasChildren) menu.enter(entry)
-                            else {
-                                entry.triggered()       // Le dice a la app que se ha pulsado
-                                menu.visible = false
-                            }
+                EntryRow {
+                    id: row
+                    visible: !entryItem.modelData.isSeparator
+                    width: parent.width
+                    entry: entryItem.modelData
+                    onClicked: {
+                        if (entry.hasChildren) menu.enter(entry)
+                        else {
+                            entry.triggered()       // Le dice a la app que se ha pulsado
+                            menu.visible = false
                         }
                     }
                 }

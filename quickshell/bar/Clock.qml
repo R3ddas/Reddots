@@ -26,26 +26,11 @@ ColumnLayout{
         horizontalAlignment: Text.AlignHCenter
         Layout.alignment: Qt.AlignHCenter
 
-        MouseArea{
-            anchors.fill: parent
-            anchors.margins: -4
-            hoverEnabled: true                                  // Para el tooltip con la fecha completa
+        TooltipArea {                                           // "jueves, 25 de septiembre de 2026" al dejar el ratón encima de la hora
+            tooltip: Qt.locale("es_ES").toString(clock.date, "dddd, d 'de' MMMM 'de' yyyy")
+            popup: menu
             acceptedButtons: Qt.RightButton
-            onContainsMouseChanged: dateTooltip.active = containsMouse
-            onClicked: {
-                dateTooltip.active = false
-                root.showDate = !root.showDate
-            }
-        }
-
-        LazyLoader {                                            // "jueves, 25 de septiembre de 2026" al dejar el ratón encima de la hora
-            id: dateTooltip
-            active: false
-            BarTooltip {
-                anchorItem: timeText
-                text: menu.visible ? "" : Qt.locale("es_ES").toString(clock.date, "dddd, d 'de' MMMM 'de' yyyy")
-                hovered: true
-            }
+            onClicked: root.showDate = !root.showDate
         }
     }
 
@@ -112,130 +97,129 @@ ColumnLayout{
             return list
         }
 
-
-        implicitWidth: calCol.implicitWidth + 16
-        implicitHeight: calCol.implicitHeight + 16
-
         onVisibleChanged: if (visible) goToToday()   // Siempre abre en el mes actual
 
-        MouseArea {                                     // La rueda en cualquier parte del calendario cambia de mes
-            anchors.fill: parent
+        // La rueda en cualquier parte del calendario cambia de mes. El MouseArea envuelve al
+        // calendario: los MouseArea de dentro (flechas, título) no usan la rueda y se la dejan pasar
+        MouseArea {
+            implicitWidth: calCol.implicitWidth
+            implicitHeight: calCol.implicitHeight
             onWheel: wheel => menu.moveMonth(wheel.angleDelta.y > 0 ? -1 : 1)
-        }
 
-        ColumnLayout {
-            id: calCol
-            anchors.centerIn: parent
-            spacing: 6
-
-            RowLayout {                                 // Cabecera: ‹  septiembre 2026  ›
-                Layout.fillWidth: true
-
-                Text {
-                    text: "‹"
-                    color: Theme.textActive
-                    font.pixelSize: 16
-                    Layout.preferredWidth: 20
-                    horizontalAlignment: Text.AlignHCenter
-                    MouseArea { anchors.fill: parent; anchors.margins: -4; onClicked: menu.moveMonth(-1) }
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                    text: {
-                        const name = Qt.locale("es_ES").standaloneMonthName(menu.viewMonth)
-                        return name.charAt(0).toUpperCase() + name.slice(1) + " " + menu.viewYear
-                    }
-                    color: Theme.textSelected
-                    font.bold: true
-                    MouseArea { anchors.fill: parent; onClicked: menu.goToToday() }   // Clic en el título: vuelve al mes actual
-                }
-
-                Text {
-                    text: "›"
-                    color: Theme.textActive
-                    font.pixelSize: 16
-                    Layout.preferredWidth: 20
-                    horizontalAlignment: Text.AlignHCenter
-                    MouseArea { anchors.fill: parent; anchors.margins: -4; onClicked: menu.moveMonth(1) }
-                }
-            }
-
-            RowLayout {                                 // Números de semana | separador | días
+            ColumnLayout {
+                id: calCol
+                anchors.fill: parent
                 spacing: 6
 
-                // Columna con el número de semana ISO 8601 (el que se usa en España).
-                // Mismas alturas y separación que las filas de los días para que
-                // cada número quede alineado con su semana.
-                ColumnLayout {
-                    spacing: 2
-                    Layout.alignment: Qt.AlignTop
+                RowLayout {                                 // Cabecera: ‹  septiembre 2026  ›
+                    Layout.fillWidth: true
 
-                    Item { Layout.preferredHeight: 16 }     // Hueco a la altura de las iniciales de los días
+                    Text {
+                        text: "‹"
+                        color: Theme.textActive
+                        font.pixelSize: 16
+                        Layout.preferredWidth: 20
+                        horizontalAlignment: Text.AlignHCenter
+                        MouseArea { anchors.fill: parent; anchors.margins: -4; onClicked: menu.moveMonth(-1) }
+                    }
 
-                    Repeater {
-                        model: 6                            // Una por fila de días
-                        delegate: Text {
-                            required property int index
-                            text: menu.isoWeek(menu.days[index * 7])   // El lunes de esa fila
-                            color: Theme.textDisabled
-                            font.pixelSize: 10
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            Layout.preferredWidth: 20
-                            Layout.preferredHeight: 24
+                    Text {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: {
+                            const name = Qt.locale("es_ES").standaloneMonthName(menu.viewMonth)
+                            return name.charAt(0).toUpperCase() + name.slice(1) + " " + menu.viewYear
                         }
+                        color: Theme.textSelected
+                        font.bold: true
+                        MouseArea { anchors.fill: parent; onClicked: menu.goToToday() }   // Clic en el título: vuelve al mes actual
+                    }
+
+                    Text {
+                        text: "›"
+                        color: Theme.textActive
+                        font.pixelSize: 16
+                        Layout.preferredWidth: 20
+                        horizontalAlignment: Text.AlignHCenter
+                        MouseArea { anchors.fill: parent; anchors.margins: -4; onClicked: menu.moveMonth(1) }
                     }
                 }
 
-                Rectangle {                                 // Barra vertical que separa las semanas de los días
-                    Layout.preferredWidth: 1
-                    Layout.fillHeight: true
-                    color: Theme.border
-                }
+                RowLayout {                                 // Números de semana | separador | días
+                    spacing: 6
 
-                GridLayout {
-                    columns: 7
-                    columnSpacing: 2
-                    rowSpacing: 2
+                    // Columna con el número de semana ISO 8601 (el que se usa en España).
+                    // Mismas alturas y separación que las filas de los días para que
+                    // cada número quede alineado con su semana.
+                    ColumnLayout {
+                        spacing: 2
+                        Layout.alignment: Qt.AlignTop
 
-                    Repeater {                              // Iniciales de los días, empezando en lunes
-                        model: ["L", "M", "X", "J", "V", "S", "D"]
-                        delegate: Text {
-                            required property string modelData
-                            text: modelData
-                            color: Theme.textDisabled
-                            font.pixelSize: 10
-                            font.bold: true
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            Layout.preferredWidth: 28
-                            Layout.preferredHeight: 16      // Fija, para que la columna de semanas pueda alinearse
+                        Item { Layout.preferredHeight: 16 }     // Hueco a la altura de las iniciales de los días
+
+                        Repeater {
+                            model: 6                            // Una por fila de días
+                            delegate: Text {
+                                required property int index
+                                text: menu.isoWeek(menu.days[index * 7])   // El lunes de esa fila
+                                color: Theme.textDisabled
+                                font.pixelSize: 10
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                Layout.preferredWidth: 20
+                                Layout.preferredHeight: 24
+                            }
                         }
                     }
 
-                    Repeater {
-                        model: menu.days
-                        delegate: Rectangle {
-                            id: dayCell
-                            required property var modelData
-                            readonly property bool inMonth: modelData.getMonth() === menu.viewMonth
-                            readonly property bool isToday: modelData.toDateString() === clock.date.toDateString()
+                    Rectangle {                                 // Barra vertical que separa las semanas de los días
+                        Layout.preferredWidth: 1
+                        Layout.fillHeight: true
+                        color: Theme.border
+                    }
 
-                            Layout.preferredWidth: 28
-                            Layout.preferredHeight: 24
-                            radius: 6
-                            color: isToday ? Theme.textSelected : "transparent"   // Hoy, relleno con el color de acento
+                    GridLayout {
+                        columns: 7
+                        columnSpacing: 2
+                        rowSpacing: 2
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: dayCell.modelData.getDate()
-                                color: dayCell.isToday ? Theme.surface
-                                     : dayCell.inMonth ? Theme.textActive
-                                     : Theme.textDisabled                            // Días del mes anterior/siguiente, apagados
-                                font.pixelSize: 11
-                                font.bold: dayCell.isToday
+                        Repeater {                              // Iniciales de los días, empezando en lunes
+                            model: ["L", "M", "X", "J", "V", "S", "D"]
+                            delegate: Text {
+                                required property string modelData
+                                text: modelData
+                                color: Theme.textDisabled
+                                font.pixelSize: 10
+                                font.bold: true
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                Layout.preferredWidth: 28
+                                Layout.preferredHeight: 16      // Fija, para que la columna de semanas pueda alinearse
+                            }
+                        }
+
+                        Repeater {
+                            model: menu.days
+                            delegate: Rectangle {
+                                id: dayCell
+                                required property var modelData
+                                readonly property bool inMonth: modelData.getMonth() === menu.viewMonth
+                                readonly property bool isToday: modelData.toDateString() === clock.date.toDateString()
+
+                                Layout.preferredWidth: 28
+                                Layout.preferredHeight: 24
+                                radius: 6
+                                color: isToday ? Theme.textSelected : "transparent"   // Hoy, relleno con el color de acento
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: dayCell.modelData.getDate()
+                                    color: dayCell.isToday ? Theme.surface
+                                         : dayCell.inMonth ? Theme.textActive
+                                         : Theme.textDisabled                            // Días del mes anterior/siguiente, apagados
+                                    font.pixelSize: 11
+                                    font.bold: dayCell.isToday
+                                }
                             }
                         }
                     }

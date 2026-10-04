@@ -23,6 +23,11 @@ Singleton {
     // el estado anterior, para saber de dónde viene cada cambio
     property var deviceMonitor: ({})
 
+    // El dispositivo con esa dirección, o null si el adaptador ya no lo tiene (o no hay adaptador)
+    function deviceByAddress(address) {
+        return root.adapter?.devices.values.find(d => d.address === address) ?? null
+    }
+
     function monitorFor(dev) {
         let m = root.deviceMonitor[dev.address]
         if (!m) {
@@ -48,9 +53,8 @@ Singleton {
     function flagRepairNeeded(dev) {
         if (!root.repairNeeded.includes(dev.address))          // evita duplicados en la lista
             root.repairNeeded = [...root.repairNeeded, dev.address]  // reasignar el array entero para que QML detecte el cambio
-        Quickshell.execDetached(["notify-send", "-u", "normal", "-a", "Bluetooth",     // Quickshell no expone Notify() a QML, así que se usa el binario
-            "Bluetooth: re-emparejamiento necesario",
-            dev.name + " perdió la clave de emparejamiento. Ponlo en modo pairing y pulsa \"Reparar\" en el menú de Bluetooth."])
+        NotificationCenter.notify("Bluetooth", "", "Bluetooth: re-emparejamiento necesario",
+            dev.name + " perdió la clave de emparejamiento. Ponlo en modo pairing y pulsa \"Reparar\" en el menú de Bluetooth.")
     }
 
     function clearRepairNeeded(address) {
@@ -115,9 +119,8 @@ Singleton {
         id: pendingCheck
         interval: 1500
         onTriggered: {
-            const devices = root.adapter ? root.adapter.devices.values : []
             root.pendingTrust = root.pendingTrust.filter(addr => {
-                const dev = devices.find(d => d.address === addr)
+                const dev = root.deviceByAddress(addr)
                 return dev && (dev.pairing || dev.paired)                   // el pairing terminó sin cuajar: se olvida el pendiente
             })
         }
@@ -166,9 +169,8 @@ Singleton {
                 const m = root.monitorFor(dev)
                 if (!m.warnedUnbonded) {                                     // una sola notificación por dispositivo y arranque
                     m.warnedUnbonded = true
-                    Quickshell.execDetached(["notify-send", "-u", "normal", "-a", "Bluetooth",
-                        "Bluetooth: emparejamiento no guardado",
-                        dev.name + " se ha emparejado sin guardar la clave: al desconectarse se olvidará y no podrá reconectarse. Olvídalo y vuelve a emparejarlo desde el menú."])
+                    NotificationCenter.notify("Bluetooth", "", "Bluetooth: emparejamiento no guardado",
+                        dev.name + " se ha emparejado sin guardar la clave: al desconectarse se olvidará y no podrá reconectarse. Olvídalo y vuelve a emparejarlo desde el menú.")
                 }
             }
             if (unbondedNow.join() !== root.unbondedAddrs.join())   // reasignar solo si cambió, para no redibujar el menú
@@ -182,7 +184,7 @@ Singleton {
     // anunciándose (por eso hace falta ponerlo en modo pairing antes).
     function repairDevice(address) {
         if (root.repairingAddrs.includes(address)) return   // ya hay una reparación en curso para este dispositivo
-        const dev = root.adapter?.devices.values.find(d => d.address === address)
+        const dev = root.deviceByAddress(address)
         if (!dev) return
         root.repairingAddrs = [...root.repairingAddrs, address]
         root.adapter.discovering = true   // necesario para volver a ver el dispositivo anunciándose tras el forget()
@@ -196,7 +198,7 @@ Singleton {
         interval: 800   // pequeño margen tras el forget() antes de intentar volver a emparejar
         property string address: ""
         onTriggered: {
-            const dev = root.adapter?.devices.values.find(d => d.address === address)
+            const dev = root.deviceByAddress(address)
             if (dev) root.pairAndTrust(dev)   // solo tiene éxito si el dispositivo sigue anunciándose (modo pairing)
             pairWatch.address = address
             pairWatch.restart()
@@ -208,7 +210,7 @@ Singleton {
         interval: 8000   // tiempo dado al pairing (incluye confirmación de passkey) antes de comprobar el resultado
         property string address: ""
         onTriggered: {
-            const dev = root.adapter?.devices.values.find(d => d.address === pairWatch.address)
+            const dev = root.deviceByAddress(pairWatch.address)
             if (dev && dev.paired) dev.connect()                 // el pairing sí cuajó: ya se puede conectar
             if (root.adapter) root.adapter.discovering = root.menuOpen  // deja el escaneo como estaba según el menú
             root.repairingAddrs = root.repairingAddrs.filter(a => a !== pairWatch.address)

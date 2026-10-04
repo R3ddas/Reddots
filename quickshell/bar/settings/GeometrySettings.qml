@@ -19,125 +19,110 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xEEB0)
-        tooltip: menu.visible ? "" : "Medidas de la barra y las ventanas"
-        onClicked: menu.toggle()
+        tooltip: "Medidas de la barra y las ventanas"
+        popup: menu
     }
 
     BarPopup {
         id: menu
         anchorItem: iconText
-
         implicitWidth: 260                  // Etiqueta y stepper en la misma línea
-        implicitHeight: listCol.implicitHeight + 16
+        spacing: 16                         // Entre secciones: más que entre filas, para que se vea dónde empieza cada una
 
-        ColumnLayout {
-            id: listCol
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 16                             // Entre secciones: más que entre filas, para que se vea dónde empieza cada una
+        // Las entradas de Geometry.editable + HyprGeometry.editable, agrupadas por su
+        // "group" en secciones, en el orden en que aparecen (ver Geometry.qml)
+        Repeater {
+            model: {
+                const sections = []
+                for (const entry of Geometry.editable.concat(HyprGeometry.editable)) {
+                    let section = sections.find(s => s.title === entry.group)
+                    if (!section) sections.push(section = { title: entry.group, entries: [] })
+                    section.entries.push(entry)
+                }
+                return sections
+            }
 
-            // Las entradas de Geometry.editable + HyprGeometry.editable, agrupadas por su
-            // "group" en secciones, en el orden en que aparecen (ver Geometry.qml)
-            Repeater {
-                model: {
-                    const sections = []
-                    for (const entry of Geometry.editable.concat(HyprGeometry.editable)) {
-                        let section = sections.find(s => s.title === entry.group)
-                        if (!section) sections.push(section = { title: entry.group, entries: [] })
-                        section.entries.push(entry)
-                    }
-                    return sections
+            delegate: ColumnLayout {
+                id: section
+                required property var modelData
+                Layout.fillWidth: true
+                spacing: 6
+
+                SectionTitle {                          // Título de la sección, como Claros/Oscuros en ThemeSettings.qml
+                    text: section.modelData.title
+                    font.pixelSize: 11
+                    spacing: 6
                 }
 
-                delegate: ColumnLayout {
-                    id: section
-                    required property var modelData
-                    Layout.fillWidth: true
-                    spacing: 6
+                // Una fila por entrada: etiqueta + stepper (-/valor/+) que lee y
+                // escribe la propiedad por nombre en su singleton
+                // (modelData.target[modelData.key]).
+                Repeater {
+                    model: section.modelData.entries
 
-                    Text {                                  // Título de la sección, como Claros/Oscuros en ThemeSettings.qml
-                        text: section.modelData.title
-                        color: Theme.textSelected
-                        font.pixelSize: 11
-                        font.bold: true
-                    }
+                    // Todo en una línea: la etiqueta a la izquierda (se come el sitio que
+                    // sobre) y el stepper pegado a la derecha
+                    delegate: RowLayout {
+                        id: row
+                        required property var modelData
 
-                    Rectangle {                             // Línea bajo el título
                         Layout.fillWidth: true
-                        implicitHeight: 1
-                        color: Theme.border
-                    }
+                        spacing: 6
 
-                    // Una fila por entrada: etiqueta + stepper (-/valor/+) que lee y
-                    // escribe la propiedad por nombre en su singleton
-                    // (modelData.target[modelData.key]).
-                    Repeater {
-                        model: section.modelData.entries
-
-                        // Todo en una línea: la etiqueta a la izquierda (se come el sitio que
-                        // sobre) y el stepper pegado a la derecha
-                        delegate: RowLayout {
-                            id: row
-                            required property var modelData
-
+                        Text {
                             Layout.fillWidth: true
-                            spacing: 6
+                            text: row.modelData.label
+                            color: Theme.textActive
+                            font.pixelSize: 11
+                            elide: Text.ElideRight              // Por si una etiqueta nueva no cabe: que no empuje al stepper
+                        }
+
+                        Rectangle {
+                            implicitWidth: 22
+                            implicitHeight: 22
+                            radius: 4
+                            color: minusMouse.containsMouse ? Theme.surfaceHover : "transparent"
+                            border.color: Theme.border
 
                             Text {
-                                Layout.fillWidth: true
-                                text: row.modelData.label
-                                color: Theme.textActive
-                                font.pixelSize: 11
-                                elide: Text.ElideRight              // Por si una etiqueta nueva no cabe: que no empuje al stepper
-                            }
-
-                            Rectangle {
-                                implicitWidth: 22
-                                implicitHeight: 22
-                                radius: 4
-                                color: minusMouse.containsMouse ? Theme.surfaceHover : "transparent"
-                                border.color: Theme.border
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "−"
-                                    color: Theme.textActive
-                                }
-
-                                MouseArea {
-                                    id: minusMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    onClicked: row.modelData.target[row.modelData.key] = Math.max(row.modelData.min, row.modelData.target[row.modelData.key] - row.modelData.step)
-                                }
-                            }
-
-                            Text {
-                                Layout.preferredWidth: 40           // Ancho fijo (cabe "100%"): así los steppers de todas las filas quedan en columna
-                                horizontalAlignment: Text.AlignHCenter
-                                text: row.modelData.target[row.modelData.key] + (row.modelData.unit ?? "px")   // Unidad opcional de la entrada (p.ej. "%")
+                                anchors.centerIn: parent
+                                text: "−"
                                 color: Theme.textActive
                             }
 
-                            Rectangle {
-                                implicitWidth: 22
-                                implicitHeight: 22
-                                radius: 4
-                                color: plusMouse.containsMouse ? Theme.surfaceHover : "transparent"
-                                border.color: Theme.border
+                            MouseArea {
+                                id: minusMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: row.modelData.target[row.modelData.key] = Math.max(row.modelData.min, row.modelData.target[row.modelData.key] - row.modelData.step)
+                            }
+                        }
 
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "+"
-                                    color: Theme.textActive
-                                }
+                        Text {
+                            Layout.preferredWidth: 40           // Ancho fijo (cabe "100%"): así los steppers de todas las filas quedan en columna
+                            horizontalAlignment: Text.AlignHCenter
+                            text: row.modelData.target[row.modelData.key] + (row.modelData.unit ?? "px")   // Unidad opcional de la entrada (p.ej. "%")
+                            color: Theme.textActive
+                        }
 
-                                MouseArea {
-                                    id: plusMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    onClicked: row.modelData.target[row.modelData.key] = Math.min(row.modelData.max, row.modelData.target[row.modelData.key] + row.modelData.step)
-                                }
+                        Rectangle {
+                            implicitWidth: 22
+                            implicitHeight: 22
+                            radius: 4
+                            color: plusMouse.containsMouse ? Theme.surfaceHover : "transparent"
+                            border.color: Theme.border
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "+"
+                                color: Theme.textActive
+                            }
+
+                            MouseArea {
+                                id: plusMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: row.modelData.target[row.modelData.key] = Math.min(row.modelData.max, row.modelData.target[row.modelData.key] + row.modelData.step)
                             }
                         }
                     }

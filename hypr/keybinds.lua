@@ -51,11 +51,11 @@ hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tr
 hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true, description = "Multimedia: Reproducir / pausar" })
 hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true, description = "Multimedia: Canción anterior" })
 
-hl.bind("SUPER + I", hl.dsp.window.set_prop({ prop = "opaque", value = "toggle" }), { dont_inhibit = true, description = "Ventanas: Quitar / poner la transparencia" })  -- dont_inhibit intenta (mal) arreglar el comportamiento en fullscreen
-hl.bind("SUPER + F", hl.dsp.window.fullscreen({ action = "toggle" }),               { description = "Ventanas: Pantalla completa" })
+hl.bind(mainMod .. " + I", hl.dsp.window.set_prop({ prop = "opaque", value = "toggle" }), { dont_inhibit = true, description = "Ventanas: Quitar / poner la transparencia" })  -- dont_inhibit intenta (mal) arreglar el comportamiento en fullscreen
+hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }),               { description = "Ventanas: Pantalla completa" })
 
 -- Al pulsar y soltar solo la tecla Super (sin combinar con otra), abro/cierro el lanzador (quickshell/windows/Launcher.qml)
-hl.bind("SUPER + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { release = true, description = "Aplicaciones: Abrir / cerrar el lanzador" })
+hl.bind(mainMod .. " + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { release = true, description = "Aplicaciones: Abrir / cerrar el lanzador" })
 
 -- Historial del portapapeles (quickshell/windows/Clipboard.qml)
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("qs ipc call clipboard toggle"), { description = "Aplicaciones: Historial del portapapeles" })

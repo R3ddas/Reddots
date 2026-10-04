@@ -15,24 +15,22 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xf195A)
-        tooltip: menu.visible ? "" : "Tema: " + Theme.activeTheme
-        onClicked: menu.toggle()
+        tooltip: "Tema: " + Theme.activeTheme
+        popup: menu
     }
 
     BarPopup {
         id: menu
         anchorItem: iconText
-
         implicitWidth: 220
-        implicitHeight: Math.min(360, listCol.implicitHeight + 16)
 
         // Flickable en vez de Repeater suelto porque hay 45 temas: con
         // todos desplegados no cabrían en pantalla, así que se recorta a
-        // 360px y se puede hacer scroll con la rueda del ratón.
+        // 360px (con los márgenes del popup) y se puede hacer scroll con la rueda del ratón.
         Flickable {
             id: flick
-            anchors.fill: parent
-            anchors.margins: 8
+            Layout.fillWidth: true
+            Layout.preferredHeight: Math.min(360 - menu.padding * 2, listCol.implicitHeight)
             clip: true
             contentWidth: width
             contentHeight: listCol.implicitHeight
@@ -56,18 +54,11 @@ ColumnLayout {
                         Layout.topMargin: index > 0 ? 8 : 0     // Aire antes de la segunda sección
                         spacing: 2
 
-                        Text {                                  // Título de la sección, como en la chuleta de atajos
+                        SectionTitle {                          // Título de la sección, como en la chuleta de atajos
                             text: section.modelData.title
-                            color: Theme.textSelected
                             font.pixelSize: 11
-                            font.bold: true
-                            Layout.leftMargin: 6
-                        }
-
-                        Rectangle {                             // Línea bajo el título
-                            Layout.fillWidth: true
-                            implicitHeight: 1
-                            color: Theme.border
+                            indent: 6
+                            spacing: 2
                             Layout.bottomMargin: 2
                         }
 

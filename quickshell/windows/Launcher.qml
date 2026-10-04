@@ -25,7 +25,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         if (visible) {
             searchInput.text = ""                       // Cada vez que se abre empieza sin filtro
             list.currentIndex = 0
-            searchInput.forceActiveFocus()
+            searchInput.input.forceActiveFocus()
         }
     }
 
@@ -64,15 +64,13 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         root.visible = false
     }
 
-    Rectangle {
-        id: background
+    Frame {                                     // Como los desplegables de la barra, pero solo con la esquina superior izquierda redondeada:
+        id: background                          // el resto llega al borde de la pantalla
         anchors.fill: parent
         anchors.rightMargin: -border.width      // Los bordes derecho e inferior quedan fuera de la ventana: solo se ve el borde
         anchors.bottomMargin: -border.width     // de arriba y el de la izquierda, no una línea pegada al filo de la pantalla
-        topLeftRadius: 24        // Solo la esquina superior izquierda es redondeada, el resto llega al borde de la pantalla
-        color: Theme.surface
-        border.color: Theme.textSelected        // Borde con el color de acento del tema, como los desplegables de la barra
-        border.width: Geometry.popupBorderWidth // Grosor editable en GeometrySettings
+        radius: 0
+        topLeftRadius: 24
         clip: true
 
         ColumnLayout {
@@ -82,38 +80,12 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
             anchors.bottomMargin: 12 + background.border.width
             spacing: 8
 
-            Rectangle {                         // Campo de búsqueda
-                Layout.fillWidth: true
-                implicitHeight: 36
-                radius: 8
-                color: Theme.background
-                border.color: Theme.border
-
-                TextInput {
-                    id: searchInput
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    verticalAlignment: TextInput.AlignVCenter
-                    color: Theme.textActive
-                    selectionColor: Theme.surfaceHover
-                    clip: true
-
-                    onTextChanged: list.currentIndex = 0   // Al filtrar, se selecciona el primer resultado
-
-                    Keys.onDownPressed: list.currentIndex = Math.min(list.currentIndex + 1, list.count - 1)
-                    Keys.onUpPressed: list.currentIndex = Math.max(list.currentIndex - 1, 0)
-                    Keys.onReturnPressed: root.launch(root.filteredApps[list.currentIndex])
-                    Keys.onEnterPressed: root.launch(root.filteredApps[list.currentIndex])    // Intro del teclado numérico
-                    Keys.onEscapePressed: root.visible = false
-
-                    Text {                      // Texto de ayuda mientras el campo está vacío
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: searchInput.text === ""
-                        text: "Buscar…"
-                        color: Theme.textDisabled
-                    }
-                }
+            InputField {                        // Campo de búsqueda: ↑ ↓ mueven la selección de la lista
+                id: searchInput
+                placeholder: "Buscar…"
+                list: list
+                onAccepted: root.launch(root.filteredApps[list.currentIndex])
+                onEscapePressed: root.visible = false
             }
 
             ListView {

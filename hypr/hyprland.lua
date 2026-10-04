@@ -71,11 +71,19 @@ local function logindLidClosed()
 end
 local lidClosed = internalPanel ~= nil and logindLidClosed()
 
-if internalPanel then
-    local hasExternal = false
-    for _, mon in ipairs(activeMonitors) do
-        if mon.name ~= internalPanel then hasExternal = true end
+-- Si el panel está encendido y si hay algún monitor externo, en una lista de monitores
+-- activos (hl.get_monitors() no lista el panel con la tapa cerrada). Lo usan la carga
+-- de la config (aquí abajo) y applyLid (ver "Tapa del portátil").
+local function panelState(monitors)
+    local panelOn, hasExternal = false, false
+    for _, mon in ipairs(monitors) do
+        if mon.name == internalPanel then panelOn = true else hasExternal = true end
     end
+    return panelOn, hasExternal
+end
+
+if internalPanel then
+    local _, hasExternal = panelState(activeMonitors)
     if lidClosed and hasExternal then
         hl.monitor({ output = internalPanel, disabled = true })     -- Recarga con la tapa cerrada: la misma regla que pone applyLid
     else
@@ -136,11 +144,7 @@ hl.on("hyprland.start",  bestModesSoon)
 -- (lidClosed) se lee de logind más arriba.
 if internalPanel then
     local function applyLid()
-        local panelOn, hasExternal = false, false
-        for _, mon in ipairs(hl.get_monitors()) do     -- Solo lista los monitores activos
-            if mon.name == internalPanel then panelOn = true else hasExternal = true end
-        end
-
+        local panelOn, hasExternal = panelState(hl.get_monitors())
         if lidClosed and hasExternal then
             if panelOn then hl.monitor({ output = internalPanel, disabled = true }) end
         else
@@ -261,12 +265,21 @@ hl.config({
         enabled = true,
     },
 
+    -- Todo lo de "misc" va aquí, también lo que no es de aspecto: tiene que ir antes del
+    -- loadIfExists("shellTheme") de más abajo, para que background_color se pueda sobrescribir
     misc = {
         -- Color que pinta Hyprland donde no hay nada encima: solo se ve mientras Quickshell no
         -- está en marcha (luego lo tapa el fondo de pantalla, quickshell/windows/Background.qml).
         -- Como los colores de los bordes de arriba, solo el valor de ARRANQUE: Theme.qml lo
         -- sobrescribe con base00 del tema elegido vía hypr/shellTheme.lua. Es el de "Gruvbox Claro".
         background_color = 0xfffbf1c7,  -- base00
+
+        force_default_wallpaper = 0,    -- 0 o 1 quita los fondos por defecto de la mascota anime
+        disable_hyprland_logo   = true, -- Quita el logo de Hyprland / la chica anime del fondo
+        disable_splash_rendering = true,
+        -- Si se nota parpadeo en juegos o vídeos, cambiar el 2 por un 3: solo se activa
+        -- cuando la aplicación indica que lo que muestra es un juego o un vídeo.
+        vrr = 2,                       -- VRR (FreeSync) solo con una ventana en pantalla completa: juegos y vídeos sin tirones, el escritorio a frecuencia fija
     },
 })
 
@@ -324,39 +337,16 @@ hl.animation({ leaf = "workspacesOut", enabled = true,  speed = 1.94, bezier = "
 hl.animation({ leaf = "zoomFactor",    enabled = true,  speed = 7,    bezier = "quick" })
 
 
--- Ver https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/
+-- Opciones de cada distribución de ventanas (la que se usa la elige general.layout, arriba)
 hl.config({
-    dwindle = {
+    dwindle = {     -- Ver https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/
         preserve_split = true, -- Mantiene la orientación de cada división (horizontal/vertical) aunque cambie el tamaño de las ventanas
     },
-})
-
--- Ver https://wiki.hypr.land/Configuring/Layouts/Master-Layout/
-hl.config({
-    master = {
+    master = {      -- Ver https://wiki.hypr.land/Configuring/Layouts/Master-Layout/
         new_status = "master",
     },
-})
-
--- Ver https://wiki.hypr.land/Configuring/Layouts/Scrolling-Layout/
-hl.config({
-    scrolling = {
+    scrolling = {   -- Ver https://wiki.hypr.land/Configuring/Layouts/Scrolling-Layout/
         fullscreen_on_one_column = true,
-    },
-})
-
---------------------
----- MISCELÁNEA ----
---------------------
-
-hl.config({
-    misc = {
-        force_default_wallpaper = 0,    -- 0 o 1 quita los fondos por defecto de la mascota anime
-        disable_hyprland_logo   = true, -- Quita el logo de Hyprland / la chica anime del fondo
-        disable_splash_rendering = true,
-        -- Si se nota parpadeo en juegos o vídeos, cambiar el 2 por un 3: solo se activa
-        -- cuando la aplicación indica que lo que muestra es un juego o un vídeo.
-        vrr = 2,                       -- VRR (FreeSync) solo con una ventana en pantalla completa: juegos y vídeos sin tirones, el escritorio a frecuencia fija
     },
 })
 
@@ -368,10 +358,6 @@ hl.config({
 hl.config({
     input = {
         kb_layout  = "es",              -- Teclado en español
-        kb_variant = "",
-        kb_model   = "",
-        kb_options = "",
-        kb_rules   = "",
         numlock_by_default = true,      -- Bloq num activo por defecto
 
         follow_mouse = 1,
@@ -418,11 +404,12 @@ local function mirrorSource()
     return ""
 end
 
-hl.bind("SUPER + M", function()
-    if not isMirroring() and #hl.get_monitors() < 2 then return end   -- Con un solo monitor no hay nada que copiar (se copiaría a sí mismo)
+hl.bind("SUPER + M", function()       -- "SUPER" a mano: mainMod es de keybinds.lua
+    local mirroring = isMirroring()
+    if not mirroring and #hl.get_monitors() < 2 then return end      -- Con un solo monitor no hay nada que copiar (se copiaría a sí mismo)
     hl.monitor({
         output   = "",                                          -- A todos los monitores
-        mirror   = isMirroring() and "" or mirrorSource(),      -- Si ya hay mirror lo quita; si no, todos copian el de mirrorSource()
+        mirror   = mirroring and "" or mirrorSource(),          -- Si ya hay mirror lo quita; si no, todos copian el de mirrorSource()
     })
 end, { description = "Monitores: Duplicar las pantallas (activar / desactivar)" })
 

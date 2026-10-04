@@ -27,8 +27,8 @@ Singleton {
     function showError(message, hint) {
         connectError = message
         if (!root.menuOpen)
-            Quickshell.execDetached(["notify-send", "-u", "normal", "-a", "Wifi", "-i", "network-wireless-disconnected",
-                "No se pudo conectar", message + (hint ? ".\n" + hint : "")])
+            NotificationCenter.notify("Wifi", "network-wireless-disconnected", "No se pudo conectar",
+                message + (hint ? ".\n" + hint : ""))
     }
 
     function connectKnown(network) {             // Red ya guardada (o abierta): conecta sin pedir nada

@@ -2,18 +2,13 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.components
 
 // Igual que Geometry.qml pero para propiedades que no vive Quickshell sino
-// Hyprland (gaps, grosor de borde de ventana, redondeo, opacidad). No hay binding
-// directo posible con el compositor, así que cada cambio se hace en dos sitios:
-//   - En caliente, con "hyprctl eval" de la misma llamada a hl.config().
-//   - Para el siguiente arranque, en ~/.config/hypr/shellOverrides.lua (fuera
-//     del repo, generado por este archivo, igual que geometry.json).
-//     hyprland.lua carga ese archivo (dofile) si existe, y como es una
-//     llamada a hl.config() con solo estas claves, no toca el resto de
-//     opciones de general/decoration.
-// No se usa "hyprctl reload": recargaría todo hyprland.lua y desharía lo que
-// se ha cambiado en caliente desde fuera (el mirror de Super+M...).
+// Hyprland (gaps, grosor de borde de ventana, redondeo, opacidad). Se aplican en
+// caliente y se guardan para el siguiente arranque en ~/.config/hypr/shellOverrides.lua
+// con components/HyprConfigFile.qml (ver allí cómo y por qué), lo mismo que los colores
+// del tema en Theme.qml.
 Singleton {
     id: root
 
@@ -37,47 +32,20 @@ Singleton {
     // Hyprland la quiere de 0 a 1. 90/100 se imprime "0.9", no 0.9000001.
     readonly property real opacity: windowOpacity / 100
 
-    // Regenera el archivo entero cada vez (no un patch incremental tipo
-    // regex): como solo hay unas pocas claves y se conocen siempre, es más
-    // simple y evita el riesgo de dejar líneas huérfanas si algún día se
-    // quita una clave de aquí.
-    function overridesText() {
-        return "-- Generado por HyprGeometry.qml (quickshell). No editar a mano: se sobrescribe.\n"
-             + "hl.config({\n"
-             + "    general = {\n"
-             + "        gaps_in = " + root.gapsIn + ",\n"
-             + "        gaps_out = " + root.gapsOut + ",\n"
-             + "        border_size = " + root.borderSize + ",\n"
-             + "    },\n"
-             + "    decoration = {\n"
-             + "        rounding = " + root.rounding + ",\n"
-             + "        active_opacity = " + root.opacity + ",\n"       // Las tres iguales, como el "local opacity" de hyprland.lua
-             + "        inactive_opacity = " + root.opacity + ",\n"
-             + "        fullscreen_opacity = " + root.opacity + ",\n"
-             + "    },\n"
-             + "})\n"
-    }
-
-    // Lo mismo que el archivo pero en una línea, para "hyprctl eval"
-    function evalText() {
-        return "hl.config({ general = { gaps_in = " + root.gapsIn
+    // Tablas de hl.config() para HyprConfigFile.qml. Se regenera todo cada vez (no un
+    // patch incremental tipo regex): como solo hay unas pocas claves y se conocen
+    // siempre, es más simple y no deja líneas huérfanas si algún día se quita una.
+    function configText() {
+        return "general = { gaps_in = " + root.gapsIn
              + ", gaps_out = " + root.gapsOut
              + ", border_size = " + root.borderSize
              + " }, decoration = { rounding = " + root.rounding
-             + ", active_opacity = " + root.opacity
+             + ", active_opacity = " + root.opacity                 // Las tres iguales, como el "local opacity" de hyprland.lua
              + ", inactive_opacity = " + root.opacity
-             + ", fullscreen_opacity = " + root.opacity + " } })"
+             + ", fullscreen_opacity = " + root.opacity + " }"
     }
 
-    // Si shellOverrides.lua ya tiene estos valores no se hace nada: es lo que
-    // pasa en casi todos los arranques de Quickshell, y Hyprland ya los cargó
-    // al arrancar (dofile en hyprland.lua).
-    function sync() {
-        const text = root.overridesText()
-        if (overridesFile.text() === text) return
-        overridesFile.setText(text)                                     // Para el siguiente arranque de Hyprland
-        Quickshell.execDetached(["hyprctl", "eval", root.evalText()])   // En caliente
-    }
+    function sync() { overridesFile.sync(root.configText()) }
 
     FileView {
         path: Quickshell.statePath("hyprGeometry.json")
@@ -107,11 +75,9 @@ Singleton {
         }
     }
 
-    FileView {
+    HyprConfigFile {
         id: overridesFile
-        path: Quickshell.env("HOME") + "/.config/hypr/shellOverrides.lua"
-        atomicWrites: true
-        blockLoading: true      // Para que text() devuelva ya el contenido actual al arrancar (igual que en Theme.qml)
+        name: "shellOverrides"
+        generator: "HyprGeometry.qml"
     }
 }
-

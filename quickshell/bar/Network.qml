@@ -50,210 +50,163 @@ ColumnLayout{
         id: iconText
         text: root.icon
         color: (root.wiredConnected || Networking.wifiEnabled) ? Theme.textActive : Theme.textDisabled
-        tooltip: menu.visible ? ""
-               : root.wiredConnected ? "Conectado por cable"
+        tooltip: root.wiredConnected ? "Conectado por cable"
                : !Networking.wifiEnabled ? "Wifi apagado"
                : !root.active ? "Wifi: sin conexión"
                : root.active.name + " · señal " + Math.round(root.signal * 100) + " %"
+        popup: menu
         acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: event => {
-            if (event.button === Qt.RightButton) Networking.wifiEnabled = !Networking.wifiEnabled   // Clic derecho: enciende/apaga el wifi
-            else menu.toggle()
-        }
+        onClicked: event => { if (event.button === Qt.RightButton) Networking.wifiEnabled = !Networking.wifiEnabled }   // Clic derecho: enciende/apaga el wifi
     }
+
+    // Campos de usuario y contraseña del menú: pequeños, a la medida de sus filas
+    component SmallField: InputField { implicitHeight: 22; radius: 4; padding: 6 }
 
     BarPopup {
         id: menu
         anchorItem: iconText
-
         implicitWidth: 260
-        implicitHeight: Math.max(40, listCol.implicitHeight + 16)
 
         onVisibleChanged: {
             if (root.wifiDevice) root.wifiDevice.scannerEnabled = visible   // Escanea mientras está abierto: al abrir fuerza un escaneo y al cerrar deja de escanear (ahorra batería)
             if (!visible) { NetworkMonitor.expandedNetwork = null; NetworkMonitor.connectError = ""; NetworkMonitor.eapUnverified = null }
         }
 
-        ColumnLayout {
-            id: listCol
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 4
+        Text {
+            Layout.fillWidth: true
+            visible: !Networking.wifiEnabled
+            text: "Wifi apagado"
+            color: Theme.textDisabled
+        }
 
-            Text {
+        Text {
+            Layout.fillWidth: true
+            visible: Networking.wifiEnabled && (!root.wifiDevice || root.wifiDevice.networks.values.length === 0)
+            text: root.wifiDevice ? "Buscando redes..." : "Sin adaptador wifi"
+            color: Theme.textDisabled
+        }
+
+        Repeater {
+            model: Networking.wifiEnabled ? (root.wifiDevice ? root.wifiDevice.networks : null) : null
+
+            delegate: ColumnLayout {
+                id: delegateRoot
+                required property var modelData
+                readonly property bool eap: NetworkMonitor.isEap(modelData)
+
+                function submit() {
+                    if (eap) NetworkMonitor.tryConnectEap(modelData.name, userInput.text, pskInput.text, true)
+                    else NetworkMonitor.tryConnect(modelData, pskInput.text)
+                    pskInput.text = ""               // Que la contraseña no se quede en el campo (si falla, se vuelve a escribir)
+                }
+
+                Connections {                        // Avisa si falla la conexión (contraseña mal, red que no responde...)
+                    target: delegateRoot.modelData
+                    function onConnectionFailed(reason) { NetworkMonitor.connectionFailed(delegateRoot.modelData, reason) }
+                }
+
                 Layout.fillWidth: true
-                visible: !Networking.wifiEnabled
-                text: "Wifi apagado"
-                color: Theme.textDisabled
-            }
+                spacing: 2
 
-            Text {
-                Layout.fillWidth: true
-                visible: Networking.wifiEnabled && (!root.wifiDevice || root.wifiDevice.networks.values.length === 0)
-                text: root.wifiDevice ? "Buscando redes..." : "Sin adaptador wifi"
-                color: Theme.textDisabled
-            }
-
-            Repeater {
-                model: Networking.wifiEnabled ? (root.wifiDevice ? root.wifiDevice.networks : null) : null
-
-                delegate: ColumnLayout {
-                    id: delegateRoot
-                    required property var modelData
-                    readonly property bool eap: NetworkMonitor.isEap(modelData)
-
-                    function submit() {
-                        if (eap) NetworkMonitor.tryConnectEap(modelData.name, userInput.text, pskInput.text, true)
-                        else NetworkMonitor.tryConnect(modelData, pskInput.text)
-                        pskInput.text = ""               // Que la contraseña no se quede en el campo (si falla, se vuelve a escribir)
-                    }
-
-                    Connections {                        // Avisa si falla la conexión (contraseña mal, red que no responde...)
-                        target: delegateRoot.modelData
-                        function onConnectionFailed(reason) { NetworkMonitor.connectionFailed(delegateRoot.modelData, reason) }
-                    }
-
+                Rectangle {
                     Layout.fillWidth: true
-                    spacing: 2
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        implicitHeight: 26
-                        radius: 4
-                        color: netMouse.containsMouse ? Theme.surfaceHover : "transparent"
-
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 6
-                            anchors.rightMargin: 6
-                            spacing: 4
-
-                            Text {
-                                Layout.fillWidth: true
-                                text: (modelData.connected ? "✓ " : "") + modelData.name
-                                      + ((NetworkMonitor.eapRunning && NetworkMonitor.eapNetwork === modelData.name)
-                                         || (modelData.stateChanging && !modelData.connected) ? " · conectando…" : "")
-                                color: modelData.connected ? Theme.textSelected : Theme.textActive
-                                elide: Text.ElideRight
-                            }
-                            Text {
-                                visible: modelData.security !== WifiSecurityType.Open
-                                text: String.fromCodePoint(0xF033E)    // lock (Nerd Font, con el color del tema; antes un emoji 🔒)
-                                color: modelData.connected ? Theme.textSelected : Theme.textActive   // Como el nombre de la red
-                                font.pixelSize: 11
-                            }
-                        }
-
-                        MouseArea {
-                            id: netMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            onClicked: {
-                                if (modelData.connected) {
-                                    modelData.disconnect()
-                                } else if (modelData.known || modelData.security === WifiSecurityType.Open) {
-                                    NetworkMonitor.connectKnown(modelData)
-                                } else {
-                                    NetworkMonitor.expandedNetwork = (NetworkMonitor.expandedNetwork === modelData) ? null : modelData
-                                }
-                            }
-                        }
-                    }
-
-                    Rectangle {                          // Usuario: solo en redes empresariales
-                        Layout.fillWidth: true
-                        visible: NetworkMonitor.expandedNetwork === modelData && delegateRoot.eap
-                        implicitHeight: 22
-                        radius: 4
-                        color: Theme.background
-                        border.color: Theme.border
-
-                        TextInput {
-                            id: userInput
-                            anchors.fill: parent
-                            anchors.leftMargin: 6
-                            anchors.rightMargin: 6
-                            verticalAlignment: TextInput.AlignVCenter
-                            color: Theme.textActive
-                            focus: NetworkMonitor.expandedNetwork === modelData && delegateRoot.eap
-                            KeyNavigation.tab: pskInput
-                            onAccepted: pskInput.forceActiveFocus()
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: !parent.text
-                                text: "Usuario"
-                                color: Theme.textDisabled
-                            }
-                        }
-                    }
+                    implicitHeight: 26
+                    radius: 4
+                    color: netMouse.containsMouse ? Theme.surfaceHover : "transparent"
 
                     RowLayout {
-                        Layout.fillWidth: true
-                        visible: NetworkMonitor.expandedNetwork === modelData
+                        anchors.fill: parent
+                        anchors.leftMargin: 6
+                        anchors.rightMargin: 6
                         spacing: 4
 
-                        Rectangle {
-                            Layout.fillWidth: true
-                            implicitHeight: 22
-                            radius: 4
-                            color: Theme.background
-                            border.color: Theme.border
-
-                            TextInput {
-                                id: pskInput
-                                anchors.fill: parent
-                                anchors.leftMargin: 6
-                                anchors.rightMargin: 6
-                                verticalAlignment: TextInput.AlignVCenter
-                                color: Theme.textActive
-                                echoMode: TextInput.Password
-                                focus: NetworkMonitor.expandedNetwork === modelData && !delegateRoot.eap
-                                onAccepted: delegateRoot.submit()
-
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    visible: delegateRoot.eap && !parent.text
-                                    text: "Contraseña"
-                                    color: Theme.textDisabled
-                                }
-                            }
-                        }
-
                         Text {
-                            text: "Conectar"
-                            color: Theme.textActive
+                            Layout.fillWidth: true
+                            text: (modelData.connected ? "✓ " : "") + modelData.name
+                                  + ((NetworkMonitor.eapRunning && NetworkMonitor.eapNetwork === modelData.name)
+                                     || (modelData.stateChanging && !modelData.connected) ? " · conectando…" : "")
+                            color: modelData.connected ? Theme.textSelected : Theme.textActive
+                            elide: Text.ElideRight
+                        }
+                        Text {
+                            visible: modelData.security !== WifiSecurityType.Open
+                            text: String.fromCodePoint(0xF033E)    // lock (Nerd Font, con el color del tema; antes un emoji 🔒)
+                            color: modelData.connected ? Theme.textSelected : Theme.textActive   // Como el nombre de la red
+                            font.pixelSize: 11
+                        }
+                    }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                anchors.margins: -4
-                                onClicked: delegateRoot.submit()
+                    MouseArea {
+                        id: netMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: {
+                            if (modelData.connected) {
+                                modelData.disconnect()
+                            } else if (modelData.known || modelData.security === WifiSecurityType.Open) {
+                                NetworkMonitor.connectKnown(modelData)
+                            } else {
+                                NetworkMonitor.expandedNetwork = (NetworkMonitor.expandedNetwork === modelData) ? null : modelData
                             }
                         }
                     }
                 }
-            }
 
-            Text {
-                Layout.fillWidth: true
-                visible: NetworkMonitor.connectError !== ""
-                text: NetworkMonitor.connectError
-                color: Theme.textDisabled
-                wrapMode: Text.Wrap
-            }
+                SmallField {                         // Usuario: solo en redes empresariales
+                    id: userInput
+                    visible: NetworkMonitor.expandedNetwork === modelData && delegateRoot.eap
+                    placeholder: "Usuario"
+                    next: pskInput                   // Tab o Intro: a la contraseña
+                    input.focus: NetworkMonitor.expandedNetwork === modelData && delegateRoot.eap
+                    onAccepted: pskInput.input.forceActiveFocus()
+                }
 
-            Text {
-                visible: NetworkMonitor.eapUnverified !== null && !NetworkMonitor.eapRunning
-                text: "Conectar sin verificar"
-                color: Theme.textActive
+                RowLayout {
+                    Layout.fillWidth: true
+                    visible: NetworkMonitor.expandedNetwork === modelData
+                    spacing: 4
 
-                MouseArea {
-                    anchors.fill: parent
-                    anchors.margins: -4
-                    onClicked: {
-                        const d = NetworkMonitor.eapUnverified
-                        NetworkMonitor.tryConnectEap(d.ssid, d.identity, d.password, false)
+                    SmallField {
+                        id: pskInput
+                        placeholder: delegateRoot.eap ? "Contraseña" : ""   // En las normales se sabe que es la contraseña
+                        input.echoMode: TextInput.Password
+                        input.focus: NetworkMonitor.expandedNetwork === modelData && !delegateRoot.eap
+                        onAccepted: delegateRoot.submit()
                     }
+
+                    Text {
+                        text: "Conectar"
+                        color: Theme.textActive
+
+                        MouseArea {
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            onClicked: delegateRoot.submit()
+                        }
+                    }
+                }
+            }
+        }
+
+        Text {
+            Layout.fillWidth: true
+            visible: NetworkMonitor.connectError !== ""
+            text: NetworkMonitor.connectError
+            color: Theme.textDisabled
+            wrapMode: Text.Wrap
+        }
+
+        Text {
+            visible: NetworkMonitor.eapUnverified !== null && !NetworkMonitor.eapRunning
+            text: "Conectar sin verificar"
+            color: Theme.textActive
+
+            MouseArea {
+                anchors.fill: parent
+                anchors.margins: -4
+                onClicked: {
+                    const d = NetworkMonitor.eapUnverified
+                    NetworkMonitor.tryConnectEap(d.ssid, d.identity, d.password, false)
                 }
             }
         }

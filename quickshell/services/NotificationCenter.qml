@@ -73,6 +73,18 @@ Singleton {
 
     function removeFromHistory(entry) { history = history.filter(e => e !== entry) }
 
+    // --- Avisos propios ----------------------------------------------------------
+
+    // Manda una notificación de la propia interfaz (batería baja, Bluetooth, wifi...). Con
+    // notify-send y no directamente: Quickshell no deja crear notificaciones desde QML, solo
+    // recibirlas. Llega a este mismo servidor como la de cualquier app.
+    //   app: nombre que sale en la notificación · icon: icono del tema ("" = ninguno)
+    //   urgency: "low", "normal" o "critical"
+    function notify(app, icon, summary, body, urgency = "normal") {
+        Quickshell.execDetached(["notify-send", "-u", urgency, "-a", app]
+            .concat(icon ? ["-i", icon] : [], [summary, body]))
+    }
+
     // --- Servidor --------------------------------------------------------------
 
     NotificationServer {

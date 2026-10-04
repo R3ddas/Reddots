@@ -66,12 +66,8 @@ PanelWindow {
         onTriggered: root.visible = false
     }
 
-    Rectangle {
+    Frame {                                     // Mismo estilo que los desplegables de la barra
         anchors.fill: parent
-        color: Theme.surface
-        radius: Geometry.popupRounding          // Mismo estilo que los desplegables de la barra
-        border.color: Theme.textSelected
-        border.width: Geometry.popupBorderWidth
 
         RowLayout {
             anchors.fill: parent

@@ -179,26 +179,21 @@ ColumnLayout{
         id: iconText
         text: root.icon
         color: root.muted ? Theme.textDisabled : Theme.textActive
-        tooltip: menu.visible || !root.sink ? ""
+        tooltip: !root.sink ? ""
                : (root.muted ? "Silenciado" : "Volumen " + Math.round(Math.min(root.volume, 1) * 100) + " %")
                  + " · " + (root.sink.nickname || root.sink.description || root.sink.name)
                  + (root.source && root.micMuted ? "\nMicrófono silenciado" : "")
                  + (root.player && root.player.isPlaying && root.player.trackTitle     // "Sonando: Canción · Artista"
                     ? "\nSonando: " + root.player.trackTitle + (root.player.trackArtist ? " · " + root.player.trackArtist : "") : "")
+        popup: menu
         acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: event => {
-            if (event.button === Qt.RightButton) {
-                if (root.sink) root.sink.audio.muted = !root.sink.audio.muted
-            } else {
-                menu.toggle()
-            }
-        }
+        onClicked: event => { if (event.button === Qt.RightButton && root.sink) root.sink.audio.muted = !root.sink.audio.muted }
     }
 
     // --- Piezas del popup ----------------------------------------------------
 
     // Título de cada parte (Salida, Micrófono, Aplicaciones)
-    component SectionTitle: Text {
+    component PartTitle: Text {
         color: Theme.textDisabled
         font.pixelSize: 11
         font.bold: true
@@ -271,250 +266,75 @@ ColumnLayout{
         }
     }
 
-    component Separator: Rectangle {
-        Layout.fillWidth: true
-        Layout.topMargin: 4
-        Layout.bottomMargin: 2
-        implicitHeight: 1
-        color: Theme.border
-    }
+    component PartSeparator: Separator { Layout.topMargin: 4; Layout.bottomMargin: 2 }    // Entre parte y parte
 
     BarPopup {
         id: menu
         anchorItem: iconText
         implicitWidth: 260
-        implicitHeight: Math.max(40, listCol.implicitHeight + 16)
 
         // Refrescamos la disponibilidad de puertos cada vez que se abre el
         // menú, por si se ha conectado/desconectado algo (monitor HDMI,
         // auriculares...) desde la última vez.
         onVisibleChanged: if (visible) root.refreshPortAvailability()
 
+        // --- Reproduciendo (solo si hay algún reproductor abierto) ---
+        // Todo va comprobando root.player !== null: aunque la parte esté oculta, sus
+        // bindings se siguen calculando, y sin reproductor darían error.
         ColumnLayout {
-            id: listCol
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 4
+            visible: root.player !== null
+            Layout.fillWidth: true
+            spacing: 6
 
-            // --- Reproduciendo (solo si hay algún reproductor abierto) ---
-            // Todo va comprobando root.player !== null: aunque la parte esté oculta, sus
-            // bindings se siguen calculando, y sin reproductor darían error.
-            ColumnLayout {
-                visible: root.player !== null
+            RowLayout {                         // Título con el nombre del reproductor + "1/2 ›" para cambiar de uno a otro
                 Layout.fillWidth: true
-                spacing: 6
-
-                RowLayout {                         // Título con el nombre del reproductor + "1/2 ›" para cambiar de uno a otro
-                    Layout.fillWidth: true
-                    SectionTitle {
-                        text: "Reproduciendo" + (root.player && root.player.identity ? " · " + root.player.identity : "")
-                        elide: Text.ElideRight
-                    }
-                    Text {
-                        visible: root.players.length > 1
-                        text: (root.players.indexOf(root.player) + 1) + "/" + root.players.length + " ›"
-                        color: Theme.textActive
-                        font.pixelSize: 11
-                        MouseArea {
-                            anchors.fill: parent
-                            anchors.margins: -4
-                            onClicked: root.nextPlayer()
-                        }
-                    }
+                PartTitle {
+                    text: "Reproduciendo" + (root.player && root.player.identity ? " · " + root.player.identity : "")
+                    elide: Text.ElideRight
                 }
-
-                Item {                              // Carátula + título y artista; al pulsar, trae el reproductor al frente
-                    Layout.fillWidth: true
-                    implicitHeight: trackRow.implicitHeight
-
-                    RowLayout {
-                        id: trackRow
-                        anchors.fill: parent
-                        spacing: 8
-
-                        ClippingRectangle {         // Carátula (con esquinas redondeadas); sin ella, una nota musical
-                            implicitWidth: 44
-                            implicitHeight: 44
-                            radius: 6
-                            color: Theme.background
-
-                            Text {
-                                anchors.centerIn: parent
-                                visible: art.status !== Image.Ready
-                                text: String.fromCodePoint(0xF075A)      // music-note
-                                color: Theme.textDisabled
-                                font.pixelSize: 20
-                            }
-                            Image {
-                                id: art
-                                anchors.fill: parent
-                                source: root.player ? root.player.trackArtUrl : ""
-                                fillMode: Image.PreserveAspectCrop
-                                sourceSize.width: 88                     // Se decodifica ya reducida (al doble, para que se vea nítida)
-                                sourceSize.height: 88
-                                asynchronous: true
-                            }
-                        }
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 1
-                            Text {
-                                text: root.player ? (root.player.trackTitle || "Sin título") : ""
-                                textFormat: Text.PlainText                // Viene de la app (como en Notifications.qml)
-                                color: Theme.textActive
-                                font.bold: true
-                                elide: Text.ElideRight
-                                Layout.fillWidth: true
-                            }
-                            Text {
-                                visible: text !== ""
-                                text: root.player ? (root.player.trackArtist || root.player.trackAlbum) : ""
-                                textFormat: Text.PlainText
-                                color: Theme.textDisabled
-                                font.pixelSize: 11
-                                elide: Text.ElideRight
-                                Layout.fillWidth: true
-                            }
-                        }
-                    }
-
+                Text {
+                    visible: root.players.length > 1
+                    text: (root.players.indexOf(root.player) + 1) + "/" + root.players.length + " ›"
+                    color: Theme.textActive
+                    font.pixelSize: 11
                     MouseArea {
                         anchors.fill: parent
-                        enabled: root.player !== null && root.player.canRaise
-                        onClicked: {
-                            root.player.raise()
-                            menu.visible = false
+                        anchors.margins: -4
+                        onClicked: root.nextPlayer()
+                    }
+                }
+            }
+
+            Item {                              // Carátula + título y artista; al pulsar, trae el reproductor al frente
+                Layout.fillWidth: true
+                implicitHeight: trackRow.implicitHeight
+
+                RowLayout {
+                    id: trackRow
+                    anchors.fill: parent
+                    spacing: 8
+
+                    ClippingRectangle {         // Carátula (con esquinas redondeadas); sin ella, una nota musical
+                        implicitWidth: 44
+                        implicitHeight: 44
+                        radius: 6
+                        color: Theme.background
+
+                        Text {
+                            anchors.centerIn: parent
+                            visible: art.status !== Image.Ready
+                            text: String.fromCodePoint(0xF075A)      // music-note
+                            color: Theme.textDisabled
+                            font.pixelSize: 20
                         }
-                    }
-                }
-
-                // Avance de la canción: se puede arrastrar o usar la rueda si el reproductor lo permite
-                Slider {
-                    visible: root.player !== null && root.player.lengthSupported && root.player.length > 0
-                    interactive: root.player !== null && root.player.canSeek && root.player.positionSupported
-                    barHeight: 8
-                    value: root.player && root.player.length > 0 ? root.player.position / root.player.length : 0
-                    label: root.player ? root.formatTime(root.player.position) + " / " + root.formatTime(root.player.length) : ""
-                    onMoved: v => root.player.position = Math.max(0, Math.min(1, v)) * root.player.length
-                }
-
-                RowLayout {                         // Anterior · play/pausa · siguiente
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: 16
-                    MediaButton {
-                        text: String.fromCodePoint(0xF04AE)             // skip-previous
-                        enabled: root.player !== null && root.player.canGoPrevious
-                        onClicked: root.player.previous()
-                    }
-                    MediaButton {
-                        text: String.fromCodePoint(root.player && root.player.isPlaying ? 0xF03E4 : 0xF040A)   // pause / play
-                        enabled: root.player !== null && root.player.canTogglePlaying
-                        onClicked: root.player.togglePlaying()
-                    }
-                    MediaButton {
-                        text: String.fromCodePoint(0xF04AD)             // skip-next
-                        enabled: root.player !== null && root.player.canGoNext
-                        onClicked: root.player.next()
-                    }
-                }
-            }
-
-            Separator { visible: root.player !== null }
-
-            // --- Salida ---
-            SectionTitle { text: "Salida" }
-
-            RowLayout {                             // Silenciar + volumen (arrastrar o rueda)
-                Layout.fillWidth: true
-                spacing: 6
-                MuteIcon { node: root.sink; text: root.icon }
-                Slider {
-                    value: root.volume
-                    dimmed: root.muted
-                    onMoved: v => root.setNodeVolume(root.sink, v)
-                }
-            }
-
-            Text {                                  // Cuando, tras filtrar, no queda ninguna salida usable
-                Layout.fillWidth: true
-                visible: root.visibleSinks.length === 0
-                text: "Sin salidas de audio"
-                color: Theme.textDisabled
-            }
-
-            Repeater {
-                model: root.visibleSinks
-                delegate: DeviceRow {
-                    required property var modelData
-                    node: modelData
-                    current: modelData === root.sink
-                    onPicked: {
-                        Pipewire.preferredDefaultAudioSink = modelData
-                        menu.visible = false
-                    }
-                }
-            }
-
-            // --- Micrófono ---
-            Separator {}
-            SectionTitle { text: "Micrófono" }
-
-            RowLayout {
-                visible: root.source !== null
-                Layout.fillWidth: true
-                spacing: 6
-                MuteIcon { node: root.source; text: root.micIcon }
-                Slider {
-                    value: root.source ? root.source.audio.volume : 0
-                    dimmed: root.micMuted
-                    onMoved: v => root.setNodeVolume(root.source, v)
-                }
-            }
-
-            Text {
-                Layout.fillWidth: true
-                visible: root.visibleSources.length === 0
-                text: "Sin micrófonos"
-                color: Theme.textDisabled
-            }
-
-            Repeater {
-                model: root.visibleSources
-                delegate: DeviceRow {
-                    required property var modelData
-                    node: modelData
-                    current: modelData === root.source
-                    onPicked: {
-                        Pipewire.preferredDefaultAudioSource = modelData
-                        menu.visible = false
-                    }
-                }
-            }
-
-            // --- Aplicaciones (solo si hay alguna sonando) ---
-            Separator { visible: root.visibleStreams.length > 0 }
-            SectionTitle { visible: root.visibleStreams.length > 0; text: "Aplicaciones" }
-
-            Repeater {
-                model: root.visibleStreams
-                delegate: RowLayout {
-                    id: appRow
-                    required property var modelData
-                    readonly property bool appMuted: modelData.audio.muted
-                    Layout.fillWidth: true
-                    spacing: 6
-
-                    IconImage {                     // Icono de la app; al pulsarlo la silencia
-                        implicitSize: 18
-                        source: Quickshell.iconPath((appRow.modelData.properties || {})["application.icon-name"] ?? "", "audio-x-generic")
-                        opacity: appRow.appMuted ? 0.35 : 1
-                        Layout.alignment: Qt.AlignVCenter
-                        Layout.preferredWidth: 20
-                        MouseArea {
+                        Image {
+                            id: art
                             anchors.fill: parent
-                            anchors.margins: -4
-                            onClicked: appRow.modelData.audio.muted = !appRow.modelData.audio.muted
+                            source: root.player ? root.player.trackArtUrl : ""
+                            fillMode: Image.PreserveAspectCrop
+                            sourceSize.width: 88                     // Se decodifica ya reducida (al doble, para que se vea nítida)
+                            sourceSize.height: 88
+                            asynchronous: true
                         }
                     }
 
@@ -522,18 +342,179 @@ ColumnLayout{
                         Layout.fillWidth: true
                         spacing: 1
                         Text {
-                            text: root.appName(appRow.modelData)
-                            color: appRow.appMuted ? Theme.textDisabled : Theme.textActive
+                            text: root.player ? (root.player.trackTitle || "Sin título") : ""
+                            textFormat: Text.PlainText                // Viene de la app (como en Notifications.qml)
+                            color: Theme.textActive
+                            font.bold: true
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                        }
+                        Text {
+                            visible: text !== ""
+                            text: root.player ? (root.player.trackArtist || root.player.trackAlbum) : ""
+                            textFormat: Text.PlainText
+                            color: Theme.textDisabled
                             font.pixelSize: 11
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                         }
-                        Slider {
-                            barHeight: 10
-                            value: appRow.modelData.audio.volume
-                            dimmed: appRow.appMuted
-                            onMoved: v => root.setNodeVolume(appRow.modelData, v)
-                        }
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: root.player !== null && root.player.canRaise
+                    onClicked: {
+                        root.player.raise()
+                        menu.visible = false
+                    }
+                }
+            }
+
+            // Avance de la canción: se puede arrastrar o usar la rueda si el reproductor lo permite
+            Slider {
+                visible: root.player !== null && root.player.lengthSupported && root.player.length > 0
+                interactive: root.player !== null && root.player.canSeek && root.player.positionSupported
+                barHeight: 8
+                value: root.player && root.player.length > 0 ? root.player.position / root.player.length : 0
+                label: root.player ? root.formatTime(root.player.position) + " / " + root.formatTime(root.player.length) : ""
+                onMoved: v => root.player.position = Math.max(0, Math.min(1, v)) * root.player.length
+            }
+
+            RowLayout {                         // Anterior · play/pausa · siguiente
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 16
+                MediaButton {
+                    text: String.fromCodePoint(0xF04AE)             // skip-previous
+                    enabled: root.player !== null && root.player.canGoPrevious
+                    onClicked: root.player.previous()
+                }
+                MediaButton {
+                    text: String.fromCodePoint(root.player && root.player.isPlaying ? 0xF03E4 : 0xF040A)   // pause / play
+                    enabled: root.player !== null && root.player.canTogglePlaying
+                    onClicked: root.player.togglePlaying()
+                }
+                MediaButton {
+                    text: String.fromCodePoint(0xF04AD)             // skip-next
+                    enabled: root.player !== null && root.player.canGoNext
+                    onClicked: root.player.next()
+                }
+            }
+        }
+
+        PartSeparator { visible: root.player !== null }
+
+        // --- Salida ---
+        PartTitle { text: "Salida" }
+
+        RowLayout {                             // Silenciar + volumen (arrastrar o rueda)
+            Layout.fillWidth: true
+            spacing: 6
+            MuteIcon { node: root.sink; text: root.icon }
+            Slider {
+                value: root.volume
+                dimmed: root.muted
+                onMoved: v => root.setNodeVolume(root.sink, v)
+            }
+        }
+
+        Text {                                  // Cuando, tras filtrar, no queda ninguna salida usable
+            Layout.fillWidth: true
+            visible: root.visibleSinks.length === 0
+            text: "Sin salidas de audio"
+            color: Theme.textDisabled
+        }
+
+        Repeater {
+            model: root.visibleSinks
+            delegate: DeviceRow {
+                required property var modelData
+                node: modelData
+                current: modelData === root.sink
+                onPicked: {
+                    Pipewire.preferredDefaultAudioSink = modelData
+                    menu.visible = false
+                }
+            }
+        }
+
+        // --- Micrófono ---
+        PartSeparator {}
+        PartTitle { text: "Micrófono" }
+
+        RowLayout {
+            visible: root.source !== null
+            Layout.fillWidth: true
+            spacing: 6
+            MuteIcon { node: root.source; text: root.micIcon }
+            Slider {
+                value: root.source ? root.source.audio.volume : 0
+                dimmed: root.micMuted
+                onMoved: v => root.setNodeVolume(root.source, v)
+            }
+        }
+
+        Text {
+            Layout.fillWidth: true
+            visible: root.visibleSources.length === 0
+            text: "Sin micrófonos"
+            color: Theme.textDisabled
+        }
+
+        Repeater {
+            model: root.visibleSources
+            delegate: DeviceRow {
+                required property var modelData
+                node: modelData
+                current: modelData === root.source
+                onPicked: {
+                    Pipewire.preferredDefaultAudioSource = modelData
+                    menu.visible = false
+                }
+            }
+        }
+
+        // --- Aplicaciones (solo si hay alguna sonando) ---
+        PartSeparator { visible: root.visibleStreams.length > 0 }
+        PartTitle { visible: root.visibleStreams.length > 0; text: "Aplicaciones" }
+
+        Repeater {
+            model: root.visibleStreams
+            delegate: RowLayout {
+                id: appRow
+                required property var modelData
+                readonly property bool appMuted: modelData.audio.muted
+                Layout.fillWidth: true
+                spacing: 6
+
+                IconImage {                     // Icono de la app; al pulsarlo la silencia
+                    implicitSize: 18
+                    source: Quickshell.iconPath((appRow.modelData.properties || {})["application.icon-name"] ?? "", "audio-x-generic")
+                    opacity: appRow.appMuted ? 0.35 : 1
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredWidth: 20
+                    MouseArea {
+                        anchors.fill: parent
+                        anchors.margins: -4
+                        onClicked: appRow.modelData.audio.muted = !appRow.modelData.audio.muted
+                    }
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 1
+                    Text {
+                        text: root.appName(appRow.modelData)
+                        color: appRow.appMuted ? Theme.textDisabled : Theme.textActive
+                        font.pixelSize: 11
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                    }
+                    Slider {
+                        barHeight: 10
+                        value: appRow.modelData.audio.volume
+                        dimmed: appRow.appMuted
+                        onMoved: v => root.setNodeVolume(appRow.modelData, v)
                     }
                 }
             }

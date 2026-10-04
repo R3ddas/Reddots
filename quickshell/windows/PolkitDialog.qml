@@ -13,6 +13,7 @@ import Quickshell.Wayland
 import Quickshell.Services.Polkit
 import QtQuick
 import QtQuick.Layouts
+import qs.components
 import qs.services
 
 PanelWindow {
@@ -37,8 +38,8 @@ PanelWindow {
 
     onVisibleChanged: {
         passwordInput.text = ""
-        if (visible) passwordInput.forceActiveFocus()
-        else passwordInput.focus = false        // Nada con foco mientras está cerrada (ver Keybinds.qml)
+        if (visible) passwordInput.input.forceActiveFocus()
+        else passwordInput.input.focus = false  // Nada con foco mientras está cerrada (ver Keybinds.qml)
     }
 
     // Cada vez que polkit pide otra vez la contraseña (p.ej. tras fallarla), campo vacío y con el foco
@@ -47,7 +48,7 @@ PanelWindow {
         function onIsResponseRequiredChanged() {
             if (root.flow.isResponseRequired) {
                 passwordInput.text = ""
-                passwordInput.forceActiveFocus()
+                passwordInput.input.forceActiveFocus()
             }
         }
     }
@@ -97,12 +98,8 @@ PanelWindow {
         }
     }
 
-    Rectangle {
+    Frame {                                         // Mismo estilo que los desplegables de la barra
         anchors.fill: parent
-        color: Theme.surface
-        radius: Geometry.popupRounding              // Mismo estilo que los desplegables de la barra
-        border.color: Theme.textSelected
-        border.width: Geometry.popupBorderWidth
 
         ColumnLayout {
             id: content
@@ -162,44 +159,21 @@ PanelWindow {
                 }
             }
 
-            Rectangle {                             // Campo de la contraseña
-                Layout.fillWidth: true
-                implicitHeight: 36
-                radius: 8
-                color: Theme.background
-                border.color: passwordInput.activeFocus ? Theme.textSelected : Theme.border
-
-                TextInput {
-                    id: passwordInput
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    verticalAlignment: TextInput.AlignVCenter
-                    color: Theme.textActive
-                    selectionColor: Theme.surfaceHover
-                    clip: true
-                    readOnly: root.flow ? !root.flow.isResponseRequired : true       // Mientras se comprueba, no se puede escribir (readOnly y no enabled: así Esc sigue funcionando)
-                    echoMode: root.flow && root.flow.responseVisible ? TextInput.Normal : TextInput.Password
-                    passwordCharacter: "•"
-
-                    Keys.onReturnPressed: root.submit()
-                    Keys.onEnterPressed: root.submit()      // Intro del teclado numérico
-                    Keys.onEscapePressed: root.cancel()
-
-                    Text {                          // Lo que pide PAM, mientras el campo está vacío
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: passwordInput.text === ""
-                        // PAM suele pedir "Password:" en inglés: ese se traduce; si pide otra cosa
-                        // (p.ej. el PIN de una llave de seguridad), se muestra tal cual
-                        readonly property string prompt: root.flow ? root.flow.inputPrompt.replace(/:\s*$/, "") : ""
-                        text: !root.flow ? ""
-                            : !root.flow.isResponseRequired ? "Comprobando…"
-                            : (prompt === "" || /^password$/i.test(prompt)) ? "Contraseña"
-                            : prompt
-                        textFormat: Text.PlainText
-                        color: Theme.textDisabled
-                    }
-                }
+            InputField {                            // Campo de la contraseña
+                id: passwordInput
+                highlightFocus: true
+                // Lo que pide PAM, mientras el campo está vacío. Suele pedir "Password:" en inglés:
+                // ese se traduce; si pide otra cosa (p.ej. el PIN de una llave de seguridad), se muestra tal cual
+                readonly property string prompt: root.flow ? root.flow.inputPrompt.replace(/:\s*$/, "") : ""
+                placeholder: !root.flow ? ""
+                    : !root.flow.isResponseRequired ? "Comprobando…"
+                    : (prompt === "" || /^password$/i.test(prompt)) ? "Contraseña"
+                    : prompt
+                input.readOnly: root.flow ? !root.flow.isResponseRequired : true       // Mientras se comprueba, no se puede escribir (readOnly y no enabled: así Esc sigue funcionando)
+                input.echoMode: root.flow && root.flow.responseVisible ? TextInput.Normal : TextInput.Password
+                input.passwordCharacter: "•"
+                onAccepted: root.submit()
+                onEscapePressed: root.cancel()
             }
 
             // Avisos: el que mande polkit/PAM o, si no manda ninguno, el de contraseña incorrecta

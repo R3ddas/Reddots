@@ -3,13 +3,16 @@
 // lo abre ("anchorItem"), con el fondo, el borde y el redondeo del tema, y se cierra
 // al hacer clic fuera. Lo usan todos los iconos de la barra que abren un menú.
 //
-// Lo que se pone dentro va sobre el fondo con borde (cada uno pone sus márgenes).
-// Quien lo usa solo tiene que darle anchorItem y el tamaño (implicitWidth/Height);
-// si necesita hacer algo al abrirse o cerrarse, puede poner su propio onVisibleChanged
+// Lo que se pone dentro va en una columna (ColumnLayout) sobre el fondo con borde, a
+// "padding" px del borde, y el popup mide lo que mida esa columna. Quien lo usa solo
+// tiene que darle anchorItem y, si no quiere que se ajuste al contenido, el ancho
+// (implicitWidth). Lo de dentro que tenga que ocupar todo el ancho, con Layout.fillWidth.
+// Si necesita hacer algo al abrirse o cerrarse, puede poner su propio onVisibleChanged
 // (se ejecutan los dos: el de aquí y el suyo).
 import Quickshell
 import Quickshell.Hyprland          // Para el HyprlandFocusGrab
 import QtQuick
+import QtQuick.Layouts
 import qs.services
 
 PopupWindow {
@@ -18,7 +21,14 @@ PopupWindow {
     color: "transparent"
 
     property Item anchorItem: null                  // Icono de la barra junto al que sale
-    default property alias content: frame.data     // Lo de dentro va sobre el fondo con borde
+    default property alias content: column.data    // Lo de dentro va en la columna, sobre el fondo con borde
+    property alias spacing: column.spacing          // Separación entre lo de dentro
+    property int padding: 8                         // Margen entre el borde y lo de dentro
+    readonly property alias contentWidth: column.implicitWidth   // Lo que pide lo de dentro (para un ancho que se ajuste con límites, como en Tray.qml)
+
+    // Mínimo 40 de alto: un menú que se queda vacío un momento (sin dispositivos, buscando...) no queda como una raya
+    implicitWidth: column.implicitWidth + padding * 2
+    implicitHeight: Math.max(40, column.implicitHeight + padding * 2)
 
     function toggle() { visible = !visible }
 
@@ -32,13 +42,15 @@ PopupWindow {
         else { grabTimer.stop(); grab.active = false }
     }
 
-    Rectangle {
-        id: frame
+    Frame {
         anchors.fill: parent
-        color: Theme.surface
-        radius: Geometry.popupRounding                  // Redondeo propio de los desplegables (editable en GeometrySettings)
-        border.color: Theme.textSelected                // Borde con el color de acento del tema
-        border.width: Geometry.popupBorderWidth         // Grosor editable en GeometrySettings
+
+        ColumnLayout {
+            id: column
+            anchors.fill: parent
+            anchors.margins: root.padding
+            spacing: 4
+        }
     }
 
     HyprlandFocusGrab {                                 // Cierra el popup al hacer clic fuera de él

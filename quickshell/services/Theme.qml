@@ -2,6 +2,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.components                // Para HyprConfigFile
 
 // Temas de color en formato Base16 (https://github.com/tinted-theming/home): cada tema son
 // 16 colores en un orden fijo, así que un tema nuevo se añade copiando los 16 de su esquema
@@ -56,11 +57,7 @@ Singleton {
     }
 
     function themeByName(themeName) {
-        for (var i = 0; i < themes.length; i++) {
-            if (themes[i].name === themeName)
-                return themes[i]
-        }
-        return themes[0]
+        return themes.find(t => t.name === themeName) ?? themes[0]     // Si no existe (p.ej. un tema que se ha quitado), el primero
     }
 
     // Cada tema: nombre, casilla del acento y sus 16 colores (base00–07 en la primera
@@ -251,8 +248,9 @@ Singleton {
         return luminance(theme.base[0]) > 0.18
     }
 
-    readonly property var current: roles(themeByName(activeTheme))
-    readonly property var base:    themeByName(activeTheme).base   // Los 16 colores del tema activo, por si algún widget necesita un rojo, un verde...
+    readonly property var scheme:  themeByName(activeTheme)        // El tema activo entero (nombre, acento y sus 16 colores)
+    readonly property var current: roles(scheme)
+    readonly property var base:    scheme.base                     // Los 16 colores del tema activo, por si algún widget necesita un rojo, un verde...
 
     readonly property color background:   current.background
     readonly property color textActive:   current.textActive
@@ -342,11 +340,8 @@ Singleton {
     }
 
     // Lo mismo para los bordes de las ventanas y el color de fondo, que los pinta Hyprland: igual
-    // que HyprGeometry.qml con las medidas, se aplican en caliente con
-    // "hyprctl eval" y se regenera entero ~/.config/hypr/shellTheme.lua (fuera
-    // del repo) para el siguiente arranque. hyprland.lua carga (dofile) ese
-    // archivo si existe. Sin "hyprctl reload", por lo mismo que en HyprGeometry.qml:
-    // desharía el mirror de Super+M...
+    // que HyprGeometry.qml con las medidas, se aplican en caliente y se guardan en
+    // ~/.config/hypr/shellTheme.lua para el siguiente arranque, con components/HyprConfigFile.qml.
     function hyprColor(c, alpha) {
         return "0x" + alpha + c.toString().slice(1)     // "#rrggbb" -> 0xAARRGGBB, el formato de hyprland.lua
     }
@@ -367,24 +362,13 @@ Singleton {
              + "misc = { background_color = " + hyprColor(theme.base[0], "ff") + " }"
     }
 
-    function hyprThemeText() {
-        return "-- Generado por Theme.qml (quickshell). No editar a mano: se sobrescribe.\n"
-             + "hl.config({ " + hyprConfigText() + " })\n"
-    }
-
-    FileView {
+    HyprConfigFile {
         id: hyprThemeFile
-        path: Quickshell.env("HOME") + "/.config/hypr/shellTheme.lua"
-        atomicWrites: true
-        blockLoading: true                                  // Para que text() devuelva ya el contenido actual al arrancar
+        name: "shellTheme"
+        generator: "Theme.qml"
     }
 
-    function syncHyprland() {
-        const text = hyprThemeText()
-        if (hyprThemeFile.text() === text) return           // Si no ha cambiado nada no se toca (lo normal en cada arranque de Quickshell: Hyprland ya lo cargó al arrancar)
-        hyprThemeFile.setText(text)                                                             // Para el siguiente arranque de Hyprland
-        Quickshell.execDetached(["hyprctl", "eval", "hl.config({ " + hyprConfigText() + " })"])  // En caliente
-    }
+    function syncHyprland() { hyprThemeFile.sync(hyprConfigText()) }
 
     function syncAll() {
         syncAlacritty()

@@ -45,12 +45,11 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xF061A)  // chip
         color: root.iconColor
-        tooltip: menu.visible ? ""
-               : "Uso del sistema y notificaciones"
+        tooltip: "Uso del sistema y notificaciones"
                  + (SystemMonitor.overheating ? "\nTemperatura alta: " + SystemMonitor.warning : "")
                  + (root.notificationCount === 1 ? "\n1 notificación sin descartar"
                     : root.notificationCount > 1 ? "\n" + root.notificationCount + " notificaciones sin descartar" : "")
-        onClicked: menu.toggle()
+        popup: menu
     }
 
     Text {                                              // Cuántas notificaciones activas hay
@@ -66,73 +65,56 @@ ColumnLayout {
         id: menu
         anchorItem: iconText
         implicitWidth: 340                              // Más ancho que el resto de menús: las notificaciones necesitan sitio para el texto
-        implicitHeight: listCol.implicitHeight + 16
 
-        ColumnLayout {
-            id: listCol
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 4
+        StatLine { label: "Procesador"; value: SystemMonitor.cpu < 0 ? "…" : "" }
+        Slider { interactive: false; value: Math.max(0, SystemMonitor.cpu) }
 
-            StatLine { label: "Procesador"; value: SystemMonitor.cpu < 0 ? "…" : "" }
-            Slider { interactive: false; value: Math.max(0, SystemMonitor.cpu) }
+        StatLine {
+            Layout.topMargin: 4
+            label: "Memoria"
+            value: SystemMonitor.memTotal ? root.gib(SystemMonitor.memUsed) + " / " + root.gib(SystemMonitor.memTotal) + " GiB" : "…"
+        }
+        Slider { interactive: false; value: SystemMonitor.memTotal ? SystemMonitor.memUsed / SystemMonitor.memTotal : 0 }
 
-            StatLine {
-                Layout.topMargin: 4
-                label: "Memoria"
-                value: SystemMonitor.memTotal ? root.gib(SystemMonitor.memUsed) + " / " + root.gib(SystemMonitor.memTotal) + " GiB" : "…"
+        StatLine {
+            visible: SystemMonitor.swapTotal > 0        // Sin swap no se pinta
+            Layout.topMargin: 4
+            label: "Swap"
+            value: root.gib(SystemMonitor.swapUsed) + " / " + root.gib(SystemMonitor.swapTotal) + " GiB"
+        }
+        Slider { visible: SystemMonitor.swapTotal > 0; interactive: false; value: SystemMonitor.swapTotal ? SystemMonitor.swapUsed / SystemMonitor.swapTotal : 0 }
+
+        Separator {                                     // Antes de las temperaturas
+            visible: SystemMonitor.temps.length > 0
+            Layout.topMargin: 4
+            Layout.bottomMargin: 2
+        }
+
+        Repeater {
+            model: SystemMonitor.temps
+            delegate: StatLine {
+                required property var modelData
+                label: String.fromCodePoint(0xF050F) + "  " + modelData.name   // thermometer
+                value: modelData.celsius + " °C"
+                valueColor: modelData.hot ? SystemMonitor.hotColor : Theme.textActive   // La que pasa del umbral, en rojo
             }
-            Slider { interactive: false; value: SystemMonitor.memTotal ? SystemMonitor.memUsed / SystemMonitor.memTotal : 0 }
+        }
 
-            StatLine {
-                visible: SystemMonitor.swapTotal > 0        // Sin swap no se pinta
-                Layout.topMargin: 4
-                label: "Swap"
-                value: root.gib(SystemMonitor.swapUsed) + " / " + root.gib(SystemMonitor.swapTotal) + " GiB"
-            }
-            Slider { visible: SystemMonitor.swapTotal > 0; interactive: false; value: SystemMonitor.swapTotal ? SystemMonitor.swapUsed / SystemMonitor.swapTotal : 0 }
+        Separator { Layout.topMargin: 6; Layout.bottomMargin: 4 }    // Antes de las notificaciones
 
-            Rectangle {                                     // Separador antes de las temperaturas
-                visible: SystemMonitor.temps.length > 0
-                Layout.fillWidth: true
-                Layout.topMargin: 4
-                Layout.bottomMargin: 2
-                implicitHeight: 1
-                color: Theme.border
-            }
+        // Las notificaciones, con su propio desplazamiento: crecen hasta un máximo y a partir
+        // de ahí se mueven con la rueda, sin que el uso del sistema se salga de la vista
+        Flickable {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Math.min(notificationList.implicitHeight, 420)
+            contentHeight: notificationList.implicitHeight
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
 
-            Repeater {
-                model: SystemMonitor.temps
-                delegate: StatLine {
-                    required property var modelData
-                    label: String.fromCodePoint(0xF050F) + "  " + modelData.name   // thermometer
-                    value: modelData.celsius + " °C"
-                    valueColor: modelData.hot ? SystemMonitor.hotColor : Theme.textActive   // La que pasa del umbral, en rojo
-                }
-            }
-
-            Rectangle {                                     // Separador antes de las notificaciones
-                Layout.fillWidth: true
-                Layout.topMargin: 6
-                Layout.bottomMargin: 4
-                implicitHeight: 1
-                color: Theme.border
-            }
-
-            // Las notificaciones, con su propio desplazamiento: crecen hasta un máximo y a partir
-            // de ahí se mueven con la rueda, sin que el uso del sistema se salga de la vista
-            Flickable {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Math.min(notificationList.implicitHeight, 420)
-                contentHeight: notificationList.implicitHeight
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-
-                NotificationList {
-                    id: notificationList
-                    width: parent.width
-                    onActionInvoked: menu.visible = false
-                }
+            NotificationList {
+                id: notificationList
+                width: parent.width
+                onActionInvoked: menu.visible = false
             }
         }
     }

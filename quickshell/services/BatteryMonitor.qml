@@ -33,12 +33,11 @@ Singleton {
         if (!UPower.onBattery) { warnedLevel = 101; return }    // Enchufado: se rearman los avisos
         if (level <= criticalLevel && warnedLevel > criticalLevel) {
             warnedLevel = criticalLevel
-            Quickshell.execDetached(["notify-send", "-u", "critical", "-a", "Batería", "-i", "battery-caution",
-                "Batería muy baja", "Queda un " + level + " %. Conecta el cargador o el equipo se apagará."])
+            NotificationCenter.notify("Batería", "battery-caution", "Batería muy baja",
+                "Queda un " + level + " %. Conecta el cargador o el equipo se apagará.", "critical")
         } else if (level <= lowLevel && warnedLevel > lowLevel) {
             warnedLevel = lowLevel
-            Quickshell.execDetached(["notify-send", "-u", "normal", "-a", "Batería", "-i", "battery-low",
-                "Batería baja", "Queda un " + level + " %."])
+            NotificationCenter.notify("Batería", "battery-low", "Batería baja", "Queda un " + level + " %.")
         }
     }
 

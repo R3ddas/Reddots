@@ -20,7 +20,7 @@ ColumnLayout {
     signal keybindsRequested()      // Se ha pulsado "Atajos de teclado"
 
     // El logo de Reddots (assets/ReddotsIcon.svg) en vez de un glifo de la Nerd Font, así que
-    // no es un BarIcon: la zona de clic y el tooltip van aquí, igual que en BarIcon.qml / Tray.qml.
+    // no es un BarIcon: la zona de clic y el tooltip (TooltipArea.qml) van aquí, como en Tray.qml.
     // El SVG es de un solo color (blanco) y un Image no se puede teñir sin un efecto de
     // shader, así que se lee el archivo, se le cambia el relleno por el azul del tema (base0D,
     // el último color de la muestra de cada tema en ThemeSettings.qml) y se
@@ -40,30 +40,13 @@ ColumnLayout {
                     logoFile.text().replace(/fill="[^"]*"/g, `fill="${Theme.base[13]}"`))
         Layout.alignment: Qt.AlignHCenter
 
-        MouseArea {
-            anchors.fill: parent
-            anchors.margins: -4                             // Zona de clic algo más grande que el icono, como en BarIcon.qml
-            hoverEnabled: true                              // Para el tooltip
-            onClicked: {
-                logoTooltip.active = false                  // Al pulsar se quita (y no vuelve hasta salir y entrar otra vez)
-                menu.toggle()
-            }
-            onContainsMouseChanged: {
-                logoTooltip.active = containsMouse
-                // Updates.qml no mira por su cuenta: se consulta al acercar el ratón, y el
-                // tooltip (y el aviso del menú) se actualizan solos cuando llega el resultado
-                if (containsMouse) Updates.refresh()
-            }
-        }
-
-        LazyLoader {                                        // Solo existe mientras el ratón está encima
-            id: logoTooltip
-            active: false
-            BarTooltip {
-                anchorItem: logo
-                text: menu.visible ? "" : "Reddots: atajos de teclado y actualizar" + (Updates.count > 0 ? "\n" + Updates.summary : "")
-                hovered: true
-            }
+        TooltipArea {
+            tooltip: "Reddots: atajos de teclado y actualizar" + (Updates.count > 0 ? "\n" + Updates.summary : "")
+            popup: menu
+            onClicked: menu.toggle()
+            // Updates.qml no mira por su cuenta: se consulta al acercar el ratón, y el
+            // tooltip (y el aviso del menú) se actualizan solos cuando llega el resultado
+            onContainsMouseChanged: if (containsMouse) Updates.refresh()
         }
     }
 
@@ -71,35 +54,27 @@ ColumnLayout {
         id: menu
         anchorItem: logo
         implicitWidth: 240
-        implicitHeight: listCol.implicitHeight + 16
 
-        ColumnLayout {
-            id: listCol
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 4
+        // Una fila por opción, como en Power.qml: icono, texto, qué hace al pulsarla
+        // y, si hace falta, un aviso debajo de lo que va a pasar ("hint")
+        Repeater {
+            model: [
+                { icon: 0xF030C, label: "Atajos de teclado",  run: () => root.keybindsRequested() },     // keyboard
+                { icon: 0xF06B0, label: "Actualizar Reddots",                                             // update
+                  hint: "Baja los cambios del repo y ejecuta install.sh en un terminal. Actualiza todo el sistema y pide la contraseña."
+                        + (Updates.count > 0 ? "\n" + Updates.summary + "." : ""),
+                  run: () => Quickshell.execDetached(["alacritty", "--title", "Actualizar Reddots", "-e",
+                                Quickshell.shellPath("scripts/update-reddots.sh")]) }
+            ]
 
-            // Una fila por opción, como en Power.qml: icono, texto, qué hace al pulsarla
-            // y, si hace falta, un aviso debajo de lo que va a pasar ("hint")
-            Repeater {
-                model: [
-                    { icon: 0xF030C, label: "Atajos de teclado",  run: () => root.keybindsRequested() },     // keyboard
-                    { icon: 0xF06B0, label: "Actualizar Reddots",                                             // update
-                      hint: "Baja los cambios del repo y ejecuta install.sh en un terminal. Actualiza todo el sistema y pide la contraseña."
-                            + (Updates.count > 0 ? "\n" + Updates.summary + "." : ""),
-                      run: () => Quickshell.execDetached(["alacritty", "--title", "Actualizar Reddots", "-e",
-                                    Quickshell.shellPath("scripts/update-reddots.sh")]) }
-                ]
-
-                delegate: MenuRow {
-                    required property var modelData
-                    icon: String.fromCodePoint(modelData.icon)
-                    text: modelData.label
-                    hint: modelData.hint ?? ""
-                    onClicked: {
-                        menu.visible = false
-                        modelData.run()
-                    }
+            delegate: MenuRow {
+                required property var modelData
+                icon: String.fromCodePoint(modelData.icon)
+                text: modelData.label
+                hint: modelData.hint ?? ""
+                onClicked: {
+                    menu.visible = false
+                    modelData.run()
                 }
             }
         }

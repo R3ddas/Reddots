@@ -20,37 +20,21 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xF0100)  // camera
-        tooltip: menu.visible ? "" : "Capturas de pantalla (clic derecho: región)"
+        tooltip: "Capturas de pantalla (clic derecho: región)"
+        popup: menu                                                       // Clic izquierdo: abre/cierra el menú
         acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: event => {
-            if (event.button === Qt.RightButton) root.capture("region")   // Clic derecho: región directamente
-            else menu.toggle()                                           // Clic izquierdo: abre/cierra el menú
-        }
+        onClicked: event => { if (event.button === Qt.RightButton) root.capture("region") }   // Clic derecho: región directamente
     }
 
     BarPopup {
         id: menu
         anchorItem: iconText
         implicitWidth: 170
-        implicitHeight: listCol.implicitHeight + 16
 
-        ColumnLayout {
-            id: listCol
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 4
-
-            MenuRow { icon: String.fromCodePoint(0xF019E); text: "Región";   onClicked: root.capture("region") }     // crop
-            MenuRow { icon: String.fromCodePoint(0xF05AF); text: "Ventana";  onClicked: root.capture("ventana") }    // window-maximize
-            MenuRow { icon: String.fromCodePoint(0xF0E51); text: "Pantalla"; onClicked: root.capture("pantalla") }   // monitor-screenshot
-
-            Rectangle {                                 // Separador antes de la carpeta
-                Layout.fillWidth: true
-                implicitHeight: 1
-                color: Theme.border
-            }
-
-            MenuRow { icon: String.fromCodePoint(0xF0770); text: "Abrir carpeta"; onClicked: root.capture("carpeta") }   // folder-open (como en WallpaperSettings.qml)
-        }
+        MenuRow { icon: String.fromCodePoint(0xF019E); text: "Región";   onClicked: root.capture("region") }     // crop
+        MenuRow { icon: String.fromCodePoint(0xF05AF); text: "Ventana";  onClicked: root.capture("ventana") }    // window-maximize
+        MenuRow { icon: String.fromCodePoint(0xF0E51); text: "Pantalla"; onClicked: root.capture("pantalla") }   // monitor-screenshot
+        Separator {}                                    // Antes de la carpeta
+        MenuRow { icon: String.fromCodePoint(0xF0770); text: "Abrir carpeta"; onClicked: root.capture("carpeta") }   // folder-open (como en WallpaperSettings.qml)
     }
 }

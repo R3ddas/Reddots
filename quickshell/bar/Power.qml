@@ -15,39 +15,31 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xF0425)  // power
         font.pixelSize: 20
-        tooltip: menu.visible ? "" : "Apagar, reiniciar o suspender"
-        onClicked: menu.toggle()
+        tooltip: "Apagar, reiniciar o suspender"
+        popup: menu
     }
 
     BarPopup {
         id: menu
         anchorItem: iconText                // A la altura del icono; como está al final de la barra, en la práctica queda pegado abajo
         implicitWidth: 170
-        implicitHeight: listCol.implicitHeight + 16
 
-        ColumnLayout {
-            id: listCol
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: 4
+        // Una fila por opción: icono, texto y qué hace al pulsarla
+        Repeater {
+            model: [
+                { icon: 0xF0425, label: "Apagar",         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
+                { icon: 0xF0709, label: "Reiniciar",      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
+                { icon: 0xF0904, label: "Suspender",      run: () => Quickshell.execDetached(["systemctl", "suspend"]) },   // power-sleep
+                { icon: 0xF0379, label: "Salvapantallas", run: () => root.launchScreensaver() }                            // monitor
+            ]
 
-            // Una fila por opción: icono, texto y qué hace al pulsarla
-            Repeater {
-                model: [
-                    { icon: 0xF0425, label: "Apagar",         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
-                    { icon: 0xF0709, label: "Reiniciar",      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
-                    { icon: 0xF0904, label: "Suspender",      run: () => Quickshell.execDetached(["systemctl", "suspend"]) },   // power-sleep
-                    { icon: 0xF0379, label: "Salvapantallas", run: () => root.launchScreensaver() }                            // monitor
-                ]
-
-                delegate: MenuRow {
-                    required property var modelData
-                    icon: String.fromCodePoint(modelData.icon)
-                    text: modelData.label
-                    onClicked: {
-                        menu.visible = false
-                        modelData.run()
-                    }
+            delegate: MenuRow {
+                required property var modelData
+                icon: String.fromCodePoint(modelData.icon)
+                text: modelData.label
+                onClicked: {
+                    menu.visible = false
+                    modelData.run()
                 }
             }
         }
