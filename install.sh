@@ -159,12 +159,17 @@ done
 
 echo "Otras configuraciones"
 
-code --list-extensions | grep -qi '^bbenoist.QML$' \
-    || code --install-extension bbenoist.QML                                # Extensión para QML en Visual Studio Code
-code --list-extensions | grep -qi '^James-Yu.latex-workshop$' \
-    || code --install-extension James-Yu.latex-workshop                     # Extensión para LaTeX en Visual Studio Code
-code --list-extensions | grep -qi '^ms-python.python$' \
-    || code --install-extension ms-python.python                            # Extensión para Python en Visual Studio Code
+# Extensiones de Visual Studio Code, todas en una sola llamada a "code" (cada una tarda en
+# arrancar). No hace falta mirar antes si ya están: las que lo están solo dan un aviso
+# ("already installed") y no se reinstalan ni se actualizan.
+vscodeExtensions=(
+    bbenoist.QML                # QML
+    James-Yu.latex-workshop     # LaTeX
+    ms-python.python            # Python
+)
+vscodeArgs=()
+for ext in "${vscodeExtensions[@]}"; do vscodeArgs+=(--install-extension "$ext"); done
+code "${vscodeArgs[@]}"
 
 echo "Reloj (dual boot con Windows)"
 

@@ -203,6 +203,14 @@ Singleton {
                  "#f5708a", "#ee8122", "#b8a300", "#54bc5c", "#00bab3", "#00aff2", "#9095ff", "#d47ada"] }
     ]
 
+    // Color de acento de un tema: la casilla que dice "accent" ("base0D" -> casilla 13).
+    // Aparte de roles() para quien solo necesita el acento (la muestra de cada tema en
+    // ThemeSettings.qml, los bordes de Hyprland): roles() calcula además contrastes
+    // WCAG, y el selector lo llamaría para los 45 temas cada vez que se abre.
+    function accentOf(theme) {
+        return theme.base[parseInt(theme.accent.slice(4), 16)]
+    }
+
     // Papeles de la barra a partir de los 16 colores de un tema
     function roles(theme) {
         const b = theme.base
@@ -219,7 +227,7 @@ Singleton {
             border:       b[2],     // Bordes y separadores
             textActive:   b[5],     // Texto normal
             textDisabled: mutedScore(b[4]) > mutedScore(b[3]) ? b[4] : b[3],
-            textSelected: b[parseInt(theme.accent.slice(4), 16)],  // Acento: "base0D" -> casilla 13
+            textSelected: accentOf(theme),  // Acento
             error:        b[8]      // Errores y avisos graves (base08, el rojo), como hace Stylix
         }
     }
@@ -353,7 +361,7 @@ Singleton {
     function hyprConfigText() {
         const theme = themeByName(activeTheme)          // Directo del tema, no de las propiedades derivadas: puede que aún no se hayan actualizado al saltar onActiveThemeChanged
         return "general = { col = { "
-             + "active_border = " + hyprColor(roles(theme).textSelected, "ff") + ", "
+             + "active_border = " + hyprColor(accentOf(theme), "ff") + ", "
              + "inactive_border = " + hyprColor(theme.base[3], "ff")
              + " } }, "
              + "misc = { background_color = " + hyprColor(theme.base[0], "ff") + " }"

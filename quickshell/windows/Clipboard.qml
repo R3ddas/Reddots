@@ -190,9 +190,16 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                         anchors.rightMargin: 10
                         spacing: 10
 
-                        Image {                     // Miniatura, solo en las imágenes
+                        // Miniatura, solo en las imágenes. Se carga directamente de thumbDir, sin
+                        // lanzar nada: solo si aún no está ahí (falla al abrirla) se saca de cliphist
+                        // y se vuelve a cargar. Antes cada miniatura lanzaba un sh para comprobarlo,
+                        // cada vez que se creaba su fila (al abrir la ventana y al hacer scroll).
+                        Image {
                             id: thumb
+                            readonly property string file: root.thumbDir + "/" + entryDelegate.modelData.id
+                            property bool decoding: false   // Ya se ha pedido a cliphist: si vuelve a fallar, no se insiste
                             visible: entryDelegate.modelData.image
+                            source: entryDelegate.modelData.image ? "file://" + file : ""
                             Layout.preferredWidth: 96
                             Layout.preferredHeight: 60
                             fillMode: Image.PreserveAspectFit
@@ -200,12 +207,22 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                             sourceSize.width: 192   // No carga la imagen entera en memoria, solo lo que hace falta para la miniatura
                             sourceSize.height: 120
 
-                            // La saca de cliphist a thumbDir si aún no está ahí, y luego la carga
+                            onStatusChanged: if (status === Image.Error && !decoding) {
+                                decoding = true
+                                decodeProc.running = true
+                            }
+
+                            // A un .tmp y luego se renombra: si se corta a medias, no queda una miniatura
+                            // rota con el nombre bueno (la próxima vez fallaría al abrirla y se volvería a sacar)
                             Process {
-                                running: entryDelegate.modelData.image
-                                command: ["sh", "-c", "mkdir -p \"$1\" && f=\"$1/$2\" && { [ -s \"$f\" ] || cliphist decode \"$2\" > \"$f\"; } && echo \"$f\"",
+                                id: decodeProc
+                                command: ["sh", "-c", "mkdir -p \"$1\" && cliphist decode \"$2\" > \"$1/$2.tmp\" && mv \"$1/$2.tmp\" \"$1/$2\"",
                                           "sh", root.thumbDir, entryDelegate.modelData.id]
-                                stdout: StdioCollector { onStreamFinished: thumb.source = text.trim() ? "file://" + text.trim() : "" }
+                                onExited: code => {
+                                    if (code !== 0) return
+                                    thumb.source = ""                       // Misma ruta que antes: sin vaciarla, Image no la vuelve a leer
+                                    thumb.source = "file://" + thumb.file
+                                }
                             }
                         }
 

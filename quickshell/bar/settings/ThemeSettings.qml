@@ -97,7 +97,7 @@ ColumnLayout {
                                         Repeater {
                                             model: [
                                                 themeRow.modelData.base[0],                         // base00: fondo
-                                                Theme.roles(themeRow.modelData).textSelected,       // El acento del tema
+                                                Theme.accentOf(themeRow.modelData),                 // El acento del tema
                                                 themeRow.modelData.base[8],                         // base08: rojo
                                                 themeRow.modelData.base[11],                        // base0B: verde
                                                 themeRow.modelData.base[13]                         // base0D: azul
