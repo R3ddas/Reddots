@@ -33,23 +33,43 @@ ListView {
         color: Theme.textDisabled
     }
 
-    // Es hijo de la lista, así que va dentro de su contenido: sus coordenadas son las de las
-    // filas (indexAt) y se desplaza con ellas. Encima de las filas (z) para recibir el ratón;
-    // la rueda no la usa, así que le llega a la lista y sigue haciendo scroll.
+    // Sobre la parte visible de la lista (parent: root; si no, al declararla aquí dentro iría
+    // al contenido, que no mide ni se mueve como se esperaría) y encima de las filas (z) para
+    // recibir el ratón. La rueda no la usa, así que le llega a la lista y sigue haciendo scroll.
+    // Sus coordenadas son las de la parte visible: para saber qué fila hay debajo se pasan
+    // a las del contenido (rowAt), que es lo que pide indexAt. Sin esto, al bajar con la
+    // rueda se elegía y se abría una fila de más arriba.
     MouseArea {
+        id: area
         property int hoverIndex: -1         // Fila bajo el ratón: solo se selecciona al pasar a otra, no con cada movimiento (si no, al mover un poco el ratón se perdería la elegida con las flechas)
-        anchors.fill: parent
-        z: 2
-        hoverEnabled: true
-        onPositionChanged: mouse => {
-            const i = root.indexAt(mouse.x, mouse.y)
+        property point lastPos: Qt.point(0, 0)
+
+        function rowAt(x, y) {
+            const p = root.contentItem.mapFromItem(area, x, y)
+            return root.indexAt(p.x, p.y)
+        }
+
+        // Pasa a la fila que hay en (x, y), si es otra que la de antes
+        function hoverAt(x, y) {
+            lastPos = Qt.point(x, y)
+            const i = rowAt(x, y)
             if (i >= 0 && i !== hoverIndex) root.currentIndex = i
             hoverIndex = i
         }
+
+        parent: root
+        anchors.fill: parent
+        z: 2
+        hoverEnabled: true
+        onPositionChanged: mouse => hoverAt(mouse.x, mouse.y)
         onExited: hoverIndex = -1
         onClicked: mouse => {
-            const i = root.indexAt(mouse.x, mouse.y)
+            const i = rowAt(mouse.x, mouse.y)
             if (i >= 0) root.activated(i)
         }
     }
+
+    // Al hacer scroll con la rueda el ratón no se mueve, pero cambia la fila que tiene debajo:
+    // se selecciona esa, como si se hubiera movido hasta ella
+    onContentYChanged: if (area.containsMouse) area.hoverAt(area.lastPos.x, area.lastPos.y)
 }
