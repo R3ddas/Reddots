@@ -24,10 +24,10 @@ ColumnLayout{
     property bool showLevel: false
 
     readonly property string icon: {
-        if (charging) return String.fromCodePoint(0xF0084)
-        if (level>=100) return String.fromCodePoint(0xF0079)
-        if (level<10) return String.fromCodePoint(0xF0083)
-        return String.fromCodePoint(0xF007A + Math.floor(level/10) - 1)
+        if (charging) return String.fromCodePoint(0xF0084)                       // battery-charging
+        if (level >= 100) return String.fromCodePoint(0xF0079)                   // battery (llena)
+        if (level < 10) return String.fromCodePoint(0xF0083)                     // battery-alert
+        return String.fromCodePoint(0xF007A + Math.floor(level / 10) - 1)        // battery-10 … battery-90: van seguidos, uno por cada 10 %
     }
 
     // "2 h 15 min", "40 min"; vacío si UPower aún no lo sabe (da 0 los primeros segundos)

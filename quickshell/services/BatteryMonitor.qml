@@ -13,10 +13,11 @@ Singleton {
     id: root
 
     readonly property UPowerDevice battery: UPower.displayDevice
-    readonly property bool charging:                            // Definiciones de cargando segun UPower (Si está enchufado y al 100% detecta FullyCharged, no Charging)
-    battery.state == UPowerDeviceState.Charging                 // Batería a la que literalmente le está entrando carga
-    || battery.state == UPowerDeviceState.PendingCharge
-    || battery.state == UPowerDeviceState.FullyCharged          // Batería completamente cargada
+    // Enchufado, según UPower: cargando, a la espera de cargar o ya llena (enchufado y al
+    // 100 % UPower dice FullyCharged, no Charging)
+    readonly property bool charging: battery.state == UPowerDeviceState.Charging       // Le está entrando carga
+                                  || battery.state == UPowerDeviceState.PendingCharge
+                                  || battery.state == UPowerDeviceState.FullyCharged   // Completamente cargada
 
     readonly property int level: Math.round(battery.percentage * 100)
 

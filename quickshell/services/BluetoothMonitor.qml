@@ -85,9 +85,9 @@ Singleton {
     // HFP): BlueZ no tiene a quién pedir autorización y lo rechaza, y el
     // dispositivo acaba desconectándose. Por eso los que se emparejan desde
     // aquí se marcan como de confianza. Solo los que pide el usuario desde el
-    // menú, no cualquiera que acabe emparejado: con el adaptador siempre en
-    // modo pairable (ver ensurePairable) un
-    // emparejamiento entrante ajeno no debe llevarse la confianza gratis.
+    // menú, no cualquiera que acabe emparejado: con el adaptador siempre en modo
+    // pairable (ver ensurePairable), un emparejamiento entrante ajeno no debe
+    // llevarse la confianza gratis.
     property var pendingTrust: []   // addresses emparejándose desde el widget, a marcar como trusted cuando cuaje
 
     function pairAndTrust(dev) {

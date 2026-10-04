@@ -18,7 +18,7 @@ ColumnLayout {
 
     BarIcon {
         id: iconText
-        text: String.fromCodePoint(0xEEB0)
+        text: String.fromCodePoint(0xEEB0)   // shapes (de Font Awesome)
         tooltip: "Medidas de la barra y las ventanas"
         popup: menu
     }

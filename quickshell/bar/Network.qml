@@ -26,15 +26,15 @@ ColumnLayout{
     readonly property real signal: active? active.signalStrength : 0
 
     readonly property string icon: {
-        if (wiredConnected) return String.fromCodePoint(0xf0317)  // ethernet
-        if (!Networking.wifiEnabled) return String.fromCodePoint (0xF05AA)
-        if (!active) return String.fromCodePoint(0xF092D)
+        if (wiredConnected) return String.fromCodePoint(0xF0317)  // lan (cable)
+        if (!Networking.wifiEnabled) return String.fromCodePoint(0xF05AA)  // wifi-off
+        if (!active) return String.fromCodePoint(0xF092D)  // wifi-strength-off: encendido, sin conexión
 
         let tier = signal >= 0.75 ? 3
                  : signal >= 0.50 ? 2
                  : signal >= 0.25 ? 1
                  : 0
-        return String.fromCodePoint(0xF091F + tier*3)
+        return String.fromCodePoint(0xF091F + tier*3)   // wifi-strength-1 … 4: van de 3 en 3 (entre medias, sus variantes con alerta y candado)
     }
 
     // Las conexiones pedidas desde el menú (contraseñas, redes empresariales, avisos de
@@ -82,7 +82,7 @@ ColumnLayout{
         Text {
             Layout.fillWidth: true
             visible: Networking.wifiEnabled && (!root.wifiDevice || root.wifiDevice.networks.values.length === 0)
-            text: root.wifiDevice ? "Buscando redes..." : "Sin adaptador wifi"
+            text: root.wifiDevice ? "Buscando redes…" : "Sin adaptador wifi"
             color: Theme.textDisabled
         }
 

@@ -45,8 +45,8 @@ Item{
                 property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
                 property bool isUrgent: !isActive && (ws?.urgent ?? false)     // Una ventana pide atención (Hyprland lo quita solo al ir a ese workspace)
                 text: index + 1
-                //Lógica del color: Si es el actual:Theme.textSelected. Si no lo es, pero contiene algo: Theme.textActive, si no: Theme.textDisabled
-                //Si pide atención, con el color de acento y parpadeando (así se distingue en todos los temas)
+                // Lógica del color: si es el actual, Theme.textSelected; si no lo es pero contiene algo, Theme.textActive; si no, Theme.textDisabled.
+                // Si pide atención, con el color de acento y parpadeando (así se distingue en todos los temas)
                 color: (isActive || isUrgent) ? Theme.textSelected : (ws ? Theme.textActive : Theme.textDisabled)
                 font { pixelSize: 15; bold: true }
                 Layout.alignment: Qt.AlignHCenter // Centro horizontalmente los números
@@ -61,7 +61,7 @@ Item{
 
                 MouseArea {
                     anchors.fill: parent
-                    anchors.margins: -5             // Doy un poco de margen para que sea más fácil hacer click en el número
+                    anchors.margins: -5             // Doy un poco de margen para que sea más fácil hacer clic en el número
                     onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + (index + 1) + " })")
                 }
             }

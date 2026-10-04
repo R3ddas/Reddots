@@ -14,7 +14,7 @@ ColumnLayout {
 
     BarIcon {
         id: iconText
-        text: String.fromCodePoint(0xf195A)
+        text: String.fromCodePoint(0xF195A)  // palette-swatch-variant
         tooltip: "Tema: " + Theme.activeTheme
         popup: menu
     }

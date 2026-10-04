@@ -1,3 +1,8 @@
+// Icono de volumen en la barra + popup con cuatro partes: lo que se está reproduciendo
+// (solo si hay algún reproductor abierto), la salida (volumen y a qué altavoz/auricular
+// va), el micrófono (volumen y cuál se usa) y el volumen de cada aplicación que está sonando.
+//   Clic izquierdo: abre/cierra el popup
+//   Clic derecho: silencia/quita el silencio sin abrir nada
 import Quickshell
 import Quickshell.Services.Pipewire   // Para el control de volumen (Pipewire)
 import Quickshell.Io                  // Para consultar la disponibilidad real de los puertos (Process/pactl)
@@ -8,9 +13,6 @@ import QtQuick.Layouts                // Para usar RowLayout o ColumnLayout
 import qs.components
 import qs.services
 
-// Icono de volumen en la barra + popup con cuatro partes: lo que se está reproduciendo
-// (solo si hay algún reproductor abierto), la salida (volumen y a qué altavoz/auricular
-// va), el micrófono (volumen y cuál se usa) y el volumen de cada aplicación que está sonando.
 ColumnLayout{
     id: root
     spacing: 6
@@ -173,7 +175,7 @@ ColumnLayout{
         onTriggered: root.player.positionChanged()
     }
 
-    // Icono en la barra: click izquierdo abre/cierra el menú, click derecho
+    // Icono en la barra: clic izquierdo abre/cierra el menú, clic derecho
     // silencia/desilencia directamente sin abrir nada.
     BarIcon {
         id: iconText

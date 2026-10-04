@@ -52,7 +52,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "reddots:osd"
-    mask: Region {}                         // click-through: no roba ningún clic
+    mask: Region {}                         // Transparente a los clics: no roba ninguno
 
     function show(newMode) {
         mode = newMode

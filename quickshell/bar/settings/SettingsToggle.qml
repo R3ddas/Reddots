@@ -18,7 +18,7 @@ ColumnLayout {
     readonly property Item owner: controls ?? root      // Quién guarda de verdad el estado
 
     BarIcon {
-        text: String.fromCodePoint(0xf01d8)                                 // Mismo icono plegado y desplegado: el estado se nota por el color
+        text: String.fromCodePoint(0xF01D8)                                 // dots-horizontal. Mismo icono plegado y desplegado: el estado se nota por el color
         // Con el color de acento mientras está desplegado. Plegado, en rojo si hay alguna temperatura
         // alta (SystemMonitor.qml) o alguna notificación crítica sin descartar (NotificationCenter.qml):
         // el icono del chip, que es el que avisa, está dentro del grupo

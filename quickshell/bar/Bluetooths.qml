@@ -118,7 +118,7 @@ ColumnLayout {
                     anchors.fill: parent
                     hoverEnabled: true
                     onClicked: {
-                        if (modelData.pairing) modelData.cancelPair()           // click durante el pairing = cancelarlo
+                        if (modelData.pairing) modelData.cancelPair()           // clic durante el pairing = cancelarlo
                         else if (modelData.connected) modelData.disconnect()
                         else if (modelData.paired) modelData.connect()          // ya conocido: solo reconectar
                         else BluetoothMonitor.pairAndTrust(modelData)           // desconocido: emparejar por primera vez (y marcar de confianza)

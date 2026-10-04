@@ -38,7 +38,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "reddots:border"
-    mask: Region {}        // click-through: no roba ningún clic
+    mask: Region {}        // Transparente a los clics: no roba ninguno
 
     // El marco se dibuja más grande que la ventana ("bleed" px de más por
     // cada lado, que quedan fuera de pantalla y no se ven). Sin eso, la

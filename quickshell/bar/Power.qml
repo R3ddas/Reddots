@@ -1,4 +1,5 @@
-// Icono de apagado, abre un menú para apagar, reiniciar o suspender el equipo
+// Icono de apagado: abre un menú para apagar, reiniciar o suspender el equipo, o para
+// lanzar el salvapantallas (cmatrix a pantalla completa en cada monitor, ver launchScreensaver()).
 
 import Quickshell          // También para lanzar systemctl (execDetached)
 import Quickshell.Hyprland

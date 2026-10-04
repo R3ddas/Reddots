@@ -13,7 +13,7 @@ import qs.services
 
 ColumnLayout{
     id: root
-    property bool showDate: false   // Se alterna con click derecho sobre la hora
+    property bool showDate: false   // Se alterna con clic derecho sobre la hora
 
     onShowDateChanged: if (!showDate) menu.visible = false   // Si se oculta la fecha, el calendario también
 

@@ -19,7 +19,7 @@ playerctl       # Para las teclas multimedia (siguiente, anterior, pausa)
 # Usados por la barra (quickshell/). CachyOS ya trae alguno, pero así no dependo de eso
 ttf-cascadia-code-nerd  # Fuente de la que salen los iconos de la barra (Nerd Font)
 papirus-icon-theme      # Tema de iconos de Quickshell: lanzador, notificaciones, bandeja (pragma IconTheme en shell.qml)
-libnotify               # Trae notify-send, para los avisos de batería baja y de Bluetooth
+libnotify               # Trae notify-send, para los avisos de la barra (batería baja, Bluetooth, wifi) y de las capturas
 libpulse                # Trae pactl, para saber qué salidas de audio tienen algo enchufado (Volume.qml)
 xdg-utils               # Trae xdg-open, para el botón "Abrir carpeta" de los fondos de pantalla
 git                     # Para el botón de actualizar Reddots (scripts/update-reddots.sh)
@@ -27,7 +27,7 @@ pacman-contrib          # Trae checkupdates, para el contador de actualizaciones
 cliphist                # Historial del portapapeles (Clipboard.qml; lo arranca hypr/hyprland.lua con wl-paste de wl-clipboard)
 networkmanager          # Redes wifi y cable del widget de red (Network.qml: Quickshell.Networking habla con NetworkManager)
 bluez                   # El servicio de Bluetooth del que tira Bluetooths.qml (Quickshell.Bluetooth)
-upower                  # Datos de la batería (Battery.qml y shell.qml: Quickshell.Services.UPower)
+upower                  # Datos de la batería (Battery.qml, BatteryMonitor.qml y Bar.qml: Quickshell.Services.UPower)
 noto-fonts-emoji        # Emojis de color para las apps (Chrome, Zen, Teams, Kate...). La barra ya no los usa: solo glifos de la Nerd Font
 
 # Del sistema, no de la barra
