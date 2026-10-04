@@ -3,6 +3,10 @@ set -euo pipefail
 cd "$(dirname "$0")"
 DOTS="$PWD" # Guardo la ruta en una variable para no acceder todo el rato
 
+# Los nombres de una de las listas del repo (packages.txt, packages_opt.txt, hidden_apps.txt),
+# uno por línea: sin comentarios (lo que va tras #), sin líneas vacías y sin espacios
+listFile() { sed 's/#.*//' "$1" | awk 'NF { print $1 }'; }
+
 echo "Instalando"
 
 sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes (aquí y no en packages.txt: hace falta ya para el "paru -Syu" de abajo)
@@ -14,8 +18,7 @@ paru -Syu --noconfirm   # Actualiza el sistema por completo antes de instalar (r
 
 echo "Instalando paquetes (via pacman)"
 
-sed 's/#.*//' packages.txt | grep -v '^\s*$' \
-| xargs -r sudo pacman -S --needed  --noconfirm
+listFile packages.txt | xargs -r sudo pacman -S --needed  --noconfirm
 
 echo "Instalando paquetes (via paru)"
 
@@ -31,7 +34,7 @@ echo "Paquetes opcionales"
 optional=()
 while read -r pkg; do
     pacman -Qq "$pkg" &>/dev/null || optional+=("$pkg")
-done < <(awk '{ sub(/#.*/, ""); if ($1 != "") print $1 }' packages_opt.txt)   # Sin comentarios ni líneas vacías
+done < <(listFile packages_opt.txt)
 
 chosen=()   # Los que se van a instalar
 if (( ${#optional[@]} == 0 )); then
@@ -141,7 +144,7 @@ mkdir -p "$apps"
 # no se queda desfasado cuando el paquete se actualiza.
 hiddenDesktop() { printf '[Desktop Entry]\nType=Application\nName=%s\nNoDisplay=true\n' "$1"; }
 
-mapfile -t hidden < <(sed 's/#.*//' hidden_apps.txt | awk 'NF { print $1 }')   # Sin comentarios, líneas vacías ni espacios
+mapfile -t hidden < <(listFile hidden_apps.txt)
 for app in "${hidden[@]}"; do
     if [[ -f "/usr/share/applications/$app.desktop" ]]; then
         hiddenDesktop "$app" > "$apps/$app.desktop"

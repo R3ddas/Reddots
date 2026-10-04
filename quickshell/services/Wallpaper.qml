@@ -2,6 +2,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io                // Para FileView y JsonAdapter
 import QtQuick
+import qs.components                // Para StateFile
 
 // Fondo de pantalla activo. Se elige desde el icono de la barra
 // (WallpaperSettings.qml) y lo pinta Background.qml, una ventana de Quickshell
@@ -30,12 +31,9 @@ Singleton {
     // de por defecto, y Background.qml lo pintaría un instante antes del guardado.
     property bool ready: false
 
-    FileView {
-        path: Quickshell.statePath("wallpaper.json")    // Fuera del repo, junto a theme.json y geometry.json
-        watchChanges: true
-        onFileChanged: reload()                         // Si se edita el JSON a mano, se recarga solo
+    StateFile {
+        name: "wallpaper.json"                          // Fuera del repo, junto a theme.json y geometry.json
         blockLoading: true                              // Es un archivo diminuto: se lee ya al arrancar
-        onAdapterUpdated: writeAdapter()                // Solo salta al cambiar "path", no al cargar el JSON
         onLoadFailed: root.ready = true                 // Aún no existe: se usa el de por defecto
         onLoaded: root.ready = true
 

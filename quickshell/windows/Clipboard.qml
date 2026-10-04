@@ -128,31 +128,18 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                 }
             }
 
-            ListView {
+            SelectionList {
                 id: list
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-                spacing: 4
                 model: root.filteredEntries
-                boundsBehavior: Flickable.StopAtBounds
-                onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)  // Hace scroll para que el seleccionado se vea
+                emptyText: root.entries.length === 0 ? "El historial está vacío: copia algo" : "Sin resultados"
+                onActivated: index => root.copy(root.filteredEntries[index])
 
-                Text {
-                    visible: list.count === 0
-                    text: root.entries.length === 0 ? "El historial está vacío: copia algo" : "Sin resultados"
-                    color: Theme.textDisabled
-                }
-
-                delegate: Rectangle {
+                delegate: Item {
                     id: entryDelegate
                     required property var modelData
-                    required property int index
 
                     width: ListView.view.width
                     height: modelData.image ? 72 : 40
-                    radius: 8
-                    color: ListView.isCurrentItem ? Theme.surfaceHover : "transparent"   // El ratón y las flechas mueven la misma selección
 
                     RowLayout {
                         anchors.fill: parent
@@ -204,13 +191,6 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignVCenter
                         }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onEntered: list.currentIndex = entryDelegate.index
-                        onClicked: root.copy(entryDelegate.modelData)
                     }
                 }
             }

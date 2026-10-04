@@ -15,6 +15,16 @@ ColumnLayout {
     id: root
     spacing: 6
 
+    // Botón − o + de una fila: suma "delta" a la medida, sin pasarse de su mínimo ni de su máximo
+    component StepButton: Button {
+        required property var entry         // La entrada de Geometry.editable de esa fila
+        property int delta: 0
+        implicitWidth: 22
+        implicitHeight: 22
+        radius: 4
+        onClicked: Geometry[entry.key] = Math.max(entry.min, Math.min(entry.max, Geometry[entry.key] + delta))
+    }
+
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xEEB0)   // shapes (de Font Awesome)
@@ -75,26 +85,7 @@ ColumnLayout {
                             elide: Text.ElideRight              // Por si una etiqueta nueva no cabe: que no empuje al stepper
                         }
 
-                        Rectangle {
-                            implicitWidth: 22
-                            implicitHeight: 22
-                            radius: 4
-                            color: minusMouse.containsMouse ? Theme.surfaceHover : "transparent"
-                            border.color: Theme.border
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "−"
-                                color: Theme.textActive
-                            }
-
-                            MouseArea {
-                                id: minusMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: Geometry[row.modelData.key] = Math.max(row.modelData.min, Geometry[row.modelData.key] - row.modelData.step)
-                            }
-                        }
+                        StepButton { text: "−"; delta: -row.modelData.step; entry: row.modelData }
 
                         Text {
                             Layout.preferredWidth: 40           // Ancho fijo (cabe "100%"): así los steppers de todas las filas quedan en columna
@@ -103,26 +94,7 @@ ColumnLayout {
                             color: Theme.textActive
                         }
 
-                        Rectangle {
-                            implicitWidth: 22
-                            implicitHeight: 22
-                            radius: 4
-                            color: plusMouse.containsMouse ? Theme.surfaceHover : "transparent"
-                            border.color: Theme.border
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "+"
-                                color: Theme.textActive
-                            }
-
-                            MouseArea {
-                                id: plusMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: Geometry[row.modelData.key] = Math.min(row.modelData.max, Geometry[row.modelData.key] + row.modelData.step)
-                            }
-                        }
+                        StepButton { text: "+"; delta: row.modelData.step; entry: row.modelData }
                     }
                 }
             }

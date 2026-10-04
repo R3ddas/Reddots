@@ -203,7 +203,7 @@ ColumnLayout{
     }
 
     // Icono a la izquierda de un slider: al pulsarlo silencia/desilencia ese nodo
-    component MuteIcon: Text {
+    component MuteIcon: TextButton {
         id: muteIcon
         property var node: null
         readonly property bool isMuted: !node || !node.audio || node.audio.muted
@@ -211,61 +211,29 @@ ColumnLayout{
         font.pixelSize: 16
         Layout.preferredWidth: 20
         horizontalAlignment: Text.AlignHCenter
-        MouseArea {
-            anchors.fill: parent
-            anchors.margins: -4
-            onClicked: if (muteIcon.node && muteIcon.node.audio) muteIcon.node.audio.muted = !muteIcon.node.audio.muted
-        }
+        onClicked: if (node && node.audio) node.audio.muted = !node.audio.muted
     }
 
-    // Una salida o un micrófono de la lista: con ✓ y el color de acento el que se está usando
-    component DeviceRow: Rectangle {
-        id: deviceRow
+    // Una salida o un micrófono de la lista: con ✓ y el color de acento el que se está usando.
+    // Con "nickname" (p.ej. "HDMI 1", "Speaker") en vez de "description" porque varias
+    // salidas del mismo chip comparten un prefijo larguísimo ("500 Series Chipset Family HD
+    // Audio ...") y, con el ancho fijo del popup y el elide, se veían todas cortadas igual
+    // (parecían la misma opción repetida 4 veces).
+    component DeviceRow: MenuRow {
         property var node
         property bool current: false
-        signal picked()
-
-        Layout.fillWidth: true
-        implicitHeight: 26
-        radius: 4
-        color: deviceMouse.containsMouse ? Theme.surfaceHover : "transparent"
-
-        // Usamos "nickname" (p.ej. "HDMI 1", "Speaker") en vez de "description"
-        // porque varias salidas del mismo chip comparten un prefijo larguísimo
-        // ("500 Series Chipset Family HD Audio ...") y, con el ancho fijo del
-        // popup y el elide, se veían todas cortadas igual (parecían la misma
-        // opción repetida 4 veces).
-        Text {
-            x: 6
-            anchors.verticalCenter: parent.verticalCenter
-            width: parent.width - 12
-            text: (deviceRow.current ? "✓ " : "") + (deviceRow.node.nickname || deviceRow.node.description || deviceRow.node.name)
-            color: deviceRow.current ? Theme.textSelected : Theme.textActive
-            elide: Text.ElideRight
-        }
-
-        MouseArea {
-            id: deviceMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: deviceRow.picked()
-        }
+        icon: current ? "✓" : ""
+        selected: current
+        text: node.nickname || node.description || node.name
     }
 
     // Botón de los controles de reproducción (anterior, play/pausa, siguiente). Con
     // enabled: false (el reproductor no lo permite) sale apagado y no responde
-    component MediaButton: Text {
-        id: mediaButton
-        signal clicked()
+    component MediaButton: TextButton {
         color: enabled ? Theme.textActive : Theme.textDisabled
         font.pixelSize: 20
         horizontalAlignment: Text.AlignHCenter
         Layout.preferredWidth: 28
-        MouseArea {
-            anchors.fill: parent
-            anchors.margins: -4
-            onClicked: mediaButton.clicked()
-        }
     }
 
     component PartSeparator: Separator { Layout.topMargin: 4; Layout.bottomMargin: 2 }    // Entre parte y parte
@@ -294,16 +262,11 @@ ColumnLayout{
                     text: "Reproduciendo" + (root.player && root.player.identity ? " · " + root.player.identity : "")
                     elide: Text.ElideRight
                 }
-                Text {
+                TextButton {
                     visible: root.players.length > 1
                     text: (root.players.indexOf(root.player) + 1) + "/" + root.players.length + " ›"
-                    color: Theme.textActive
                     font.pixelSize: 11
-                    MouseArea {
-                        anchors.fill: parent
-                        anchors.margins: -4
-                        onClicked: root.nextPlayer()
-                    }
+                    onClicked: root.nextPlayer()
                 }
             }
 
@@ -433,7 +396,7 @@ ColumnLayout{
                 required property var modelData
                 node: modelData
                 current: modelData === root.sink
-                onPicked: {
+                onClicked: {
                     Pipewire.preferredDefaultAudioSink = modelData
                     menu.visible = false
                 }
@@ -469,7 +432,7 @@ ColumnLayout{
                 required property var modelData
                 node: modelData
                 current: modelData === root.source
-                onPicked: {
+                onClicked: {
                     Pipewire.preferredDefaultAudioSource = modelData
                     menu.visible = false
                 }

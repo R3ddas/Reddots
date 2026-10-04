@@ -1,5 +1,5 @@
 // MenuRow.qml
-// Fila de un menú de la barra (Power, Screenshot, Reddots, Tray): icono, texto y,
+// Fila de un menú de la barra (Power, Screenshot, Reddots, Tray, Volume): icono, texto y,
 // si hace falta, un aviso debajo ("hint") y una flecha de submenú. Resalta con el
 // ratón encima y avisa con clicked().
 import Quickshell
@@ -17,6 +17,7 @@ Rectangle {
     property string hint: ""            // Aviso de qué va a pasar, en pequeño debajo del texto
     property bool arrow: false          // Tiene submenú: flecha a la derecha
     property bool active: true          // false = en gris y sin reaccionar al ratón
+    property bool selected: false       // La opción en uso (la salida de audio de Volume.qml...): icono y texto con el color de acento
     signal clicked()
 
     Layout.fillWidth: true
@@ -41,7 +42,7 @@ Rectangle {
             Text {
                 visible: row.iconSource === ""
                 text: row.icon
-                color: row.active ? Theme.textActive : Theme.textDisabled
+                color: !row.active ? Theme.textDisabled : row.selected ? Theme.textSelected : Theme.textActive
                 font.pixelSize: 15
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
@@ -56,7 +57,7 @@ Rectangle {
             Text {
                 id: label
                 text: row.text
-                color: row.active ? Theme.textActive : Theme.textDisabled
+                color: !row.active ? Theme.textDisabled : row.selected ? Theme.textSelected : Theme.textActive
                 elide: Text.ElideRight
                 anchors.left: parent.left
                 anchors.leftMargin: 28

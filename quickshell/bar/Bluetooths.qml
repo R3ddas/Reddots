@@ -125,22 +125,16 @@ ColumnLayout {
                     }
                 }
 
-                Text {
+                TextButton {
                     id: repairLabel
                     visible: deviceRow.needsRepair || deviceRow.repairing   // solo aparece cuando hace falta
+                    enabled: !deviceRow.repairing          // evita relanzar la reparación mientras ya hay una en curso
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
                     anchors.rightMargin: 6
                     text: deviceRow.repairing ? "reparando…" : "reparar"
                     font.underline: !deviceRow.repairing   // subrayado = clicable; sin subrayar mientras repara
-                    color: Theme.textActive
-
-                    MouseArea {
-                        anchors.fill: parent
-                        anchors.margins: -4
-                        enabled: !deviceRow.repairing   // evita relanzar la reparación mientras ya hay una en curso
-                        onClicked: BluetoothMonitor.repairDevice(modelData.address)
-                    }
+                    onClicked: BluetoothMonitor.repairDevice(modelData.address)
                 }
             }
         }

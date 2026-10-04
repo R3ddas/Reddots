@@ -18,9 +18,9 @@ ColumnLayout{
     id: root
     spacing: 6
 
-    property var wifiDevice: Networking.devices.values.find(d => d.type === DeviceType.Wifi)
-    property var wiredDevice: Networking.devices.values.find(d => d.type === DeviceType.Wired)
-    property var active: wifiDevice ? wifiDevice.networks.values.find(n => n.connected) : null
+    readonly property var wifiDevice: Networking.devices.values.find(d => d.type === DeviceType.Wifi)
+    readonly property var wiredDevice: Networking.devices.values.find(d => d.type === DeviceType.Wired)
+    readonly property var active: wifiDevice ? wifiDevice.networks.values.find(n => n.connected) : null
 
     readonly property bool wiredConnected: wiredDevice ? wiredDevice.connected : false
     readonly property real signal: active? active.signalStrength : 0
@@ -174,15 +174,9 @@ ColumnLayout{
                         onAccepted: delegateRoot.submit()
                     }
 
-                    Text {
+                    TextButton {
                         text: "Conectar"
-                        color: Theme.textActive
-
-                        MouseArea {
-                            anchors.fill: parent
-                            anchors.margins: -4
-                            onClicked: delegateRoot.submit()
-                        }
+                        onClicked: delegateRoot.submit()
                     }
                 }
             }
@@ -196,18 +190,12 @@ ColumnLayout{
             wrapMode: Text.Wrap
         }
 
-        Text {
+        TextButton {
             visible: NetworkMonitor.eapUnverified !== null && !NetworkMonitor.eapRunning
             text: "Conectar sin verificar"
-            color: Theme.textActive
-
-            MouseArea {
-                anchors.fill: parent
-                anchors.margins: -4
-                onClicked: {
-                    const d = NetworkMonitor.eapUnverified
-                    NetworkMonitor.tryConnectEap(d.ssid, d.identity, d.password, false)
-                }
+            onClicked: {
+                const d = NetworkMonitor.eapUnverified
+                NetworkMonitor.tryConnectEap(d.ssid, d.identity, d.password, false)
             }
         }
     }

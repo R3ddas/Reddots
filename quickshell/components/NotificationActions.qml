@@ -17,30 +17,12 @@ Flow {
 
     Repeater {
         model: root.buttonActions
-        delegate: Rectangle {
-            id: actionButton
+        delegate: Button {
             required property var modelData
-            implicitWidth: actionText.implicitWidth + 16
-            implicitHeight: actionText.implicitHeight + 8
-            radius: 6
-            color: actionMouse.containsMouse ? Theme.surfaceHover : Theme.surface
-            border.color: Theme.border
-
-            Text {
-                id: actionText
-                anchors.centerIn: parent
-                text: actionButton.modelData.text
-                textFormat: Text.PlainText      // Viene de la app: que no se interprete como HTML
-                color: Theme.textActive
-                font.pixelSize: 11
-            }
-
-            MouseArea {
-                id: actionMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: actionButton.modelData.invoke()   // La cierra sola, salvo que la app pida que se quede
-            }
+            text: modelData.text                    // Viene de la app: Button lo pinta como texto plano
+            font.pixelSize: 11
+            idleColor: Theme.surface
+            onClicked: modelData.invoke()           // La cierra sola, salvo que la app pida que se quede
         }
     }
 }

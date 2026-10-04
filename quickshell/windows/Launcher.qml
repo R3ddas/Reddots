@@ -4,7 +4,7 @@
 // Al abrirse ya se puede escribir para filtrar: flechas para moverse, Intro para lanzar, Esc para cerrar
 
 import Quickshell
-import Quickshell.Io        // Para FileView y JsonAdapter (cuántas veces se ha abierto cada app)
+import Quickshell.Io        // Para el JsonAdapter (cuántas veces se ha abierto cada app)
 import Quickshell.Wayland
 import Quickshell.Widgets  // Para el IconImage
 import QtQuick
@@ -53,12 +53,9 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
     // vuelva a crear al cerrar la tapa o cambiar de monitor: el recuento vive en el archivo.
     // La clave es el id del .desktop ("code", "org.kde.kate"...), no el nombre que se ve:
     // el nombre cambia con el idioma o al actualizar la app, el id no.
-    FileView {
-        path: Quickshell.statePath("launcher.json")
-        watchChanges: true
-        onFileChanged: reload()                         // Si se edita el JSON a mano, se recarga solo
+    StateFile {
+        name: "launcher.json"
         blockLoading: true                              // Es un archivo diminuto: así el primer orden ya lo tiene en cuenta
-        onAdapterUpdated: writeAdapter()
 
         JsonAdapter {
             id: usage
@@ -112,31 +109,15 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                 onEscapePressed: root.visible = false
             }
 
-            ListView {
+            SelectionList {
                 id: list
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-                spacing: 4
                 model: root.filteredApps
-                boundsBehavior: Flickable.StopAtBounds
-                onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)  // Hace scroll para que el seleccionado se vea
+                onActivated: index => root.launch(root.filteredApps[index])
 
-                Text {
-                    visible: list.count === 0
-                    text: "Sin resultados"
-                    color: Theme.textDisabled
-                }
-
-                delegate: Rectangle {
-                    id: appDelegate
+                delegate: Item {
                     required property var modelData
-                    required property int index
-
                     width: ListView.view.width
                     height: 44
-                    radius: 8
-                    color: ListView.isCurrentItem ? Theme.surfaceHover : "transparent"   // El ratón y las flechas mueven la misma selección
 
                     RowLayout {
                         anchors.fill: parent
@@ -146,23 +127,16 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
 
                         IconImage {
                             implicitSize: 28
-                            source: Quickshell.iconPath(appDelegate.modelData.icon, "application-x-executable")
+                            source: Quickshell.iconPath(modelData.icon, "application-x-executable")
                             Layout.alignment: Qt.AlignVCenter
                         }
                         Text {
-                            text: appDelegate.modelData.name
+                            text: modelData.name
                             color: Theme.textActive
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignVCenter
                         }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onEntered: list.currentIndex = appDelegate.index
-                        onClicked: root.launch(appDelegate.modelData)
                     }
                 }
             }

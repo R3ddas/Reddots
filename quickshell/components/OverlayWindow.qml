@@ -6,10 +6,8 @@
 //
 // Quien la usa pone el contenido, el tamaño, el namespace (WlrLayershell.namespace)
 // y, si quiere, anchors (sin anchors el compositor la centra en la pantalla). Si
-// necesita hacer algo al abrirse o cerrarse, puede poner su propio onVisibleChanged
-// (se ejecutan los dos: el de aquí y el suyo).
+// necesita hacer algo al abrirse o cerrarse, puede poner su propio onVisibleChanged.
 import Quickshell
-import Quickshell.Hyprland          // Para el HyprlandFocusGrab
 import Quickshell.Wayland
 import QtQuick
 
@@ -25,21 +23,5 @@ PanelWindow {
     // El teclado le llega igual al abrirse, porque se lo da el propio grab.
     WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
-    onVisibleChanged: {
-        if (visible) grabTimer.restart()
-        else { grabTimer.stop(); grab.active = false }
-    }
-
-    HyprlandFocusGrab {
-        id: grab
-        windows: [root]
-        active: false
-        onCleared: root.visible = false             // Se cierra al hacer clic fuera
-    }
-
-    Timer {
-        id: grabTimer
-        interval: 5                                 // Deja que la ventana termine de abrirse antes de activar el grab (si no, lo cierra el mismo clic que la abrió)
-        onTriggered: grab.active = true
-    }
+    ClickOutsideGrab { window: root }               // Se cierra al hacer clic fuera
 }

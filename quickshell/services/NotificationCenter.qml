@@ -126,7 +126,7 @@ Singleton {
                     image: n.image,
                     summary: n.summary,
                     body: n.body,
-                    critical: n.urgency === NotificationUrgency.Critical,
+                    urgency: n.urgency,             // Mismos nombres que la notificación: NotificationCard lee igual las dos
                     time: time
                 }].concat(root.history).slice(0, root.maxHistory)
             }

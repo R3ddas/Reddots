@@ -2,7 +2,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
-import qs.components                // Para HyprConfigFile
+import qs.components                // HyprConfigFile y StateFile
 
 // Medidas de la interfaz, editables en caliente desde GeometrySettings.qml y guardadas en
 // disco (fuera del repo, en el directorio de estado de Quickshell) para que sobrevivan a
@@ -75,11 +75,8 @@ Singleton {
         return Math.max(minY, Math.min(centered, maxY))
     }
 
-    FileView {
-        path: Quickshell.statePath("geometry.json")
-        watchChanges: true
-        onFileChanged: reload()
-        onAdapterUpdated: writeAdapter()
+    StateFile {
+        name: "geometry.json"
 
         JsonAdapter {
             id: adapter
@@ -114,14 +111,9 @@ Singleton {
 
     function syncHyprland() { overridesFile.sync(root.hyprConfigText()) }
 
-    FileView {
-        path: Quickshell.statePath("hyprGeometry.json")
-        watchChanges: true
-        onFileChanged: reload()
-        onAdapterUpdated: {
-            writeAdapter()
-            root.syncHyprland()
-        }
+    StateFile {
+        name: "hyprGeometry.json"
+        onAdapterUpdated: root.syncHyprland()       // Además de guardarlo (eso ya lo hace StateFile)
         // Al arrancar Quickshell, onAdapterUpdated no se dispara solo por
         // cargar el JSON existente, así que se sincroniza una vez aquí por si
         // shellOverrides.lua se quedó desfasado (p.ej. se editó el JSON a mano

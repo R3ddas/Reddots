@@ -2,7 +2,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
-import qs.components                // Para HyprConfigFile
+import qs.components                // HyprConfigFile y StateFile
 
 // Temas de color en formato Base16 (https://github.com/tinted-theming/home): cada tema son
 // 16 colores en un orden fijo, así que un tema nuevo se añade copiando los 16 de su esquema
@@ -36,17 +36,14 @@ import qs.components                // Para HyprConfigFile
 
 Singleton {
     // Tema activo: se elige desde el icono de la paleta en la barra
-    // (ThemeSettings.qml) y se guarda solo, gracias al FileView de más abajo.
+    // (ThemeSettings.qml) y se guarda solo, gracias al StateFile de más abajo.
     // El de por defecto (instalación nueva) es el del JsonAdapter, "Gruvbox Claro";
     // si lo cambias, cambia también los colores de arranque de col en hypr/hyprland.lua.
     // Debe coincidir con el "name" de uno de los temas de "themes".
     property alias activeTheme: adapter.activeTheme
 
-    FileView {
-        path: Quickshell.statePath("theme.json")
-        watchChanges: true
-        onFileChanged: reload()
-        onAdapterUpdated: writeAdapter()
+    StateFile {
+        name: "theme.json"
         onLoaded: syncAll()             // Al arrancar, cuando ya se sabe el tema guardado (antes activeTheme aún vale el de por defecto)
         onLoadFailed: syncAll()         // Si theme.json aún no existe (instalación nueva), con el tema por defecto
 

@@ -63,41 +63,6 @@ PanelWindow {
         if (flow) flow.cancelAuthenticationRequest()
     }
 
-    // Botón de la parte de abajo (Cancelar / Autenticar)
-    component DialogButton: Rectangle {
-        id: button
-        property string text
-        property bool accent: false
-        property bool enabled: true
-        signal clicked()
-
-        implicitWidth: label.implicitWidth + 28
-        implicitHeight: 30
-        radius: 6
-        color: !enabled ? "transparent"
-             : accent ? (buttonMouse.containsMouse ? Theme.surfaceHover : Theme.background)
-             : (buttonMouse.containsMouse ? Theme.surfaceHover : "transparent")
-        border.width: 1
-        border.color: accent && enabled ? Theme.textSelected : Theme.border
-
-        Text {
-            id: label
-            anchors.centerIn: parent
-            text: button.text
-            textFormat: Text.PlainText
-            color: button.enabled ? (button.accent ? Theme.textSelected : Theme.textActive) : Theme.textDisabled
-            font.bold: button.accent
-        }
-
-        MouseArea {
-            id: buttonMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            enabled: button.enabled
-            onClicked: button.clicked()
-        }
-    }
-
     Frame {                                         // Mismo estilo que los desplegables de la barra
         anchors.fill: parent
 
@@ -199,13 +164,18 @@ PanelWindow {
 
                 Item { Layout.fillWidth: true }     // Empuja los botones a la derecha
 
-                DialogButton {
+                Button {
                     text: "Cancelar"
+                    padding: 14
+                    implicitHeight: 30
                     onClicked: root.cancel()
                 }
-                DialogButton {
+                Button {
                     text: "Autenticar"
                     accent: true
+                    idleColor: Theme.background             // El principal se distingue también sin el ratón encima
+                    padding: 14
+                    implicitHeight: 30
                     enabled: root.flow ? root.flow.isResponseRequired : false
                     onClicked: root.submit()
                 }

@@ -54,7 +54,7 @@ Scope{
             // (visible: false). Así, al ocultarse o cerrarse una, las demás no se recrean.
             Repeater{
                 model: NotificationCenter.server.trackedNotifications
-                delegate: Rectangle{
+                delegate: NotificationCard{
                     id: card
                     required property var modelData
                     required property int index
@@ -80,82 +80,14 @@ Scope{
                                                   : modelData.expireTimeout < 0 ? root.defaultTimeout * 1000
                                                   : modelData.expireTimeout
 
-                    // La acción "default" no es un botón: es la que se lanza al hacer clic en la
-                    // notificación (p.ej. abrir el chat de Teams). El resto se pintan como botones.
-                    readonly property var defaultAction: modelData.actions.find(a => a.identifier === "default") ?? null
-
+                    notification: modelData
                     Layout.fillWidth: true
-                    Layout.preferredHeight: layout.implicitHeight +20
-
-                    radius: 8
-                    color: Theme.background
-                    border.width: 2
-                    border.color: modelData.urgency === NotificationUrgency.Critical ? Theme.error : Theme.textSelected
+                    onCloseRequested: modelData.dismiss()       // Clic derecho, o clic izquierdo sin acción de la app
 
                     Timer{
                         interval: card.timeout
-                        running: card.visible && card.timeout > 0 && !hover.hovered     // Con el ratón encima no se va (al quitarlo, la cuenta empieza de nuevo). En cola, tampoco
+                        running: card.visible && card.timeout > 0 && !card.hovered     // Con el ratón encima no se va (al quitarlo, la cuenta empieza de nuevo). En cola, tampoco
                         onTriggered: NotificationCenter.hidePopup(card.modelData)   // Se quita de la pantalla, pero sigue en SystemStats
-                    }
-
-                    HoverHandler{ id: hover }                           // HoverHandler y no MouseArea: se entera también con el ratón sobre los botones
-
-                    // Va antes que el contenido para quedar por debajo: si no, se tragaría los clics de los botones
-                    MouseArea{
-                        anchors.fill: parent
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton
-                        onClicked: event => {
-                            if (event.button === Qt.LeftButton && card.defaultAction) card.defaultAction.invoke()   // Izquierdo: la acción de la app (la cierra sola, salvo que la app pida que se quede)
-                            else card.modelData.dismiss()                                                           // Sin acción, o clic derecho: solo cerrarla
-                        }
-                    }
-
-                    RowLayout{
-                        id: layout
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        spacing: 10
-                        NotificationIcon{               // La imagen de la app o, si no se puede abrir, el icono de la app
-                            size: 36
-                            Layout.alignment: Qt.AlignTop
-                            image: card.modelData.image
-                            appIcon: card.modelData.appIcon
-                            desktopEntry: card.modelData.desktopEntry
-                            appName: card.modelData.appName
-                        }
-                        ColumnLayout{
-                            Layout.fillWidth: true
-                            spacing: 2
-
-                            Text{                           // Título de la notificación
-                                Layout.fillWidth: true
-                                visible: text !== ""        // Visible si no está vacío
-                                text: card.modelData.summary
-                                // PlainText: el texto viene de la app y no debe interpretarse como HTML (como en PolkitDialog.qml).
-                                // Sin esto Qt adivina si es texto enriquecido y un "<" puede cambiar cómo se pinta.
-                                textFormat: Text.PlainText
-                                color: Theme.textSelected
-                                font.bold: true
-                                wrapMode: Text.WordWrap
-                            }
-                            Text{                           // Mensaje de la notificación
-                                Layout.fillWidth: true
-                                visible: text !== ""        // Visible si no está vacío
-                                text: card.modelData.body
-                                // Igual que el título. El servidor no anuncia marcado (bodyMarkupSupported está a false
-                                // por defecto), pero la documentación de Quickshell avisa de que algunas apps lo mandan igual
-                                textFormat: Text.PlainText
-                                color: Theme.textActive
-                                wrapMode: Text.WordWrap
-                                maximumLineCount: 8         // Un mensaje larguísimo tampoco se sale de la pantalla
-                                elide: Text.ElideRight
-                            }
-                            NotificationActions{            // Botones de las acciones
-                                Layout.fillWidth: true
-                                Layout.topMargin: 6
-                                notification: card.modelData
-                            }
-                        }
                     }
                 }
             }

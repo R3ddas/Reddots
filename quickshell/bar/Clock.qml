@@ -14,6 +14,7 @@ import qs.services
 ColumnLayout{
     id: root
     property bool showDate: false   // Se alterna con clic derecho sobre la hora
+    readonly property var spanish: Qt.locale("es_ES")    // Nombres de días y meses en español, sea cual sea el idioma del sistema
 
     onShowDateChanged: if (!showDate) menu.visible = false   // Si se oculta la fecha, el calendario también
 
@@ -27,7 +28,7 @@ ColumnLayout{
         Layout.alignment: Qt.AlignHCenter
 
         TooltipArea {                                           // "jueves, 25 de septiembre de 2026" al dejar el ratón encima de la hora
-            tooltip: Qt.locale("es_ES").toString(clock.date, "dddd, d 'de' MMMM 'de' yyyy")
+            tooltip: root.spanish.toString(clock.date, "dddd, d 'de' MMMM 'de' yyyy")
             popup: menu
             acceptedButtons: Qt.RightButton
             onClicked: root.showDate = !root.showDate
@@ -49,7 +50,7 @@ ColumnLayout{
             anchors.margins: -4
             acceptedButtons: Qt.LeftButton | Qt.RightButton
             onClicked: event => {
-                if (event.button === Qt.LeftButton) menu.visible = !menu.visible   // Izquierdo: abre/cierra el calendario
+                if (event.button === Qt.LeftButton) menu.toggle()                   // Izquierdo: abre/cierra el calendario
                 else root.showDate = !root.showDate                                 // Derecho: oculta la fecha, como en la hora
             }
         }
@@ -114,34 +115,32 @@ ColumnLayout{
                 RowLayout {                                 // Cabecera: ‹  septiembre 2026  ›
                     Layout.fillWidth: true
 
-                    Text {
+                    TextButton {
                         text: "‹"
-                        color: Theme.textActive
                         font.pixelSize: 16
                         Layout.preferredWidth: 20
                         horizontalAlignment: Text.AlignHCenter
-                        MouseArea { anchors.fill: parent; anchors.margins: -4; onClicked: menu.moveMonth(-1) }
+                        onClicked: menu.moveMonth(-1)
                     }
 
-                    Text {
+                    TextButton {                            // Clic en el título: vuelve al mes actual
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignHCenter
                         text: {
-                            const name = Qt.locale("es_ES").standaloneMonthName(menu.viewMonth)
+                            const name = root.spanish.standaloneMonthName(menu.viewMonth)
                             return name.charAt(0).toUpperCase() + name.slice(1) + " " + menu.viewYear
                         }
                         color: Theme.textSelected
                         font.bold: true
-                        MouseArea { anchors.fill: parent; onClicked: menu.goToToday() }   // Clic en el título: vuelve al mes actual
+                        onClicked: menu.goToToday()
                     }
 
-                    Text {
+                    TextButton {
                         text: "›"
-                        color: Theme.textActive
                         font.pixelSize: 16
                         Layout.preferredWidth: 20
                         horizontalAlignment: Text.AlignHCenter
-                        MouseArea { anchors.fill: parent; anchors.margins: -4; onClicked: menu.moveMonth(1) }
+                        onClicked: menu.moveMonth(1)
                     }
                 }
 

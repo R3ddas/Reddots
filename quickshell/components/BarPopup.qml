@@ -7,10 +7,8 @@
 // "padding" px del borde, y el popup mide lo que mida esa columna. Quien lo usa solo
 // tiene que darle anchorItem y, si no quiere que se ajuste al contenido, el ancho
 // (implicitWidth). Lo de dentro que tenga que ocupar todo el ancho, con Layout.fillWidth.
-// Si necesita hacer algo al abrirse o cerrarse, puede poner su propio onVisibleChanged
-// (se ejecutan los dos: el de aquí y el suyo).
+// Si necesita hacer algo al abrirse o cerrarse, puede poner su propio onVisibleChanged.
 import Quickshell
-import Quickshell.Hyprland          // Para el HyprlandFocusGrab
 import QtQuick
 import QtQuick.Layouts
 import qs.services
@@ -37,11 +35,6 @@ PopupWindow {
     anchor.gravity: Edges.Bottom | Edges.Right      // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
     anchor.onAnchoring: if (anchorItem) anchor.rect.y = Geometry.popupY(anchorItem, anchor.rect.x, implicitHeight)  // A la altura del icono; si no cabe, se mueve lo justo para dejar el mismo hueco que a la izquierda
 
-    onVisibleChanged: {
-        if (visible) grabTimer.restart()
-        else { grabTimer.stop(); grab.active = false }
-    }
-
     Frame {
         anchors.fill: parent
 
@@ -53,16 +46,5 @@ PopupWindow {
         }
     }
 
-    HyprlandFocusGrab {                                 // Cierra el popup al hacer clic fuera de él
-        id: grab
-        windows: [root]
-        active: false
-        onCleared: root.visible = false
-    }
-
-    Timer {
-        id: grabTimer
-        interval: 5                                     // Deja que el popup termine de abrirse antes de activar el grab (si no, lo cierra el mismo clic que lo abrió)
-        onTriggered: grab.active = true
-    }
+    ClickOutsideGrab { window: root }                   // Se cierra al hacer clic fuera
 }
