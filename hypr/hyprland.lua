@@ -211,7 +211,7 @@ hl.config({
         -- gaps_in, gaps_out y border_size de aquí son solo el valor de
         -- ARRANQUE (para una instalación nueva, antes de tocar nada).
         -- En cuanto se cambia algo en el panel GeometrySettings.qml de
-        -- Quickshell, HyprGeometry.qml los aplica en caliente (hyprctl eval)
+        -- Quickshell, Geometry.qml los aplica en caliente (hyprctl eval)
         -- y los guarda en hypr/shellOverrides.lua (ver loadIfExists al final
         -- de este hl.config, más abajo), que gana siempre a estos valores. Editar
         -- estas líneas a mano no tiene efecto una vez que existe ese archivo.
@@ -294,7 +294,7 @@ hl.config({
 -- bestModes/applyLid lo corrigen: dos cambios de modo y la pantalla en negro
 -- unos segundos cada vez que se cambiaba de tema o de medidas. No hace falta
 -- recargar nada: Quickshell ya aplica esos cambios en caliente con "hyprctl
--- eval" (Theme.qml, HyprGeometry.qml); los archivos solo sirven para el
+-- eval" (Theme.qml, Geometry.qml); los archivos solo sirven para el
 -- siguiente arranque, y eso lo hace el dofile().
 local function loadIfExists(name)
     local path = os.getenv("HOME") .. "/.config/hypr/" .. name .. ".lua"
@@ -305,7 +305,7 @@ local function loadIfExists(name)
     end
 end
 
-loadIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding + active/inactive/fullscreen_opacity (decoration), desde el panel GeometrySettings.qml (quickshell/services/HyprGeometry.qml)
+loadIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding + active/inactive/fullscreen_opacity (decoration), desde el panel GeometrySettings.qml (quickshell/services/Geometry.qml)
 loadIfExists("shellTheme")       -- col.active_border/inactive_border (general) y background_color (misc), según el tema elegido (quickshell/services/Theme.qml)
 
 -- Curvas y animaciones por defecto, ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/

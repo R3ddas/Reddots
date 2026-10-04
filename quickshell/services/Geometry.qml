@@ -2,20 +2,23 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.components                // Para HyprConfigFile
 
-// Medidas compartidas de la "carcasa" de la interfaz (barra lateral + borde),
-// para que Border.qml y Bar.qml no dupliquen los mismos números y puedan
-// desincronizarse entre sí. Editable en caliente desde GeometrySettings.qml
-// y persistida en disco (fuera del repo, en el directorio de estado de
-// Quickshell) para que los ajustes sobrevivan a un reinicio.
-//
-// Solo cubre propiedades que vive Quickshell (bindings QML normales, efecto
-// inmediato). Las que vive Hyprland (gaps, borde/redondeo de ventana) están
-// en el singleton paralelo HyprGeometry.qml, que persiste igual pero aplica
-// los cambios de otra forma porque no hay binding posible con el compositor.
+// Medidas de la interfaz, editables en caliente desde GeometrySettings.qml y guardadas en
+// disco (fuera del repo, en el directorio de estado de Quickshell) para que sobrevivan a
+// un reinicio. Hay dos tipos, y cada uno se guarda en su archivo:
+//   - Las que vive Quickshell (barra lateral, borde de la pantalla, desplegables), en
+//     geometry.json. Son bindings QML normales: efecto inmediato. Así Border.qml, Bar.qml
+//     y los desplegables no repiten los mismos números ni se desincronizan entre sí.
+//   - Las que vive Hyprland (gaps, borde, redondeo y opacidad de las ventanas), en
+//     hyprGeometry.json. No hay binding posible con el compositor: cada cambio se aplica en
+//     caliente y se guarda para el siguiente arranque en ~/.config/hypr/shellOverrides.lua,
+//     con components/HyprConfigFile.qml (ver allí cómo y por qué), lo mismo que los
+//     colores del tema en Theme.qml.
 Singleton {
     id: root
 
+    // --- Las que vive Quickshell ---
     property alias sidebarWidth: adapter.sidebarWidth
     property alias borderThickness: adapter.borderThickness
     property alias borderRounding: adapter.borderRounding
@@ -24,22 +27,34 @@ Singleton {
     property alias popupRounding: adapter.popupRounding
     property alias popupBorderWidth: adapter.popupBorderWidth
 
-    // Registro de propiedades editables: GeometrySettings.qml construye su
-    // panel iterando esta lista (concatenada con la de HyprGeometry.qml), así
-    // que añadir aquí una entrada es lo único que hace falta para que
-    // aparezca un nuevo control en el panel. "target" indica en qué singleton
-    // vive de verdad la propiedad (aquí o en HyprGeometry). "group" es la
-    // sección del panel en la que sale (las secciones van en el orden en que
-    // aparecen aquí; con un nombre nuevo, sale una sección nueva). "unit" es
-    // opcional: lo que se muestra tras el número (si falta, "px").
+    // --- Las que vive Hyprland ---
+    property alias gapsIn: hyprAdapter.gapsIn
+    property alias gapsOut: hyprAdapter.gapsOut
+    property alias borderSize: hyprAdapter.borderSize
+    property alias rounding: hyprAdapter.rounding
+    property alias windowOpacity: hyprAdapter.windowOpacity
+
+    // Registro de propiedades editables: GeometrySettings.qml construye su panel
+    // iterando esta lista, así que añadir aquí una entrada es lo único que hace falta para
+    // que aparezca un nuevo control en el panel. "key" es el nombre de la propiedad de
+    // este singleton. "group" es la sección del panel en la que sale (las secciones van
+    // en el orden en que aparecen aquí; con un nombre nuevo, sale una sección nueva).
+    // "unit" es opcional: lo que se muestra tras el número (si falta, "px").
     readonly property var editable: [
-        { target: root, group: "Barra lateral",        key: "sidebarWidth",        label: "Ancho",                 min: 16, max: 80,  step: 1 },
-        { target: root, group: "Borde de la pantalla", key: "borderThickness",     label: "Grosor",                min: 0,  max: 20,  step: 1 },
-        { target: root, group: "Borde de la pantalla", key: "borderRounding",      label: "Redondeo de esquinas",  min: 0,  max: 40,  step: 1 },
-        { target: root, group: "Borde de la pantalla", key: "borderShadow",        label: "Sombra",                min: 0,  max: 40,  step: 1 },
-        { target: root, group: "Borde de la pantalla", key: "borderShadowOpacity", label: "Opacidad de la sombra", min: 0,  max: 100, step: 5, unit: "%" },
-        { target: root, group: "Desplegables",         key: "popupRounding",       label: "Redondeo",              min: 0,  max: 40,  step: 1 },
-        { target: root, group: "Desplegables",         key: "popupBorderWidth",    label: "Grosor del borde",      min: 0,  max: 10,  step: 1 }
+        { group: "Barra lateral",        key: "sidebarWidth",        label: "Ancho",                  min: 16, max: 80,  step: 1 },
+        { group: "Borde de la pantalla", key: "borderThickness",     label: "Grosor",                 min: 0,  max: 20,  step: 1 },
+        { group: "Borde de la pantalla", key: "borderRounding",      label: "Redondeo de esquinas",   min: 0,  max: 40,  step: 1 },
+        { group: "Borde de la pantalla", key: "borderShadow",        label: "Sombra",                 min: 0,  max: 40,  step: 1 },
+        { group: "Borde de la pantalla", key: "borderShadowOpacity", label: "Opacidad de la sombra",  min: 0,  max: 100, step: 5, unit: "%" },
+        { group: "Desplegables",         key: "popupRounding",       label: "Redondeo",               min: 0,  max: 40,  step: 1 },
+        { group: "Desplegables",         key: "popupBorderWidth",    label: "Grosor del borde",       min: 0,  max: 10,  step: 1 },
+        { group: "Ventanas",             key: "gapsIn",              label: "Espacio entre ventanas", min: 0,  max: 40,  step: 1 },
+        { group: "Ventanas",             key: "gapsOut",             label: "Espacio con el borde",   min: 0,  max: 60,  step: 1 },
+        { group: "Ventanas",             key: "borderSize",          label: "Grosor del borde",       min: 0,  max: 10,  step: 1 },
+        { group: "Ventanas",             key: "rounding",            label: "Redondeo",               min: 0,  max: 40,  step: 1 },
+        // Mínimo 10 %: por debajo las ventanas son prácticamente invisibles y
+        // costaría encontrar el panel para volver a subirla
+        { group: "Ventanas",             key: "windowOpacity",       label: "Opacidad",               min: 10, max: 100, step: 5, unit: "%" }
     ]
 
     // "anchor.rect.y" (relativo a "item") para un popup de altura "popupHeight"
@@ -76,5 +91,60 @@ Singleton {
             property int popupRounding: 16     // Radio de las esquinas de los desplegables de la barra
             property int popupBorderWidth: 2   // Grosor del borde de color de los desplegables y del lanzador (0 = sin borde)
         }
+    }
+
+    // --- Lo que se le pasa a Hyprland ---
+
+    // En el JSON va en % (entero, para que el stepper no acumule decimales);
+    // Hyprland la quiere de 0 a 1. 90/100 se imprime "0.9", no 0.9000001.
+    readonly property real opacity: windowOpacity / 100
+
+    // Tablas de hl.config() para HyprConfigFile.qml. Se regenera todo cada vez (no un
+    // patch incremental tipo regex): como solo hay unas pocas claves y se conocen
+    // siempre, es más simple y no deja líneas huérfanas si algún día se quita una.
+    function hyprConfigText() {
+        return "general = { gaps_in = " + root.gapsIn
+             + ", gaps_out = " + root.gapsOut
+             + ", border_size = " + root.borderSize
+             + " }, decoration = { rounding = " + root.rounding
+             + ", active_opacity = " + root.opacity                 // Las tres iguales, como el "local opacity" de hyprland.lua
+             + ", inactive_opacity = " + root.opacity
+             + ", fullscreen_opacity = " + root.opacity + " }"
+    }
+
+    function syncHyprland() { overridesFile.sync(root.hyprConfigText()) }
+
+    FileView {
+        path: Quickshell.statePath("hyprGeometry.json")
+        watchChanges: true
+        onFileChanged: reload()
+        onAdapterUpdated: {
+            writeAdapter()
+            root.syncHyprland()
+        }
+        // Al arrancar Quickshell, onAdapterUpdated no se dispara solo por
+        // cargar el JSON existente, así que se sincroniza una vez aquí por si
+        // shellOverrides.lua se quedó desfasado (p.ej. se editó el JSON a mano
+        // con Quickshell cerrado). Si coincide, no hace nada.
+        onLoaded: root.syncHyprland()
+
+        // Estos valores solo se usan la primerísima vez (si hyprGeometry.json
+        // no existe todavía); a partir de ahí manda lo que haya en ese JSON.
+        // Son los mismos que los de arranque de hyprland.lua, para que
+        // instalar esto no cambie nada a simple vista.
+        JsonAdapter {
+            id: hyprAdapter
+            property int gapsIn: 5        // hypr/hyprland.lua: general.gaps_in
+            property int gapsOut: 12      // hypr/hyprland.lua: general.gaps_out
+            property int borderSize: 2    // hypr/hyprland.lua: general.border_size
+            property int rounding: 16     // hypr/hyprland.lua: decoration.rounding
+            property int windowOpacity: 90 // hypr/hyprland.lua: "local opacity" (active/inactive/fullscreen_opacity), en %
+        }
+    }
+
+    HyprConfigFile {
+        id: overridesFile
+        name: "shellOverrides"
+        generator: "Geometry.qml"
     }
 }

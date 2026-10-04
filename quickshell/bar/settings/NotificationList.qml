@@ -1,6 +1,6 @@
 // NotificationList.qml
-// Lista de notificaciones del popup de SystemStats (bar/settings/SystemStats.qml), debajo del uso
-// del sistema. El estado está en services/NotificationCenter.qml; aquí solo se pinta.
+// Lista de notificaciones del popup de SystemStats.qml (en esta misma carpeta), debajo del
+// uso del sistema. El estado está en services/NotificationCenter.qml; aquí solo se pinta.
 //   - Activas: las que no se han descartado, aunque ya no estén en pantalla (al acabar su
 //     tiempo solo se ocultan). Con sus botones de acción. Clic izquierdo: la acción
 //     principal de la app (si no tiene, la descarta); clic derecho o la ✕: descartarla.
@@ -11,6 +11,7 @@ import Quickshell
 import Quickshell.Services.Notifications   // Para NotificationUrgency
 import QtQuick
 import QtQuick.Layouts
+import qs.components                // NotificationIcon y NotificationActions (compartidos con las tarjetas emergentes)
 import qs.services
 
 ColumnLayout {

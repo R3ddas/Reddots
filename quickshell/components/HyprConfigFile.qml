@@ -1,6 +1,6 @@
 // HyprConfigFile.qml
 // Opciones de Hyprland que pone Quickshell: los colores del tema (Theme.qml) y las medidas
-// de las ventanas (HyprGeometry.qml). No hay binding posible con el compositor, así que
+// de las ventanas (Geometry.qml). No hay binding posible con el compositor, así que
 // cada cambio se aplica en dos sitios:
 //   - En caliente, con "hyprctl eval" de la llamada a hl.config().
 //   - Para el siguiente arranque, en ~/.config/hypr/<name>.lua (fuera del repo, generado

@@ -4,6 +4,7 @@
 // Al abrirse ya se puede escribir para filtrar: flechas para moverse, Intro para lanzar, Esc para cerrar
 
 import Quickshell
+import Quickshell.Io        // Para FileView y JsonAdapter (cuántas veces se ha abierto cada app)
 import Quickshell.Wayland
 import Quickshell.Widgets  // Para el IconImage
 import QtQuick
@@ -46,12 +47,31 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         return -1
     }
 
-    // Lo que se ve en la lista. Sin nada escrito: primero las más usadas (AppUsage.qml) y
+    // Cuántas veces se ha abierto cada aplicación desde aquí, para sacar primero las que más
+    // se usan. Se guarda en launcher.json (fuera del repo, junto a theme.json y
+    // wallpaper.json), así que sobrevive a reiniciar Quickshell y a que esta ventana se
+    // vuelva a crear al cerrar la tapa o cambiar de monitor: el recuento vive en el archivo.
+    // La clave es el id del .desktop ("code", "org.kde.kate"...), no el nombre que se ve:
+    // el nombre cambia con el idioma o al actualizar la app, el id no.
+    FileView {
+        path: Quickshell.statePath("launcher.json")
+        watchChanges: true
+        onFileChanged: reload()                         // Si se edita el JSON a mano, se recarga solo
+        blockLoading: true                              // Es un archivo diminuto: así el primer orden ya lo tiene en cuenta
+        onAdapterUpdated: writeAdapter()
+
+        JsonAdapter {
+            id: usage
+            property var counts: ({})                   // id -> veces que se ha abierto (vacío hasta que se abre algo)
+        }
+    }
+
+    // Lo que se ve en la lista. Sin nada escrito: primero las más usadas (ver "usage") y
     // luego el resto por nombre. Escribiendo: por cómo coinciden (matchRank) y, dentro de
     // cada grupo, igual: las más usadas primero y luego por nombre.
     property var filteredApps: {
         const query = Search.normalize(searchInput.text.trim())
-        const list = apps.map(e => ({ entry: e, rank: query === "" ? 0 : matchRank(e, query), uses: AppUsage.count(e) }))
+        const list = apps.map(e => ({ entry: e, rank: query === "" ? 0 : matchRank(e, query), uses: usage.counts[e.id] ?? 0 }))
                          .filter(a => a.rank >= 0)
         list.sort((a, b) => a.rank - b.rank || b.uses - a.uses || a.entry.name.localeCompare(b.entry.name))
         return list.map(a => a.entry)
@@ -59,7 +79,11 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
 
     function launch(entry) {
         if (!entry) return
-        AppUsage.record(entry)                      // Para que la próxima vez salga más arriba
+        // Para que la próxima vez salga más arriba. Objeto nuevo y no counts[id]++: si se
+        // cambia por dentro, QML no se entera (ni se reordena la lista ni se guarda el archivo)
+        const next = Object.assign({}, usage.counts)
+        next[entry.id] = (next[entry.id] ?? 0) + 1
+        usage.counts = next
         entry.execute()
         root.visible = false
     }

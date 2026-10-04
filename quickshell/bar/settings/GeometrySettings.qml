@@ -1,9 +1,8 @@
-// Icono en la barra + popup para editar en caliente las medidas de Geometry.qml
-// (ancho de la barra lateral; grosor, redondeo, sombra y opacidad de la sombra del borde) y las de
-// HyprGeometry.qml (gaps, borde/redondeo y opacidad de ventana, que viven en Hyprland).
-// Los cambios de Geometry se aplican al momento (Border.qml, Bar.qml y los desplegables
-// están enlazados a Geometry); los de HyprGeometry se aplican en caliente con "hyprctl eval".
-// Ambos se guardan solos en disco gracias a sus respectivos FileView.
+// Icono en la barra + popup para editar en caliente las medidas de Geometry.qml: las de
+// Quickshell (ancho de la barra lateral; grosor, redondeo y sombra del borde; desplegables)
+// y las de las ventanas, que vive Hyprland (gaps, borde, redondeo y opacidad). Las primeras
+// se aplican al momento (Border.qml, Bar.qml y los desplegables están enlazados a Geometry)
+// y las de Hyprland en caliente con "hyprctl eval". Todas se guardan solas en disco.
 // Las opciones salen agrupadas por lo que tocan (barra lateral, borde de la pantalla,
 // desplegables, ventanas): cada entrada dice su sección con "group".
 import Quickshell
@@ -29,12 +28,12 @@ ColumnLayout {
         implicitWidth: 260                  // Etiqueta y stepper en la misma línea
         spacing: 16                         // Entre secciones: más que entre filas, para que se vea dónde empieza cada una
 
-        // Las entradas de Geometry.editable + HyprGeometry.editable, agrupadas por su
-        // "group" en secciones, en el orden en que aparecen (ver Geometry.qml)
+        // Las entradas de Geometry.editable, agrupadas por su "group" en secciones, en el
+        // orden en que aparecen (ver Geometry.qml)
         Repeater {
             model: {
                 const sections = []
-                for (const entry of Geometry.editable.concat(HyprGeometry.editable)) {
+                for (const entry of Geometry.editable) {
                     let section = sections.find(s => s.title === entry.group)
                     if (!section) sections.push(section = { title: entry.group, entries: [] })
                     section.entries.push(entry)
@@ -55,8 +54,7 @@ ColumnLayout {
                 }
 
                 // Una fila por entrada: etiqueta + stepper (-/valor/+) que lee y
-                // escribe la propiedad por nombre en su singleton
-                // (modelData.target[modelData.key]).
+                // escribe la propiedad de Geometry por su nombre (Geometry[modelData.key]).
                 Repeater {
                     model: section.modelData.entries
 
@@ -94,14 +92,14 @@ ColumnLayout {
                                 id: minusMouse
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                onClicked: row.modelData.target[row.modelData.key] = Math.max(row.modelData.min, row.modelData.target[row.modelData.key] - row.modelData.step)
+                                onClicked: Geometry[row.modelData.key] = Math.max(row.modelData.min, Geometry[row.modelData.key] - row.modelData.step)
                             }
                         }
 
                         Text {
                             Layout.preferredWidth: 40           // Ancho fijo (cabe "100%"): así los steppers de todas las filas quedan en columna
                             horizontalAlignment: Text.AlignHCenter
-                            text: row.modelData.target[row.modelData.key] + (row.modelData.unit ?? "px")   // Unidad opcional de la entrada (p.ej. "%")
+                            text: Geometry[row.modelData.key] + (row.modelData.unit ?? "px")   // Unidad opcional de la entrada (p.ej. "%")
                             color: Theme.textActive
                         }
 
@@ -122,7 +120,7 @@ ColumnLayout {
                                 id: plusMouse
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                onClicked: row.modelData.target[row.modelData.key] = Math.min(row.modelData.max, row.modelData.target[row.modelData.key] + row.modelData.step)
+                                onClicked: Geometry[row.modelData.key] = Math.min(row.modelData.max, Geometry[row.modelData.key] + row.modelData.step)
                             }
                         }
                     }

@@ -3,7 +3,7 @@
 // (cada 15 s, y cada 2 s mientras este popup está abierto). Si alguna temperatura pasa
 // de su umbral, el icono se pone en rojo (y el engranaje, ver SettingsToggle.qml).
 // Debajo, las notificaciones: las activas y las últimas descartadas
-// (components/NotificationList.qml). Van aquí para no añadir otro icono a la barra. Bajo
+// (NotificationList.qml). Van aquí para no añadir otro icono a la barra. Bajo
 // el chip sale cuántas activas hay, y si alguna es crítica se pone en rojo, como con una
 // temperatura alta.
 import Quickshell

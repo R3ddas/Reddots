@@ -340,7 +340,7 @@ Singleton {
     }
 
     // Lo mismo para los bordes de las ventanas y el color de fondo, que los pinta Hyprland: igual
-    // que HyprGeometry.qml con las medidas, se aplican en caliente y se guardan en
+    // que Geometry.qml con las medidas de las ventanas, se aplican en caliente y se guardan en
     // ~/.config/hypr/shellTheme.lua para el siguiente arranque, con components/HyprConfigFile.qml.
     function hyprColor(c, alpha) {
         return "0x" + alpha + c.toString().slice(1)     // "#rrggbb" -> 0xAARRGGBB, el formato de hyprland.lua

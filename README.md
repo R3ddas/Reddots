@@ -16,6 +16,20 @@ chmod +x install.sh
 ./install.sh
 ```
 
+## Si algo falla
+
+- **La actualización del sistema (`paru -Syu`) falla por una dependencia de toolkit.** Fuerza a que Hyprland y hyprtoolkit salgan los dos del repositorio `extra`:
+
+  ```bash
+  sudo pacman -Syu extra/hyprtoolkit
+  ```
+
+- **Las descargas van muy lentas.** Actualiza la lista de servidores de CachyOS por los más rápidos desde donde estés:
+
+  ```bash
+  sudo cachyos-rate-mirrors
+  ```
+
 ## Qué hay en cada carpeta
 
 - `hypr/`: configuración de Hyprland (en Lua: `hyprland.lua` y los atajos en `keybinds.lua`) y sus scripts.

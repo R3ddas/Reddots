@@ -68,7 +68,7 @@ PanelWindow {
                 SystemStats{Layout.alignment: Qt.AlignHCenter}       // Uso del sistema: procesador, memoria y temperaturas
                 Screenshot{Layout.alignment: Qt.AlignHCenter}        // Capturas de pantalla
                 Brightness{Layout.alignment: Qt.AlignHCenter}        // Brillo del portátil y de los monitores externos (DDC)
-                GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Medidas de la barra, el borde, los desplegables y las ventanas (Geometry.qml y HyprGeometry.qml)
+                GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Medidas de la barra, el borde, los desplegables y las ventanas (Geometry.qml)
                 ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
                 WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)
                 SettingsToggle{controls: settingsToggle; Layout.alignment: Qt.AlignHCenter}  // Copia del engranaje al final del grupo: se oculta con él y hace lo mismo

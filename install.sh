@@ -5,13 +5,9 @@ DOTS="$PWD" # Guardo la ruta en una variable para no acceder todo el rato
 
 echo "Instalando"
 
-#sudo cachyos-rate-mirrors                   # Actualizo la lista de servidores
 sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes (aquí y no en packages.txt: hace falta ya para el "paru -Syu" de abajo)
 
 echo "Actualizando el sistema"
-
-# Si la actualización falla por alguna dependencia de toolkit, puede arreglarse con sudo pacman -Syu extra/hyprtoolkit
-# Esto fuerza a que tanto hyprland como hyprtoolkit se saquen del repositorio "extra"
 
 paru -Syu --noconfirm   # Actualiza el sistema por completo antes de instalar (repos oficiales + AUR)
 

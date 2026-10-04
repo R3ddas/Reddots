@@ -17,11 +17,10 @@
             "key": "│ {$2}{$1}  kernel",
             "format": "{$2}{release>22}{$1} │"
         },
-        {
-            "type": "command",
+        { // Módulos propios de fastfetch y no "command": un "command" lanza un sh cada vez que se abre una terminal
+            "type": "uptime",
             "key": "│   uptime",
-            "text": "uptime -p | cut -d ' ' -f 2-",
-            "format": "{>22} │"
+            "format": "{formatted>22} │"
         },
         {
             "type": "shell",
@@ -29,27 +28,24 @@
             "format": "{$2}{pretty-name>22}{$1} │"
         },
         {
-            "type": "command",
+            "type": "memory",
             "key": "│ {$3}{$1}  mem   ",
-            "text": "free -m | awk 'NR==2{printf \"%.2f GiB / %.2f GiB\",$3/1024,$2/1024}'",
-            "format": "{$3}{>22}{$1} │"
+            "format": "{$3}{used>10} / {total>9}{$1} │"  // 10 + " / " + 9 = 22, el ancho de las demás líneas
         },
         {
             "type": "packages",
             "key": "│   pkgs  ",
             "format": "{all>22} │"
         },
-        {
-            "type": "command",
+        { // El módulo "title" ya sabe el usuario y el nombre del equipo
+            "type": "title",
             "key": "│ {$2}{$1}  user  ",
-            "text": "echo $USER",
-            "format": "{$2}{>22}{$1} │"
+            "format": "{$2}{user-name>22}{$1} │"
         },
         {
-            "type": "command",
+            "type": "title",
             "key": "│   hname ",
-            "text": "hostnamectl hostname",
-            "format": "{>22} │"
+            "format": "{host-name>22} │"
         },
         {
             "type": "os",
