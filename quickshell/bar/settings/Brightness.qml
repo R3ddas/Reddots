@@ -1,8 +1,8 @@
 // Icono en la barra + popup con un slider de brillo por cada pantalla que lo permita:
 // el panel del portátil (brightnessctl) y los monitores externos que respondan por
-// DDC/CI (ddcutil). Qué pantallas hay lo averigua scripts/brightness-list.sh cada vez
-// que se abre el popup (así también se ve si se ha tocado desde los botones del monitor
-// o con las teclas de brillo).
+// DDC/CI (ddcutil). Qué pantallas hay lo averigua scripts/brightness-list.sh al poco de
+// arrancar y cada vez que se abre el popup (así también se ve si se ha tocado desde los
+// botones del monitor o con las teclas de brillo).
 import Quickshell
 import Quickshell.Io                // Para lanzar brightness-list.sh, brightnessctl y ddcutil
 import QtQuick
@@ -16,12 +16,27 @@ ColumnLayout {
 
     ListModel { id: displays }      // Una fila por pantalla: kind, target, label, percent, max
 
-    // No se busca al arrancar Quickshell, solo al abrir el popup (ver onVisibleChanged, más
-    // abajo): "ddcutil detect" tarda y el brillo solo se ve ahí. La primera vez que se abre
-    // sale "Buscando pantallas…" un momento.
+    // Se busca una vez en segundo plano al poco de arrancar (prefetch, abajo) y otra cada vez
+    // que se abre el popup (ver onVisibleChanged, más abajo). Sin la primera, al abrirlo por
+    // primera vez había que esperar a "ddcutil detect" y a la consulta DDC, que justo tras
+    // arrancar (monitor recién despertado) es cuando más tardan. Así se abre ya con la lista
+    // de la última búsqueda, y los valores se actualizan solos al terminar la nueva.
+    //
+    // Si ya hay una búsqueda en marcha (p. ej. se abre el popup durante la de arranque) no se
+    // reinicia: su resultado llega antes que el de una nueva, y matar ddcutil a mitad de una
+    // consulta DDC puede dejar al monitor sin responder un rato.
     function refresh() {
-        listProc.running = false
-        listProc.running = true
+        if (!listProc.running) listProc.running = true
+    }
+
+    // Unos segundos de margen: al arrancar Hyprland aún está configurando los monitores, y una
+    // consulta DDC en mitad de un cambio de modo puede fallar (el monitor se omitiría de la lista
+    // hasta la siguiente búsqueda). Tampoco compite así con el resto del arranque.
+    // Esto no me gusta nada, pero no tengo una alternativa mejor para que no tarde tanto el wiget de brightnesss lap rimera vez que lo abro
+    Timer {
+        interval: 3000
+        running: true
+        onTriggered: root.refresh()
     }
 
     Process {
