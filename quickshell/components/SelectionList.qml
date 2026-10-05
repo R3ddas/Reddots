@@ -5,6 +5,10 @@
 // activated(index). Si no hay filas, sale "emptyText".
 // Las filas (delegate) solo pintan su contenido: el resaltado y el ratón van aquí, iguales
 // para todas, en vez de repetirlos en cada fila.
+// Si una fila tiene un botón propio (la papelera del Launcher), el clic no le llega: se lo
+// queda el MouseArea de aquí, que está encima. Para eso la fila puede tener una función
+// handleClick(x, y), en sus coordenadas: si devuelve true es que el clic era para ese botón
+// y ya lo ha atendido, y no se avisa con activated().
 import QtQuick
 import QtQuick.Layouts
 import qs.services
@@ -65,7 +69,10 @@ ListView {
         onExited: hoverIndex = -1
         onClicked: mouse => {
             const i = rowAt(mouse.x, mouse.y)
-            if (i >= 0) root.activated(i)
+            if (i < 0) return
+            const row = root.itemAtIndex(i)
+            const p = row.mapFromItem(area, mouse.x, mouse.y)
+            if (!(row.handleClick && row.handleClick(p.x, p.y))) root.activated(i)
         }
     }
 
