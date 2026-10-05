@@ -30,10 +30,28 @@ PopupWindow {
 
     function toggle() { visible = !visible }
 
+    // Posición (anchor.rect.y) en la que se ha colocado al abrirse; NaN mientras está cerrado.
+    //
+    // Quickshell vuelve a colocar el popup (y llama a anchor.onAnchoring) cada vez que cambia
+    // de alto, y popupY lo recentraba con el icono: con el popup abierto, cualquier cambio de
+    // contenido (el brillo al terminar de buscar pantallas, la lista de redes o de Bluetooth...)
+    // lo movía. Hyprland, al mover un popup, a veces no repinta donde estaba, y dejaba ahí una
+    // imagen fija del popup (arriba, porque al crecer sube) hasta que se cerraba. Así que, una vez
+    // abierto, se queda con el borde de arriba donde estaba y crece o encoge por abajo; solo se
+    // mueve, lo justo, si así ya no cabe en la pantalla.
+    property real placedY: NaN
+    onVisibleChanged: if (!visible) placedY = NaN   // La próxima vez que se abra, se centra otra vez con el icono
+
     anchor.item: anchorItem
     anchor.rect.x: Geometry.sidebarWidth            // Que el menú no tape la barra, aparece a partir de su borde derecho
     anchor.gravity: Edges.Bottom | Edges.Right      // Sin "Right" el popup se centra en el punto de anclaje y vuelve a tapar la barra
-    anchor.onAnchoring: if (anchorItem) anchor.rect.y = Geometry.popupY(anchorItem, anchor.rect.x, implicitHeight)  // A la altura del icono; si no cabe, se mueve lo justo para dejar el mismo hueco que a la izquierda
+    // A la altura del icono; si no cabe, se mueve lo justo para dejar el mismo hueco que a la izquierda.
+    // Ya abierto, se intenta dejar donde estaba (ver placedY)
+    anchor.onAnchoring: {
+        if (!anchorItem) return
+        anchor.rect.y = Geometry.popupY(anchorItem, anchor.rect.x, implicitHeight, isNaN(placedY) ? undefined : placedY)
+        if (visible) placedY = anchor.rect.y
+    }
 
     Frame {
         anchors.fill: parent

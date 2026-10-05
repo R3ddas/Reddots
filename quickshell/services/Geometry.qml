@@ -64,7 +64,11 @@ Singleton {
     // por la izquierda. Se llama desde el "anchoring" de BarPopup.qml
     // (justo antes de colocarlo), porque mapToItem no avisa cuando el icono
     // cambia de sitio.
-    function popupY(item, popupX, popupHeight) {
+    //
+    // Con "preferredY" se intenta dejar ahí en vez de centrarlo (con los mismos
+    // límites): lo usa BarPopup.qml para que un popup abierto no se mueva al
+    // cambiar de alto (ver allí por qué).
+    function popupY(item, popupX, popupHeight, preferredY) {
         const pos = item.mapToItem(null, 0, 0)                                     // Posición del icono dentro de la barra
         let win = item
         while (win.parent) win = win.parent                                        // contentItem de la barra: mide lo que la pantalla
@@ -72,7 +76,8 @@ Singleton {
         const maxY = win.height - root.borderThickness - leftGap - pos.y - popupHeight          // Lo más abajo que puede empezar
         const minY = root.borderThickness + leftGap - pos.y                                     // Lo más arriba que puede empezar
         const centered = (item.height - popupHeight) / 2                                        // Centrado con el icono
-        return Math.max(minY, Math.min(centered, maxY))
+        const wanted = preferredY !== undefined ? preferredY : centered
+        return Math.max(minY, Math.min(wanted, maxY))
     }
 
     StateFile {
