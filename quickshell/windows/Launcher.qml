@@ -2,6 +2,7 @@
 // Widget que aparece al pulsar Super solo (sin combinar con otra tecla), anclado abajo-derecha
 // Lista las aplicaciones instaladas (con icono) y las lanza al hacer clic
 // Al abrirse ya se puede escribir para filtrar: flechas para moverse, Intro para lanzar, Esc para cerrar
+// La rueda junto al buscador pasa a elegir qué apps se ocultan (ver "editing")
 
 import Quickshell
 import Quickshell.Io        // Para el JsonAdapter (cuántas veces se ha abierto cada app)
@@ -25,13 +26,37 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
     onVisibleChanged: {
         if (visible) {
             searchInput.text = ""                       // Cada vez que se abre empieza sin filtro
+            editing = false                             // ...y lanzando apps, no ocultándolas
             list.currentIndex = 0
             searchInput.input.forceActiveFocus()
         }
     }
 
-    // Aplicaciones instaladas (sin las ocultas)
-    property var apps: DesktopEntries.applications.values.filter(e => !e.noDisplay)
+    // Con la rueda activada, la lista es para elegir qué apps se ocultan: salen también las
+    // ocultas (atenuadas) y al pulsar una (clic o Intro) se oculta o se vuelve a mostrar en
+    // vez de abrirse. Se sale con la rueda otra vez o con Esc, y al cerrar el launcher.
+    property bool editing: false
+
+    // Aplicaciones instaladas. Sin las que el propio .desktop pide no mostrar (NoDisplay:
+    // ajustes internos, ayudantes de otras apps...), que no se pueden ni elegir, ni las
+    // ocultadas desde aquí, salvo mientras se eligen.
+    property var apps: DesktopEntries.applications.values.filter(e => !e.noDisplay && (editing || !isHidden(e)))
+
+    function isHidden(entry) { return usage.hidden.includes(entry.id) }
+
+    // Oculta la app o la vuelve a mostrar. Lista nueva y no push/splice, por lo mismo que en
+    // launch(): si se cambia por dentro, QML no se entera
+    function toggleHidden(entry) {
+        if (!entry) return
+        usage.hidden = isHidden(entry) ? usage.hidden.filter(id => id !== entry.id)
+                                       : [...usage.hidden, entry.id]
+    }
+
+    // Intro o clic en una fila: abrirla u ocultarla/mostrarla, según el modo
+    function activate(entry) {
+        if (editing) toggleHidden(entry)
+        else launch(entry)
+    }
 
     // Qué tal coincide una app con lo escrito: cuanto más bajo, más arriba sale; -1 = no coincide.
     //   0: el nombre empieza por lo escrito                     ("fi" -> "Firefox")
@@ -48,7 +73,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
     }
 
     // Cuántas veces se ha abierto cada aplicación desde aquí, para sacar primero las que más
-    // se usan. Se guarda en launcher.json (fuera del repo, junto a theme.json y
+    // se usan, y cuáles se han ocultado con la rueda. Se guarda en launcher.json (fuera del repo, junto a theme.json y
     // wallpaper.json), así que sobrevive a reiniciar Quickshell y a que esta ventana se
     // vuelva a crear al cerrar la tapa o cambiar de monitor: el recuento vive en el archivo.
     // La clave es el id del .desktop ("code", "org.kde.kate"...), no el nombre que se ve:
@@ -60,6 +85,8 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         JsonAdapter {
             id: usage
             property var counts: ({})                   // id -> veces que se ha abierto (vacío hasta que se abre algo)
+            property var hidden: []                     // ids de las apps ocultas. Sustituye a la lista que había en install.sh (hidden_apps.txt):
+                                                        // así se cambia sin tocar el repo ni reinstalar, y cada equipo tiene la suya
         }
     }
 
@@ -101,21 +128,45 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
             anchors.bottomMargin: 12 + background.border.width
             spacing: 8
 
-            InputField {                        // Campo de búsqueda: ↑ ↓ mueven la selección de la lista
-                id: searchInput
-                placeholder: "Buscar…"
-                list: list
-                onAccepted: root.launch(root.filteredApps[list.currentIndex])
-                onEscapePressed: root.visible = false
+            RowLayout {
+                spacing: 8
+
+                InputField {                    // Campo de búsqueda: ↑ ↓ mueven la selección de la lista
+                    id: searchInput
+                    placeholder: root.editing ? "Buscar app para ocultar…" : "Buscar…"
+                    list: list
+                    onAccepted: root.activate(root.filteredApps[list.currentIndex])
+                    // Esc primero sale de elegir las ocultas, como si se pulsara la rueda; luego cierra
+                    onEscapePressed: {
+                        if (root.editing) root.editing = false
+                        else root.visible = false
+                    }
+                }
+
+                // Rueda: entra y sale de elegir las ocultas. Con el color de acento mientras se
+                // eligen, para que se note que al pulsar una fila no se va a abrir.
+                // El clic no le quita el foco al buscador (un MouseArea no lo coge): se puede
+                // seguir escribiendo sin volver a pulsar en el campo.
+                TextButton {
+                    text: String.fromCodePoint(0xF0493)     // cog
+                    font.pixelSize: 18
+                    color: root.editing ? Theme.textSelected : hovered ? Theme.textActive : Theme.textDisabled
+                    Layout.alignment: Qt.AlignVCenter
+                    onClicked: root.editing = !root.editing
+                }
             }
 
             SelectionList {
                 id: list
                 model: root.filteredApps
-                onActivated: index => root.launch(root.filteredApps[index])
+                onActivated: index => root.activate(root.filteredApps[index])
 
                 delegate: Item {
+                    id: appDelegate
                     required property var modelData
+                    // Depende de usage.hidden (lo lee isHidden), así que cambia en cuanto se pulsa la fila.
+                    // Solo puede ser true eligiendo las ocultas: si no, las ocultas no están en la lista
+                    readonly property bool hidden: root.isHidden(modelData)
                     width: ListView.view.width
                     height: 44
 
@@ -124,21 +175,38 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
                         spacing: 10
+                        opacity: appDelegate.hidden ? 0.4 : 1   // Atenuada, pero se sigue viendo para poder volver a mostrarla
 
                         IconImage {
                             implicitSize: 28
-                            source: Quickshell.iconPath(modelData.icon, "application-x-executable")
+                            source: Quickshell.iconPath(appDelegate.modelData.icon, "application-x-executable")
                             Layout.alignment: Qt.AlignVCenter
                         }
                         Text {
-                            text: modelData.name
+                            text: appDelegate.modelData.name
                             color: Theme.textActive
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignVCenter
                         }
+                        Text {                              // Solo eligiendo las ocultas: si se ve o no en el launcher.
+                            visible: root.editing           // Es solo un indicador: el clic lo recoge la lista (toda la fila)
+                            text: String.fromCodePoint(appDelegate.hidden ? 0xF0209 : 0xF0208)    // eye-off / eye
+                            color: Theme.textActive
+                            font.pixelSize: 16
+                            Layout.alignment: Qt.AlignVCenter
+                        }
                     }
                 }
+            }
+
+            Text {                                  // Recordatorio mientras se eligen las ocultas (como el de Clipboard.qml)
+                visible: root.editing
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                text: "Intro o clic: ocultar / mostrar   ·   Esc: volver"
+                color: Theme.textDisabled
+                font.pixelSize: 11
             }
         }
     }

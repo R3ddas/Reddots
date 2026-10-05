@@ -41,4 +41,4 @@ chmod +x install.sh
   - `scripts/`: los scripts que lanza la interfaz.
 - `apps/`: configuración de cada programa, una carpeta por programa (`alacritty/`, `fish/`, `fastfetch/`, `vscode/`).
 - `wallpapers/`: los fondos de pantalla.
-- `packages.txt`, `packages_opt.txt` y `hidden_apps.txt`: los paquetes que instala `install.sh`, los opcionales (pregunta antes de instalarlos) y las apps que se ocultan del lanzador.
+- `packages.txt` y `packages_opt.txt`: los paquetes que instala `install.sh` y los opcionales (pregunta antes de instalarlos). Las apps que no salen en el lanzador se eligen desde él, con la rueda junto al buscador.
