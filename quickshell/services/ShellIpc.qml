@@ -4,7 +4,7 @@ import Quickshell.Io                // Para los IpcHandler
 import QtQuick
 
 // Órdenes que llegan de fuera con "qs ipc call <target> <función>": las mandan los atajos
-// de hypr/keybinds.lua (Super, Super + V, teclas de volumen y brillo).
+// de hypr/keybinds.lua (Super, Super + V, Super + L, teclas de volumen y brillo).
 //
 // Los IpcHandler están aquí, en un singleton, y no en cada ventana: las ventanas van
 // dentro del Variants de la pantalla (shell.qml) y se destruyen y se crean de nuevo al
@@ -21,6 +21,11 @@ Singleton {
     signal launcherToggled()            // windows/Launcher.qml
     signal clipboardToggled()           // windows/Clipboard.qml
     signal osdRequested(string mode)    // windows/Osd.qml: "volume", "mic" o "brightness"
+    // windows/Lock.qml. Como Lock.qml no está en el Variants de la pantalla, el handler podría
+    // vivir allí, pero va aquí con los demás: así el menú de apagado de la barra (Power.qml)
+    // también bloquea emitiendo la señal, sin tener que llegar hasta Lock.qml.
+    signal lockRequested()
+    signal suspendRequested()           // Bloquear y, ya bloqueada la pantalla, suspender
 
     IpcHandler {
         target: "launcher"
@@ -37,5 +42,11 @@ Singleton {
         function volume(): void { root.osdRequested("volume") }
         function mic(): void { root.osdRequested("mic") }
         function brightness(): void { root.osdRequested("brightness") }
+    }
+
+    IpcHandler {
+        target: "lock"
+        function lock(): void { root.lockRequested() }
+        function suspend(): void { root.suspendRequested() }
     }
 }

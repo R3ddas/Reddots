@@ -280,6 +280,11 @@ hl.config({
         -- Si se nota parpadeo en juegos o vídeos, cambiar el 2 por un 3: solo se activa
         -- cuando la aplicación indica que lo que muestra es un juego o un vídeo.
         vrr = 2,                       -- VRR (FreeSync) solo con una ventana en pantalla completa: juegos y vídeos sin tirones, el escritorio a frecuencia fija
+
+        -- Si Quickshell se cae con la pantalla bloqueada (quickshell/windows/Lock.qml), la
+        -- pantalla se queda bloqueada; con esto, al volver a lanzarlo puede tomar ese mismo
+        -- bloqueo y pedir la contraseña (sin esto solo se saldría matando la sesión)
+        allow_session_lock_restore = true,
     },
 })
 

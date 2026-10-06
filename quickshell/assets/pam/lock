@@ -1,0 +1,11 @@
+# PAM de la pantalla de bloqueo (quickshell/windows/Lock.qml): solo comprueba la
+# contraseña del usuario con pam_unix, sin más módulos.
+#
+# Aquí, en el repo, y no en /etc/pam.d: así no hace falta root para instalarlo, y
+# Quickshell lo lee de esta carpeta (configDirectory del PamContext).
+#
+# No se usa el "login" del sistema (lo que hace hyprlock) porque incluye pam_faillock:
+# tras 3 fallos bloquea la cuenta 10 minutos, y en una pantalla de bloqueo eso es
+# quedarse fuera de la sesión aunque luego se acierte la contraseña.
+# Sin "nullok": una contraseña vacía nunca desbloquea.
+auth required pam_unix.so

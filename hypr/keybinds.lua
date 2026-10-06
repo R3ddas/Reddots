@@ -60,5 +60,8 @@ hl.bind(mainMod .. " + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"),
 -- Historial del portapapeles (quickshell/windows/Clipboard.qml)
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("qs ipc call clipboard toggle"), { description = "Aplicaciones: Historial del portapapeles" })
 
+-- Bloquear la pantalla (quickshell/windows/Lock.qml)
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("qs ipc call lock lock"), { description = "Sesión: Bloquear la pantalla" })
+
 -- Super + M (duplicar las pantallas) no está aquí sino en hyprland.lua, justo después del
 -- require("keybinds"): necesita saber cuál es el panel del portátil (ver MONITORES allí).

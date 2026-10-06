@@ -60,6 +60,11 @@ ShellRoot {
     // que el sistema no se quede sin servidor ese rato.
     readonly property var notificationCenter: NotificationCenter
 
+    // Pantalla de bloqueo (windows/Lock.qml): fuera del Variants de la pantalla, porque tapa
+    // todos los monitores (crea ella sola una superficie en cada uno) y no puede desaparecer
+    // con la pantalla de la barra al cerrar la tapa.
+    Lock {}
+
     // Fondo de pantalla (windows/Background.qml): en todos los monitores, no solo en el de la
     // barra, así que va en su propio Variants. Se crea y se quita solo al enchufar o
     // desenchufar un monitor (o al cerrar la tapa del portátil).

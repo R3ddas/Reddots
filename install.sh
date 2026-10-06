@@ -92,6 +92,30 @@ if pacman -Qq hyprpolkitagent &>/dev/null; then
     sudo pacman -Rns --noconfirm hyprpolkitagent
 fi
 
+echo "Inicio de sesión"
+
+# No hay gestor de inicio de sesión (SDDM, GDM...): en la TTY1 se entra solo, sin pedir
+# usuario ni contraseña, y apps/fish/config.fish arranca Hyprland con la pantalla ya
+# bloqueada. La contraseña la pide el bloqueo de Quickshell (quickshell/windows/Lock.qml),
+# así que el inicio de sesión tiene el mismo fondo y los mismos colores que el escritorio.
+# Ojo: la sesión arranca un instante antes de que aparezca el bloqueo (y el disco no va
+# cifrado), así que esto protege igual que un bloqueo de pantalla, no más.
+#
+# Con la credencial agetty.autologin (agetty la lee desde util-linux 2.40) y no cambiando
+# el ExecStart de getty@.service: así no se copia la línea de agetty, que cambia entre
+# versiones de systemd. Para volver a pedir usuario y contraseña en la TTY, basta con
+# borrar este archivo (y "sudo systemctl daemon-reload").
+# Solo se aplica en el siguiente arranque: reiniciar ahora getty@tty1 cerraría la sesión,
+# que vive en esa misma TTY.
+autologinConf=/etc/systemd/system/getty@tty1.service.d/autologin.conf
+autologinText="[Service]
+SetCredential=agetty.autologin:$USER"
+if [[ "$(cat "$autologinConf" 2>/dev/null)" != "$autologinText" ]]; then
+    sudo mkdir -p "$(dirname "$autologinConf")"
+    printf '%s\n' "$autologinText" | sudo tee "$autologinConf" > /dev/null
+    sudo systemctl daemon-reload
+fi
+
 echo "Sistema de archivos"
 
 mkdir -p ~/.config/hypr ~/.config/fish ~/.config/alacritty ~/.config/fastfetch ~/.config/Code/User # Creo las carpetas si no existen

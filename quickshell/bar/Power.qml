@@ -1,5 +1,6 @@
-// Icono de apagado: abre un menú para apagar, reiniciar o suspender el equipo, o para
-// lanzar el salvapantallas (cmatrix a pantalla completa en cada monitor, ver launchScreensaver()).
+// Icono de apagado: abre un menú para apagar o reiniciar el equipo, bloquear la pantalla
+// (windows/Lock.qml), suspender, o lanzar el salvapantallas (cmatrix a pantalla completa
+// en cada monitor, ver launchScreensaver()).
 
 import Quickshell          // También para lanzar systemctl (execDetached)
 import Quickshell.Hyprland
@@ -16,7 +17,7 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xF0425)  // power
         font.pixelSize: 20
-        tooltip: "Apagar, reiniciar o suspender"
+        tooltip: "Apagar, reiniciar, bloquear o suspender"
         popup: menu
     }
 
@@ -30,7 +31,8 @@ ColumnLayout {
             model: [
                 { icon: 0xF0425, label: "Apagar",         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
                 { icon: 0xF0709, label: "Reiniciar",      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
-                { icon: 0xF0904, label: "Suspender",      run: () => Quickshell.execDetached(["systemctl", "suspend"]) },   // power-sleep
+                { icon: 0xF033E, label: "Bloquear",       run: () => ShellIpc.lockRequested() },                            // lock
+                { icon: 0xF0904, label: "Suspender",      run: () => ShellIpc.suspendRequested() },                         // power-sleep: bloquea antes de suspender (Lock.qml)
                 { icon: 0xF0379, label: "Salvapantallas", run: () => root.launchScreensaver() }                            // monitor
             ]
 
