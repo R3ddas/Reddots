@@ -1,8 +1,8 @@
 // LockScreen.qml
 // Lo que se ve en cada monitor con la pantalla bloqueada (el estado y la contraseña están
 // en Lock.qml): el fondo de pantalla desenfocado y velado con el fondo del tema, la hora y
-// la fecha, una tarjeta con el usuario y el campo de la contraseña, y abajo los botones de
-// suspender, reiniciar y apagar.
+// la fecha, el usuario y el campo de la contraseña (sin recuadro), y abajo los botones de
+// apagar, reiniciar y suspender.
 //   Intro: desbloquear   ·   Esc: borrar lo escrito
 // Al bloquear, el desenfoque, el velo y el contenido entran con una animación corta
 // ("progress"), así el paso desde el escritorio no es un corte seco.
@@ -25,6 +25,20 @@ Item {
     NumberAnimation on progress { from: 0; to: 1; duration: 350; easing.type: Easing.OutCubic }
 
     clip: true                          // El fondo se dibuja algo más grande que la pantalla (ver wallpaper)
+
+    // Halo del fondo del tema alrededor de lo que va directamente sobre la imagen (la hora,
+    // la fecha, el nombre...): con un fondo muy claro y un tema oscuro (o al revés) el velo
+    // solo no basta para leerlo. Se pone con "layer.enabled: true; layer.effect: Halo {}".
+    component Halo: MultiEffect {
+        shadowEnabled: true
+        shadowColor: Theme.background
+        blurMax: 12                     // Halo corto y denso: con el de por defecto (32) se repartía tanto que casi no se veía
+        shadowBlur: 1.0
+        shadowOpacity: 1.0
+        shadowScale: 1.02
+        shadowHorizontalOffset: 0
+        shadowVerticalOffset: 0
+    }
 
     // Nombre del usuario: el "nombre completo" de /etc/passwd (el campo GECOS, el que se
     // cambia con chfn) o, si está vacío, el nombre de la cuenta; con la primera en mayúscula.
@@ -81,7 +95,7 @@ Item {
         onClicked: field.input.forceActiveFocus()
     }
 
-    // --- Hora, fecha y tarjeta --------------------------------------------------
+    // --- Hora, fecha, usuario y contraseña ---------------------------------------
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
@@ -94,23 +108,13 @@ Item {
         opacity: root.progress
         scale: 0.96 + 0.04 * root.progress
 
-        // Hora y fecha, con un halo del fondo del tema alrededor de las letras: van directamente
-        // sobre la imagen, y con un fondo muy claro y un tema oscuro (o al revés) el velo solo
-        // no basta para leerlas. La tarjeta no lo necesita, ya tiene su propio fondo.
+        // Hora y fecha, con el halo (ver Halo) y un pelín translúcidas, para que no pesen tanto
         ColumnLayout {
             Layout.alignment: Qt.AlignHCenter
             spacing: 0
+            opacity: 0.85
             layer.enabled: true
-            layer.effect: MultiEffect {
-                shadowEnabled: true
-                shadowColor: Theme.background
-                blurMax: 12                 // Halo corto y denso: con el de por defecto (32) se repartía tanto que casi no se veía
-                shadowBlur: 1.0
-                shadowOpacity: 1.0
-                shadowScale: 1.02
-                shadowHorizontalOffset: 0
-                shadowVerticalOffset: 0
-            }
+            layer.effect: Halo {}
 
             Text {
                 Layout.alignment: Qt.AlignHCenter
@@ -131,7 +135,9 @@ Item {
             }
         }
 
-        Frame {                             // Mismo estilo que los desplegables de la barra
+        // Usuario y contraseña, sin recuadro: directamente sobre el fondo, como la hora.
+        // Es un Item y no solo el ColumnLayout para poder sacudirlo entero al fallar.
+        Item {
             id: card
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 48
@@ -158,26 +164,14 @@ Item {
                 anchors.margins: 24
                 spacing: 12
 
-                Rectangle {                 // "Avatar": la inicial del usuario sobre el color de acento
-                    Layout.alignment: Qt.AlignHCenter
-                    implicitWidth: 72
-                    implicitHeight: 72
-                    radius: width / 2
-                    color: Theme.textSelected
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: root.userName.charAt(0)
-                        color: Theme.background
-                        font.pixelSize: 32
-                        font.bold: true
-                    }
-                }
-
                 Text {
                     Layout.alignment: Qt.AlignHCenter
                     text: root.userName
                     textFormat: Text.PlainText
+                    // Halo solo en los textos y no en toda la columna: el campo de la contraseña ya
+                    // tiene su fondo, y el halo (algo más grande que lo que rodea) asomaba por sus lados
+                    layer.enabled: true
+                    layer.effect: Halo {}
                     color: Theme.textActive
                     font.pixelSize: 18
                     font.bold: true
@@ -186,10 +180,13 @@ Item {
                 InputField {
                     id: field
                     Layout.topMargin: 4
-                    highlightFocus: true
+                    // Borde del color de los números de la hora (el texto del tema, con su misma
+                    // transparencia), con foco o sin él: aquí el campo siempre tiene el foco
+                    border.color: Qt.alpha(Theme.textActive, 0.85)
                     placeholder: root.lock && root.lock.checking ? "Comprobando…" : "Contraseña"
                     input.echoMode: TextInput.Password
                     input.passwordCharacter: "•"
+                    input.font.pointSize: Qt.application.font.pointSize + 1    // Un punto más que la letra normal (también el texto de ayuda, ver InputField)
                     input.readOnly: root.lock ? root.lock.checking : false     // readOnly y no enabled: así Esc sigue funcionando
                     onAccepted: root.lock.submit()
                     onEscapePressed: root.lock.password = ""
@@ -210,6 +207,8 @@ Item {
                     visible: text !== ""
                     text: root.lock ? root.lock.message : ""
                     textFormat: Text.PlainText      // Viene de PAM: que no se interprete como HTML
+                    layer.enabled: true
+                    layer.effect: Halo {}
                     color: root.lock && root.lock.messageIsError ? Theme.error : Theme.textDisabled
                     font.pixelSize: 12
                     horizontalAlignment: Text.AlignHCenter
@@ -219,30 +218,62 @@ Item {
         }
     }
 
-    // --- Suspender, reiniciar y apagar -----------------------------------------
+    // --- Apagar, reiniciar y suspender -----------------------------------------
     // Con texto y no solo el icono: en esta pantalla no hay descripciones al pasar el ratón
     // (los BarTooltip son ventanas emergentes de la barra). Los mismos glifos que Power.qml.
     RowLayout {
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottomMargin: 40
-        spacing: 10
+        spacing: 12
+        // Los tres igual de anchos (el del más largo, "Suspender"): así el del medio queda
+        // justo en el centro de la pantalla, alineado con la hora y el campo
+        uniformCellSizes: true
         opacity: root.progress
 
         Repeater {
             model: [
-                { icon: 0xF0904, label: "Suspender", command: ["systemctl", "suspend"] },     // power-sleep
+                { icon: 0xF0425, label: "Apagar",    command: ["systemctl", "poweroff"] },    // power
                 { icon: 0xF0709, label: "Reiniciar", command: ["systemctl", "reboot"] },      // restart
-                { icon: 0xF0425, label: "Apagar",    command: ["systemctl", "poweroff"] }     // power
+                { icon: 0xF0904, label: "Suspender", command: ["systemctl", "suspend"] }      // power-sleep
             ]
 
+            // El icono va más grande que el texto, así que no cabe en el texto único de Button:
+            // el botón se queda sin texto y lleva dentro su propia fila de icono + texto (y
+            // mide lo que ella más "padding" a cada lado, como Button con su texto)
             delegate: Button {
+                id: powerButton
                 required property var modelData
-                text: String.fromCodePoint(modelData.icon) + "  " + modelData.label
-                padding: 14
-                implicitHeight: 34
-                idleColor: Theme.surface        // Sobre el fondo velado, con relleno para que se vean como botones
-                onClicked: Quickshell.execDetached(modelData.command)
+                padding: 18
+                implicitWidth: powerContent.implicitWidth + padding * 2
+                implicitHeight: 42
+                Layout.fillWidth: true          // Ocupa toda su celda (ver uniformCellSizes)
+                // Translúcidos, porque son secundarios y no deben competir con la hora ni el campo:
+                // el recuadro (relleno y borde) al 40 % y el icono y el texto algo más visibles
+                // (powerContent, 65 %). Con el color y no con "opacity" del botón entero, que
+                // también apagaría el texto. El relleno es el del campo de la contraseña
+                // (InputField): el fondo del tema, el color del velo, así que se funde con él.
+                color: Qt.alpha(hovered ? Theme.surfaceHover : Theme.background, 0.4)
+                border.color: Qt.alpha(Theme.border, 0.4)
+                onClicked: root.lock.power(modelData.command)       // Ver power() en Lock.qml
+
+                RowLayout {
+                    id: powerContent
+                    anchors.centerIn: parent
+                    spacing: 8
+                    opacity: 0.65
+
+                    Text {
+                        text: String.fromCodePoint(powerButton.modelData.icon)
+                        color: Theme.textActive
+                        font.pixelSize: 20
+                    }
+                    Text {
+                        text: powerButton.modelData.label
+                        color: Theme.textActive
+                        font.pixelSize: 16
+                    }
+                }
             }
         }
     }

@@ -79,6 +79,14 @@ Scope {
         Quickshell.execDetached(["systemctl", "suspend"])
     }
 
+    // Suspender, reiniciar y apagar desde la pantalla de bloqueo (los botones de
+    // LockScreen.qml). Pasan por aquí y no los lanza LockScreen.qml por su cuenta: así quien
+    // la crea decide qué hacen; p. ej., para probar su aspecto en una ventana sin que un clic
+    // apague el equipo de verdad.
+    function power(command) {
+        Quickshell.execDetached(command)
+    }
+
     // Intro en el campo. PAM no se arranca hasta tener la contraseña: cuando la pide
     // (onPamMessage), se le da la que ya está escrita.
     function submit() {

@@ -15,6 +15,7 @@ Rectangle {
     property bool accent: false
     property color idleColor: "transparent"     // Fondo sin el ratón encima
     property int padding: 8                     // Margen del texto a izquierda y derecha
+    readonly property bool hovered: area.containsMouse  // Para quien cambie el color por su cuenta (los botones de LockScreen.qml)
     signal clicked()
 
     implicitWidth: label.implicitWidth + padding * 2

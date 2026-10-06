@@ -60,6 +60,7 @@ Rectangle {
             text: root.placeholder
             textFormat: Text.PlainText  // Puede venir de fuera (lo que pide PAM en PolkitDialog.qml): que no se interprete como HTML
             color: Theme.textDisabled
+            font: input.font            // La misma letra que lo que se escribe: quien cambie input.font cambia las dos
         }
     }
 }
