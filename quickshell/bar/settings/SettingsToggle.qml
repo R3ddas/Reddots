@@ -1,5 +1,5 @@
 // Icono de engranaje que muestra/oculta el grupo de widgets de configuración
-// de la barra (uso del sistema, capturas, brillo, geometría, tema y fondo de pantalla). Este archivo solo guarda
+// de la barra (uso del sistema, capturas, geometría, tema y brillo, y fondo de pantalla). Este archivo solo guarda
 // el estado ("expanded"); quién se oculta lo decide Bar.qml, enlazando el
 // "visible" de ese grupo a esta propiedad. El estado no se guarda en disco,
 // así que la barra siempre arranca con los widgets ocultos.

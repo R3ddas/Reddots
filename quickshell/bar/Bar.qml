@@ -67,7 +67,6 @@ PanelWindow {
                 Layout.maximumWidth: Infinity                        // Igual que arriba: sin esto fillWidth queda limitado al ancho del icono más ancho
                 SystemStats{Layout.alignment: Qt.AlignHCenter}       // Uso del sistema: procesador, memoria, gráfica y temperaturas; y las notificaciones
                 Screenshot{Layout.alignment: Qt.AlignHCenter}        // Capturas de pantalla
-                Brightness{Layout.alignment: Qt.AlignHCenter}        // Brillo del portátil y de los monitores externos (DDC)
                 GeometrySettings{Layout.alignment: Qt.AlignHCenter}  // Medidas de la barra, el borde, los desplegables y las ventanas (Geometry.qml)
                 ThemeSettings{Layout.alignment: Qt.AlignHCenter}     // Selector de tema de color (Theme.qml)
                 WallpaperSettings{Layout.alignment: Qt.AlignHCenter} // Selector de fondo de pantalla (Wallpaper.qml)

@@ -13,7 +13,7 @@ imv             # Visor de imagenes minimalista
 # Usados por los atajos de teclado (hypr/keybinds.lua)
 wireplumber     # Trae wpctl, para las teclas de volumen y silenciar
 brightnessctl   # Para las teclas de brillo de la pantalla
-ddcutil         # Brillo de los monitores externos por DDC/CI (widget Brightness.qml)
+ddcutil         # Brillo de los monitores externos por DDC/CI (sliders de brillo del selector de tema, ThemeSettings.qml)
 playerctl       # Para las teclas multimedia (siguiente, anterior, pausa)
 
 # Usados por la barra (quickshell/). CachyOS ya trae alguno, pero así no dependo de eso

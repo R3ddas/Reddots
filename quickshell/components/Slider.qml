@@ -1,7 +1,8 @@
 // Slider.qml
 // Barra de nivel con su porcentaje a la derecha: la de volumen (Volume.qml), las de
-// brillo (Brightness.qml), la del indicador de las teclas multimedia (Osd.qml) y la del
-// avance de la canción (Volume.qml, con el tiempo en vez del porcentaje: ver "label").
+// brillo (BrightnessSliders.qml, en el selector de tema), la del indicador de las teclas
+// multimedia (Osd.qml) y la del avance de la canción (Volume.qml, con el tiempo en vez del
+// porcentaje: ver "label").
 // Se arrastra o se hace clic para elegir el valor, y la rueda lo sube/baja de 5 en 5;
 // con interactive: false es solo un indicador. No cambia "value" por sí misma:
 // avisa con moved() y quien la usa decide (y acota) el valor nuevo.

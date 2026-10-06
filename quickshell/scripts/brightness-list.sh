@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Lista las pantallas con brillo regulable para Brightness.qml, una por línea:
+# Lista las pantallas con brillo regulable para services/BrightnessMonitor.qml, una por línea:
 #   tipo|objetivo|nombre|porcentaje|máximo
 # tipo "backlight" = panel del portátil (objetivo = dispositivo de brightnessctl)
 # tipo "ddc"       = monitor externo por DDC/CI (objetivo = número de bus i2c de ddcutil)

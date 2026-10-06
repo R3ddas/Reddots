@@ -2,6 +2,9 @@
 // Cada fila muestra el nombre del tema y una muestra de sus colores; al
 // pulsar una fila se aplica al momento y queda guardada (Theme.qml persiste
 // activeTheme solo, igual que Geometry.qml con sus medidas).
+// Arriba del todo, los sliders del brillo de las pantallas (BrightnessSliders.qml): al
+// elegir tema es cuando más se mira cómo se ve la pantalla. Es el único sitio de la barra
+// donde está el brillo (las teclas de brillo del portátil van aparte, en hypr/keybinds.lua).
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
@@ -23,6 +26,17 @@ ColumnLayout {
         id: menu
         anchorItem: iconText
         implicitWidth: 220
+
+        onVisibleChanged: if (visible) BrightnessMonitor.refresh()     // Relee el brillo real al abrir
+
+        // Fuera del Flickable de los temas: así se quedan siempre arriba, aunque se baje
+        // con la rueda para ver más temas
+        BrightnessSliders {}
+
+        Separator {
+            Layout.topMargin: 4
+            Layout.bottomMargin: 4
+        }
 
         // Flickable en vez de Repeater suelto porque hay 45 temas: con
         // todos desplegados no cabrían en pantalla, así que se recorta a

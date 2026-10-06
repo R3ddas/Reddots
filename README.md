@@ -46,7 +46,7 @@ chmod +x install.sh
 
 - `hypr/`: configuración de Hyprland (en Lua: `hyprland.lua` y los atajos en `keybinds.lua`) y sus scripts.
 - `quickshell/`: la interfaz (barra, lanzador, notificaciones, fondo...). Todo arranca en `shell.qml`.
-  - `bar/`: la barra lateral (`Bar.qml`) y sus widgets; en `bar/settings/`, el engranaje y todo lo que se pliega con él (uso del sistema, capturas, brillo, medidas, tema y fondo).
+  - `bar/`: la barra lateral (`Bar.qml`) y sus widgets; en `bar/settings/`, el engranaje y todo lo que se pliega con él (uso del sistema, capturas, medidas, tema y brillo, y fondo).
   - `windows/`: ventanas y capas sueltas: fondo, borde, lanzador, portapapeles, notificaciones, pantalla de bloqueo (Super + L)...
   - `services/`: singletons con el estado compartido (tema, medidas, fondo, uso del sistema...), sin nada visible.
   - `components/`: piezas comunes con las que se montan las demás (icono de la barra, desplegable, slider...).
