@@ -134,40 +134,6 @@ pictures="$(xdg-user-dir PICTURES)"
 mkdir -p "$pictures"
 ln -sfn "$DOTS/wallpapers"   "$pictures/Wallpapers"
 
-echo "Apps ocultas del launcher"
-
-# Antes las ocultaba este script (lista hidden_apps.txt) con un .desktop mínimo con
-# NoDisplay=true en ~/.local/share/applications. Ahora se eligen con la rueda del propio
-# launcher y se guardan en su launcher.json (ver quickshell/windows/Launcher.qml).
-# Migración (se puede quitar cuando todos los equipos hayan pasado por aquí): las que
-# estaban ocultas así pasan a la lista del launcher y se borran esos .desktop. Solo los
-# que son exactamente uno de aquellos (ningún .desktop de verdad es así, sin Exec), nunca
-# otro .desktop que haya en esa carpeta.
-apps="$HOME/.local/share/applications"
-hiddenDesktop() { printf '[Desktop Entry]\nType=Application\nName=%s\nNoDisplay=true\n' "$1"; }
-
-migrated=()
-for file in "$apps"/*.desktop; do
-    app="$(basename "$file" .desktop)"
-    [[ -f "$file" && "$(< "$file")" == "$(hiddenDesktop "$app")" ]] && migrated+=("$app")
-done
-
-# launcher.json está en la carpeta de estado de Quickshell, en una subcarpeta con un hash de
-# la ruta de la config: se busca en vez de calcularlo. Si aún no existe (nunca se ha abierto
-# nada desde el launcher), los .desktop se dejan: borrarlos haría que volvieran a salir.
-states=(~/.local/state/quickshell/by-shell/*/launcher.json)
-if (( ${#migrated[@]} )) && [[ -f "${states[0]}" ]]; then
-    ids="$(printf '%s\n' "${migrated[@]}" | jq -R . | jq -s .)"
-    for state in "${states[@]}"; do
-        # Se reescribe el mismo archivo (cat >, no mv): Quickshell lo está vigilando y, si
-        # se cambiara por otro, dejaría de ver los cambios y luego lo pisaría sin "hidden"
-        merged="$(jq --argjson ids "$ids" '.hidden = ((.hidden // []) + $ids | unique)' "$state")"
-        printf '%s\n' "$merged" > "$state"
-    done
-    for app in "${migrated[@]}"; do rm "$apps/$app.desktop"; done
-    echo "Pasadas a la lista del launcher: ${migrated[*]}"
-fi
-
 echo "Otras configuraciones"
 
 # Extensiones de Visual Studio Code, todas en una sola llamada a "code" (cada una tarda en
