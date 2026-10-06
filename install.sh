@@ -156,4 +156,23 @@ if [[ "$(timedatectl show -p LocalRTC --value)" != "yes" ]]; then
     sudo timedatectl set-local-rtc 1 --adjust-system-clock
 fi
 
+echo "Arranque sin texto"
+
+# "quiet" en la línea del kernel, junto al "splash" de Plymouth: así tampoco salen los
+# mensajes del kernel ni los "[ OK ] Started…" de systemd en los momentos en que Plymouth
+# no tapa la pantalla (antes de que arranque y al cerrarse, justo antes del login). Es solo
+# estético, no acelera el arranque, y vale para cualquier equipo y gráfica.
+# Solo si el equipo arranca con GRUB (otro gestor de arranque tiene su propia config), y
+# grub.cfg solo se regenera si "quiet" no estaba ya: el resto de veces no se toca nada.
+grubConf=/etc/default/grub
+if [[ -f "$grubConf" ]] && ! grep -qE '^GRUB_CMDLINE_LINUX_DEFAULT=.*\bquiet\b' "$grubConf"; then
+    # Se añade al final, dentro de las comillas (simples o dobles) que cierran el valor
+    sudo sed -i -E "/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/(['\"])\$/ quiet\1/" "$grubConf"
+    if grep -qE '^GRUB_CMDLINE_LINUX_DEFAULT=.*\bquiet\b' "$grubConf"; then
+        sudo grub-mkconfig -o /boot/grub/grub.cfg
+    else
+        echo "Aviso: no se pudo añadir quiet a GRUB_CMDLINE_LINUX_DEFAULT en $grubConf (¿sin comillas?)"
+    fi
+fi
+
 echo "Listo"
