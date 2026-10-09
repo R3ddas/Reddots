@@ -1,17 +1,25 @@
-// Recursos: https://www.youtube.com/watch?v=leCzeCeNxas&t=268s
-// En el vídeo también enseña cómo hacer que se queden ahí y poner botones para quitarlas
-// Se pueden generar notificaciones desde terminal con: notify-send "Titulo" "Contenido"
-// Pueden ser críticas con: notify-send -u critical "Titulo" "Contenido"
-// Se ocultan solas a los 10 s (defaultTimeout) o al tiempo que pida la app (notify-send -t 3000 = 3 s; -t 0 = nunca).
-// Ocultarse no es cerrarse: siguen en el popup de SystemStats (bar/settings/SystemStats.qml) hasta
-// que se descartan; ver services/NotificationCenter.qml. Las transitorias sí se cierran.
-// Las críticas no se ocultan solas. Con el ratón encima, tampoco.
-// Clic izquierdo: la acción principal de la app si la tiene (si no, la cierra). Clic derecho: la cierra.
-// Con acciones se pintan botones: notify-send -A si=Sí -A no=No "Titulo" "Contenido"
-// Como mucho se ven maxVisible a la vez (las más antiguas); el resto espera en cola,
-// sin gastar su tiempo, y debajo sale un "+N más". Así una ráfaga (Teams...) no se sale
-// de la pantalla. Probar: for i in $(seq 8); do notify-send "Prueba $i"; done
-
+// Notificaciones emergentes: tarjetas arriba a la derecha de la pantalla de la barra, una por
+// notificación, con sus botones de acción. El servidor y el estado están en
+// services/NotificationCenter.qml; aquí solo se pintan.
+//   Clic izquierdo: la acción principal de la app si la tiene (si no, la cierra)
+//   Clic derecho: la cierra
+// Se ocultan solas a los 10 s (defaultTimeout) o al tiempo que pida la app. Las críticas no
+// se ocultan solas; con el ratón encima, tampoco. Ocultarse no es cerrarse: siguen en el
+// popup de SystemStats (bar/settings/SystemStats.qml) hasta que se descartan. Las
+// transitorias sí se cierran.
+// Como mucho se ven maxVisible a la vez (las más antiguas); el resto espera en cola, sin
+// gastar su tiempo, y debajo sale un "+N más". Así una ráfaga (Teams...) no se sale de la
+// pantalla.
+//
+// Para probarlas desde un terminal:
+//   notify-send "Título" "Contenido"
+//   notify-send -u critical "Título" "Contenido"          Crítica
+//   notify-send -t 3000 "Título" "Contenido"              3 s en pantalla (-t 0: no se oculta)
+//   notify-send -A si=Sí -A no=No "Título" "Contenido"    Con botones de acción
+//   for i in $(seq 8); do notify-send "Prueba $i"; done   Una ráfaga (cola y "+N más")
+//
+// Recursos: https://www.youtube.com/watch?v=leCzeCeNxas&t=268s (también enseña cómo hacer
+// que se queden y poner botones para quitarlas)
 
 import Quickshell
 import Quickshell.Services.Notifications

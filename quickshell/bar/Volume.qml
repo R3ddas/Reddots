@@ -17,8 +17,8 @@ ColumnLayout{
     id: root
     spacing: 6
 
-    // Al arrancar el widget, pedimos ya el estado de los puertos para que la
-    // primera vez que se abra el menú no salga la lista sin filtrar un instante.
+    // Al crearse el icono se pide ya el estado de los puertos, para que la primera vez
+    // que se abra el menú no salga un instante la lista sin filtrar.
     Component.onCompleted: refreshPortAvailability()
 
     readonly property var sink: Pipewire.defaultAudioSink
@@ -31,34 +31,33 @@ ColumnLayout{
     readonly property var source: Pipewire.defaultAudioSource              // El micrófono que se usa
     readonly property bool micMuted: source ? source.audio.muted : true
 
-    // --- Detección de salidas realmente conectadas ------------------------
-    // Quickshell.Services.Pipewire no expone si un puerto (jack) tiene algo
-    // enchufado (esa info vive en el Device/Route de PipeWire, no en el Node).
-    // Por eso la pedimos por fuera con `pactl -f json list cards`, que sí la
-    // da por puerto como "not available" / "available" / "availability unknown".
+    // --- Salidas que de verdad tienen algo enchufado ----------------------
+    // Quickshell.Services.Pipewire no dice si un puerto (un jack) tiene algo enchufado:
+    // eso está en el Device/Route de PipeWire, no en el Node. Por eso se pregunta aparte
+    // con `pactl -f json list cards`, que sí lo da por puerto: "not available",
+    // "available" o "availability unknown".
     //
-    // portAvailability es un mapa "deviceId:portIndex" -> estado del puerto,
-    // reconstruido cada vez que se llama a refreshPortAvailability().
+    // portAvailability: "deviceId:portIndex" -> estado del puerto. Se rehace entero cada
+    // vez que se llama a refreshPortAvailability().
     property var portAvailability: ({})
 
-    // Clave común para cruzar el "device.id" / "card.profile.device" de un
-    // PwNode con el "index" de tarjeta / "card.profile.port" de pactl.
+    // Clave común para cruzar el "device.id" y el "card.profile.device" de un PwNode con
+    // el "index" de la tarjeta y el "card.profile.port" de pactl.
     function keyForPort(deviceId, portIndex) {
         return String(deviceId) + ":" + String(portIndex)
     }
 
-    // Relanza la consulta a pactl. Se llama al arrancar y cada vez que se
-    // abre el menú (para reflejar un cable que se acaba de enchufar/quitar).
+    // Vuelve a preguntar a pactl. Se llama al arrancar y cada vez que se abre el menú
+    // (por si se acaba de enchufar o quitar un cable).
     function refreshPortAvailability() {
         portsProc.running = false
         portsProc.running = true
     }
 
-    // Ejecuta `pactl -f json list cards` y parsea la disponibilidad de cada
-    // puerto de cada tarjeta de sonido. Si pactl no existe o la salida no es
-    // el JSON esperado, el catch deja portAvailability tal cual estaba y no
-    // se filtra nada (fallback seguro: mejor mostrar de más que ocultar algo
-    // que sí se pueda usar).
+    // Lanza `pactl -f json list cards` y lee si cada puerto de cada tarjeta de sonido
+    // tiene algo enchufado. Si pactl no está o no devuelve el JSON esperado, la lista
+    // queda vacía y no se filtra nada: mejor enseñar de más que esconder una salida que
+    // sí se pueda usar.
     Process {
         id: portsProc
         command: ["pactl", "-f", "json", "list", "cards"]
@@ -78,7 +77,7 @@ ColumnLayout{
                         }
                     }
                 } catch (e) {
-                    // pactl no disponible o salida inesperada: no filtramos nada
+                    // Sin pactl o con una salida rara: no se filtra nada
                 }
                 root.portAvailability = avail
             }
@@ -86,27 +85,26 @@ ColumnLayout{
     }
 
     // --- Listas de nodos ----------------------------------------------------
-    // IMPORTANTE: estas tres listas SOLO dependen de propiedades constantes de
-    // PwNode (isSink / isStream, marcadas isPropertyConstant en el plugin). Son
-    // las que se pasan a PwObjectTracker más abajo, que es quien engancha/mantiene
-    // vivos los nodos de PipeWire.
+    // Ojo: estas tres listas dependen SOLO de propiedades de PwNode que no cambian nunca
+    // (isSink e isStream, constantes en Quickshell). Son las que se le pasan al
+    // PwObjectTracker de más abajo, que es quien engancha los nodos de PipeWire y los
+    // mantiene al día.
     //
-    // Si dependieran de algo mutable -como n.properties o portAvailability-, se
-    // forma un bucle: trackear un nodo hace que PipeWire rellene/actualice sus
-    // properties -> se emite propertiesChanged -> se recalcula la lista -> cambia
-    // el array pasado a PwObjectTracker.objects -> vuelve a (re)trackear -> bucle
-    // infinito. Eso es justo lo que provocó el "Binding loop detected for property
-    // sinks" y el crash de quickshell la primera vez que se probó el filtro aquí
-    // mismo. La lección: todo lo que alimente a PwObjectTracker.objects debe
-    // depender solo de propiedades constantes.
+    // Si dependieran de algo que cambia (n.properties, portAvailability...), se formaría un
+    // bucle: enganchar un nodo hace que PipeWire rellene sus properties -> avisa con
+    // propertiesChanged -> se recalcula la lista -> cambia lo que recibe
+    // PwObjectTracker.objects -> vuelve a engancharlos -> y así sin fin. Es lo que pasó la
+    // primera vez que se puso aquí el filtro: "Binding loop detected for property sinks" y
+    // Quickshell se cerró. Todo lo que llegue a PwObjectTracker.objects tiene que depender
+    // solo de propiedades que no cambian.
     readonly property var sinks: Pipewire.nodes.values.filter(n => n.isSink && !n.isStream)      // Altavoces, auriculares, HDMI...
     readonly property var sources: Pipewire.nodes.values.filter(n => !n.isSink && !n.isStream)   // Micrófonos (y nodos sin audio, que se quitan al pintar)
     readonly property var streams: Pipewire.nodes.values.filter(n => n.isSink && n.isStream)     // Aplicaciones que están sonando
 
-    // ¿El puerto físico de este nodo está marcado "not available" (nada
-    // conectado, p.ej. una salida HDMI sin monitor)? Si el nodo no tiene
-    // device.id/card.profile.device (p.ej. un dispositivo USB o Bluetooth) o
-    // pactl no ha respondido todavía, se da por conectado por seguridad.
+    // El puerto de este nodo está marcado "not available": no tiene nada enchufado (p.ej.
+    // una salida HDMI sin monitor). Si el nodo no tiene device.id o card.profile.device
+    // (un dispositivo USB o Bluetooth) o pactl aún no ha respondido, se da por enchufado,
+    // por si acaso.
     function isUnplugged(n) {
         const props = n.properties || {}
         const deviceId = props["device.id"]
@@ -115,9 +113,9 @@ ColumnLayout{
         return root.portAvailability[root.keyForPort(deviceId, portIndex)] === "not available"
     }
 
-    // Listas SOLO para pintar el menú (Repeater.model). Aquí sí es seguro leer
-    // n.properties, n.audio y portAvailability, porque nada de esto retroalimenta
-    // al PwObjectTracker: como mucho, el menú se repinta cuando cambian.
+    // Listas SOLO para pintar el menú (el model de los Repeater). Aquí sí se pueden leer
+    // n.properties, n.audio y portAvailability: nada de esto llega al PwObjectTracker, así
+    // que como mucho el menú se vuelve a pintar cuando cambian.
     readonly property var visibleSinks: root.sinks.filter(n => !root.isUnplugged(n))
     readonly property var visibleSources: root.sources.filter(n => n.audio && !root.isUnplugged(n))   // Sin audio = nodos MIDI y similares
     readonly property var visibleStreams: root.streams.filter(n => n.audio)
@@ -137,7 +135,7 @@ ColumnLayout{
         return props["application.name"] || n.description || n.name
     }
 
-    // Icono según estado de mute/volumen (glifos de Nerd Font).
+    // Icono según el volumen y si está silenciado (glifos de la Nerd Font).
     // Tres tramos: por debajo de 1/3 bajo, hasta 2/3 medio y de ahí para arriba alto (igual que en Osd.qml).
     readonly property string icon: {
         if (!sink || muted || volume === 0) return String.fromCodePoint(0xF075F)  // volume-mute
@@ -179,8 +177,8 @@ ColumnLayout{
         onTriggered: root.player.positionChanged()
     }
 
-    // Icono en la barra: clic izquierdo abre/cierra el menú, clic derecho
-    // silencia/desilencia directamente sin abrir nada.
+    // Icono en la barra: el clic izquierdo abre o cierra el menú, y el derecho silencia
+    // o quita el silencio sin abrir nada.
     BarIcon {
         id: iconText
         text: root.icon
@@ -206,7 +204,7 @@ ColumnLayout{
         Layout.fillWidth: true
     }
 
-    // Icono a la izquierda de un slider: al pulsarlo silencia/desilencia ese nodo
+    // Icono a la izquierda de un slider: al pulsarlo silencia ese nodo o le quita el silencio
     component MuteIcon: TextButton {
         id: muteIcon
         property var node: null
@@ -247,9 +245,8 @@ ColumnLayout{
         anchorItem: iconText
         implicitWidth: 260
 
-        // Refrescamos la disponibilidad de puertos cada vez que se abre el
-        // menú, por si se ha conectado/desconectado algo (monitor HDMI,
-        // auriculares...) desde la última vez.
+        // Se vuelve a mirar qué puertos tienen algo enchufado cada vez que se abre el menú,
+        // por si se ha enchufado o quitado algo (un monitor HDMI, unos auriculares...).
         onVisibleChanged: if (visible) root.refreshPortAvailability()
 
         // --- Reproduciendo (solo si hay algún reproductor abierto) ---
@@ -501,9 +498,8 @@ ColumnLayout{
         }
     }
 
-    // Mantiene vivos/suscritos los nodos de PipeWire que nos interesan.
-    // Ligado a las listas SIN filtrar a propósito: ver el comentario de más
-    // arriba sobre el bucle de bindings.
+    // Engancha los nodos de PipeWire que se usan aquí, para que estén al día. Con las
+    // listas SIN filtrar a propósito: ver arriba lo del bucle.
     PwObjectTracker {
         objects: root.sinks.concat(root.sources, root.streams)
     }

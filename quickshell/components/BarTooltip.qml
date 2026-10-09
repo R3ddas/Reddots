@@ -1,4 +1,3 @@
-// BarTooltip.qml
 // Etiqueta que aparece a la derecha de un icono de la barra al dejar el ratón encima
 // un momento (red, volumen, batería...). Quien la usa le dice junto a qué icono sale
 // ("anchorItem"), qué texto pone y si el ratón está encima ("hovered"); aquí se espera

@@ -1,4 +1,3 @@
-// Bar.qml
 // La barra lateral izquierda con todos sus widgets. La crea shell.qml, una por
 // pantalla de la barra (ver laptopScreen allí).
 

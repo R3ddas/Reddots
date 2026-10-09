@@ -1,4 +1,3 @@
-// SectionTitle.qml
 // Título de una sección con una línea debajo, en el color de acento: los grupos de
 // GeometrySettings.qml, Claros/Oscuros en ThemeSettings.qml y las secciones de la chuleta
 // de atajos (Keybinds.qml). El tamaño de letra lo pone quien lo usa (font.pixelSize):

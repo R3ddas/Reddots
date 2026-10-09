@@ -1,4 +1,3 @@
-// PolkitDialog.qml
 // Ventana que pide la contraseña cuando una aplicación necesita permisos de
 // administrador (montar un disco en Nemo, cambiar la hora, instalar algo desde una
 // app gráfica...). Sustituye a hyprpolkitagent: es lo mismo, pero con los colores

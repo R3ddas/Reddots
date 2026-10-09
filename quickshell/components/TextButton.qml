@@ -1,4 +1,3 @@
-// TextButton.qml
 // Texto que se pulsa: las flechas del calendario, "Conectar" del wifi, "reparar" del
 // Bluetooth, la ✕ y los enlaces de las notificaciones, los controles de reproducción...
 // La zona de clic es algo más grande que el texto, para que sea fácil atinar, y avisa con

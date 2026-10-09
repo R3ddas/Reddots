@@ -1,4 +1,3 @@
-// NotificationList.qml
 // Lista de notificaciones del popup de SystemStats.qml (en esta misma carpeta), debajo del
 // uso del sistema. El estado está en services/NotificationCenter.qml; aquí solo se pinta.
 //   - Activas: las que no se han descartado, aunque ya no estén en pantalla (al acabar su

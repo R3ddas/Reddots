@@ -1,4 +1,3 @@
-// ClickOutsideGrab.qml
 // Cierra "window" al hacer clic fuera de ella, con un HyprlandFocusGrab. Lo usan los
 // desplegables de la barra (BarPopup.qml) y las ventanas sueltas (OverlayWindow.qml):
 // basta con ponerlo dentro y darle la ventana.

@@ -1,4 +1,3 @@
-// Slider.qml
 // Barra de nivel con su porcentaje a la derecha: la de volumen (Volume.qml), las de
 // brillo (BrightnessSliders.qml, en el selector de tema), la del indicador de las teclas
 // multimedia (Osd.qml) y la del avance de la canción (Volume.qml, con el tiempo en vez del

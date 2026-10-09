@@ -16,10 +16,10 @@ Singleton {
     id: root
 
     readonly property var adapter: Bluetooth.defaultAdapter               // null si el equipo no tiene Bluetooth
-    readonly property bool powered: adapter ? adapter.enabled : false     // radio encendida/apagada
-    property bool menuOpen: false       // El menú de Bluetooth de la barra está abierto (y escaneando); lo pone bar/Bluetooths.qml
+    readonly property bool powered: adapter ? adapter.enabled : false     // Radio encendida o apagada
+    property bool menuOpen: false       // El menú de Bluetooth de la barra está abierto (y buscando); lo pone bar/Bluetooths.qml
 
-    // Historial de cada dispositivo (address -> { prevState, prevPairing, lastNotify, warnedUnbonded }):
+    // Historial de cada dispositivo (dirección -> { prevState, prevPairing, lastNotify, warnedUnbonded }):
     // el estado anterior, para saber de dónde viene cada cambio
     property var deviceMonitor: ({})
 
@@ -31,69 +31,67 @@ Singleton {
     function monitorFor(dev) {
         let m = root.deviceMonitor[dev.address]
         if (!m) {
-            m = { prevState: dev.state, prevPairing: dev.pairing, lastNotify: 0 }   // primera vez que vemos este dispositivo en este arranque
+            m = { prevState: dev.state, prevPairing: dev.pairing, lastNotify: 0 }   // Primera vez que se ve este dispositivo desde que arrancó Quickshell
             root.deviceMonitor[dev.address] = m
         }
         return m
     }
 
-    // --- Aviso + reparación manual de dispositivos con key desincronizada ---
-    // Si un dispositivo ya emparejado falla al conectar (pasa a Connecting y
-    // vuelve a Disconnected sin llegar a Connected), es la señal típica de
-    // "br-connection-key-missing": el link key local ya no coincide con el
-    // del dispositivo. El único arreglo real es olvidar y re-emparejar, y eso
-    // solo funciona si el dispositivo está anunciándose (modo pairing) justo
-    // en ese momento. Como no podemos saber cuándo el usuario habrá puesto el
-    // dispositivo en modo pairing, en vez de reintentar a ciegas en segundo
-    // plano avisamos por notificación y dejamos un botón "Reparar" en el
-    // menú para dispararlo en el momento justo.
-    property var repairNeeded: []      // addresses con el botón "Reparar" visible
-    property var repairingAddrs: []    // addresses con una reparación en curso ahora mismo
+    // --- Aviso y reparación a mano de los dispositivos que han perdido la clave ---
+    // Si un dispositivo ya emparejado falla al conectar (pasa a Connecting y vuelve a
+    // Disconnected sin llegar a Connected), es la señal típica de "br-connection-key-missing":
+    // la clave de emparejamiento que guarda el equipo ya no coincide con la del dispositivo.
+    // El único arreglo es olvidarlo y volver a emparejarlo, y eso solo funciona si el
+    // dispositivo se está anunciando (en modo de emparejamiento) justo en ese momento. Como
+    // no se puede saber cuándo lo habrá puesto así el usuario, en vez de reintentar a ciegas
+    // en segundo plano se avisa con una notificación y se deja un botón "reparar" en el menú
+    // para lanzarlo en el momento justo.
+    property var repairNeeded: []      // Direcciones con el botón "reparar" a la vista
+    property var repairingAddrs: []    // Direcciones con una reparación en marcha
 
     function flagRepairNeeded(dev) {
-        if (!root.repairNeeded.includes(dev.address))          // evita duplicados en la lista
-            root.repairNeeded = [...root.repairNeeded, dev.address]  // reasignar el array entero para que QML detecte el cambio
-        NotificationCenter.notify("Bluetooth", "", "Bluetooth: re-emparejamiento necesario",
-            dev.name + " perdió la clave de emparejamiento. Ponlo en modo pairing y pulsa \"Reparar\" en el menú de Bluetooth.")
+        if (!root.repairNeeded.includes(dev.address))          // Sin repetidos en la lista
+            root.repairNeeded = [...root.repairNeeded, dev.address]  // Lista nueva: si se cambia por dentro, QML no se entera
+        NotificationCenter.notify("Bluetooth", "", "Bluetooth: hay que volver a emparejarlo",
+            dev.name + " ha perdido la clave de emparejamiento. Ponlo en modo de emparejamiento y pulsa \"reparar\" en el menú de Bluetooth.")
     }
 
     function clearRepairNeeded(address) {
         if (root.repairNeeded.includes(address))
-            root.repairNeeded = root.repairNeeded.filter(a => a !== address)  // igual: reasignar para notificar el cambio
+            root.repairNeeded = root.repairNeeded.filter(a => a !== address)  // También lista nueva, por lo mismo
     }
 
     // Ha cambiado el estado de conexión de un dispositivo. Como llega cada cambio (no una
     // foto cada 2 s, como antes), tampoco se escapa un intento fallido que dure muy poco.
     function stateChanged(dev) {
         const m = root.monitorFor(dev)
-        if (m.prevState === BluetoothDeviceState.Connecting                  // intentó conectar...
+        if (m.prevState === BluetoothDeviceState.Connecting                  // Intentó conectar...
             && dev.state === BluetoothDeviceState.Disconnected               // ...y volvió a desconectado sin pasar por Connected
-            && dev.paired) {                                                 // solo nos interesa si ya estaba emparejado (key vieja)
+            && dev.paired) {                                                 // Solo si ya estaba emparejado (clave vieja)
             const now = Date.now()
-            if (now - m.lastNotify > 5 * 60 * 1000) {                         // cooldown de 5 min para no spamear notificaciones
+            if (now - m.lastNotify > 5 * 60 * 1000) {                         // Como mucho un aviso cada 5 min, para no llenar la pantalla de notificaciones
                 m.lastNotify = now
                 root.flagRepairNeeded(dev)
             }
         }
-        if (dev.state === BluetoothDeviceState.Connected) root.clearRepairNeeded(dev.address)  // se arregló solo (o ya no hace falta avisar)
+        if (dev.state === BluetoothDeviceState.Connected) root.clearRepairNeeded(dev.address)  // Se ha arreglado solo (o ya no hace falta avisar)
         m.prevState = dev.state
     }
 
-    // --- Confianza automática al emparejar desde el widget ---
-    // Sin agente de BlueZ, un dispositivo emparejado pero no "trusted" no
-    // puede abrir perfiles por su cuenta (p.ej. los auriculares conectando el
-    // HFP): BlueZ no tiene a quién pedir autorización y lo rechaza, y el
-    // dispositivo acaba desconectándose. Por eso los que se emparejan desde
-    // aquí se marcan como de confianza. Solo los que pide el usuario desde el
-    // menú, no cualquiera que acabe emparejado: con el adaptador siempre en modo
-    // pairable (ver ensurePairable), un emparejamiento entrante ajeno no debe
-    // llevarse la confianza gratis.
-    property var pendingTrust: []   // addresses emparejándose desde el widget, a marcar como trusted cuando cuaje
+    // --- De confianza al emparejar desde el menú ---
+    // Sin un agente de BlueZ, un dispositivo emparejado pero que no es de confianza
+    // ("trusted") no puede abrir perfiles por su cuenta (p.ej. unos auriculares conectando
+    // el HFP): BlueZ no tiene a quién pedir permiso, lo rechaza y el dispositivo acaba
+    // desconectándose. Por eso los que se emparejan desde aquí se marcan de confianza. Solo
+    // los que pide el usuario desde el menú, no cualquiera que acabe emparejado: con el
+    // adaptador siempre dispuesto a emparejar (ver ensurePairable), un emparejamiento ajeno
+    // que llegue de fuera no debe llevarse la confianza gratis.
+    property var pendingTrust: []   // Direcciones que se están emparejando desde el menú, a marcar de confianza cuando terminen
 
     function pairAndTrust(dev) {
         if (!root.pendingTrust.includes(dev.address))
             root.pendingTrust = [...root.pendingTrust, dev.address]
-        root.ensurePairable()   // por si BlueZ lo acaba de quitar: sin esto la clave no se guardaría
+        root.ensurePairable()   // Por si BlueZ lo acaba de quitar: sin esto la clave no se guardaría
         dev.pair()
     }
 
@@ -102,40 +100,39 @@ Singleton {
         const m = root.monitorFor(dev)
         if (root.pendingTrust.includes(dev.address)) {
             if (dev.paired) {
-                dev.trusted = true                                          // emparejado desde el widget: de confianza
+                dev.trusted = true                                          // Emparejado desde el menú: de confianza
                 root.pendingTrust = root.pendingTrust.filter(a => a !== dev.address)
             } else if (m.prevPairing && !dev.pairing) {
-                pendingCheck.restart()                                      // el pairing ha terminado sin emparejar... de momento (ver pendingCheck)
+                pendingCheck.restart()                                      // El emparejamiento ha terminado sin emparejar... de momento (ver pendingCheck)
             }
         }
         m.prevPairing = dev.pairing
         unbondedCheck.restart()
     }
 
-    // Al terminar un pairing, "pairing" y "paired" pueden llegar por separado: si llega
-    // primero el fin del pairing, parecería que ha fallado. Se espera un momento y solo
-    // entonces se olvidan los pendientes que de verdad no se han emparejado.
+    // Al terminar un emparejamiento, "pairing" y "paired" pueden llegar por separado: si llega
+    // primero el fin del emparejamiento, parecería que ha fallado. Se espera un momento y
+    // solo entonces se olvidan los pendientes que de verdad no se han emparejado.
     Timer {
         id: pendingCheck
         interval: 1500
         onTriggered: {
             root.pendingTrust = root.pendingTrust.filter(addr => {
                 const dev = root.deviceByAddress(addr)
-                return dev && (dev.pairing || dev.paired)                   // el pairing terminó sin cuajar: se olvida el pendiente
+                return dev && (dev.pairing || dev.paired)                   // Si terminó sin emparejar, se olvida el pendiente
             })
         }
     }
 
-    // --- Adaptador siempre en modo "pairable" ---
-    // Si el adaptador no está en modo "pairable" (BlueZ lo deja así cuando no
-    // hay ningún agente registrado, y Quickshell no registra ninguno), el
-    // pairing sale adelante pero sin guardar la clave: el dispositivo queda
-    // Paired pero no Bonded. Funciona mientras dura la conexión, pero al
-    // desconectarse BlueZ lo olvida y ya no se puede reconectar. Equivale a
-    // AlwaysPairable = true en /etc/bluetooth/main.conf, pero sin tocar
-    // archivos del sistema: la propiedad Pairable del adaptador se puede
-    // cambiar sin root. BlueZ la vuelve a poner a false al reiniciar el
-    // servicio o el adaptador, por eso se reimpone cada vez que cambia.
+    // --- Adaptador siempre dispuesto a emparejar ("pairable") ---
+    // Si el adaptador no está en modo "pairable" (BlueZ lo deja así cuando no hay ningún
+    // agente registrado, y Quickshell no registra ninguno), el emparejamiento sale adelante
+    // pero sin guardar la clave: el dispositivo queda emparejado ("Paired") pero sin clave
+    // guardada ("Bonded"). Funciona mientras dura la conexión, pero al desconectarse BlueZ
+    // lo olvida y ya no se puede volver a conectar. Equivale a AlwaysPairable = true en
+    // /etc/bluetooth/main.conf, pero sin tocar archivos del sistema: la propiedad Pairable
+    // del adaptador se puede cambiar sin root. BlueZ la vuelve a poner a false al reiniciar
+    // el servicio o el adaptador, por eso se vuelve a poner cada vez que cambia.
     function ensurePairable() {
         if (root.adapter && root.adapter.enabled && !root.adapter.pairable)
             root.adapter.pairable = true
@@ -150,56 +147,56 @@ Singleton {
     }
 
     // --- Aviso de emparejamientos que BlueZ no guarda ---
-    // Con ensurePairable() no debería volver a pasar, pero si algo lo impide
-    // (o el dispositivo se emparejó antes de este arreglo) se avisa: el botón
-    // "reparar" no sirve aquí, lo que hace falta es olvidarlo y re-emparejar.
-    property var unbondedAddrs: []   // addresses emparejadas sin clave guardada (Paired sin Bonded)
+    // Con ensurePairable() no debería volver a pasar, pero si algo lo impide (o el
+    // dispositivo se emparejó antes de este arreglo) se avisa: aquí el botón "reparar" no
+    // sirve, lo que hace falta es olvidarlo y volver a emparejarlo.
+    property var unbondedAddrs: []   // Direcciones emparejadas sin clave guardada ("Paired" sin "Bonded")
 
-    // Paired sin Bonded durante 4 s seguidos sin más cambios, para no saltar en el instante
-    // justo en que termina el pairing (la clave se guarda un poco después de emparejar).
+    // Emparejado sin clave guardada durante 4 s seguidos sin más cambios, para no saltar en
+    // el instante justo en que termina el emparejamiento (la clave se guarda un poco después).
     // Se vuelve a contar desde cero con cada cambio de paired/bonded de cualquier dispositivo.
     Timer {
         id: unbondedCheck
         interval: 4000
         onTriggered: {
-            const unbondedNow = []   // se recalcula entero (así los que desaparecen salen solos de la lista)
+            const unbondedNow = []   // Se recalcula entera (así los que desaparecen salen solos de la lista)
             for (const dev of (root.adapter ? root.adapter.devices.values : [])) {
                 if (!dev.paired || dev.bonded) continue
                 unbondedNow.push(dev.address)
                 const m = root.monitorFor(dev)
-                if (!m.warnedUnbonded) {                                     // una sola notificación por dispositivo y arranque
+                if (!m.warnedUnbonded) {                                     // Un solo aviso por dispositivo desde que arrancó Quickshell
                     m.warnedUnbonded = true
                     NotificationCenter.notify("Bluetooth", "", "Bluetooth: emparejamiento no guardado",
-                        dev.name + " se ha emparejado sin guardar la clave: al desconectarse se olvidará y no podrá reconectarse. Olvídalo y vuelve a emparejarlo desde el menú.")
+                        dev.name + " se ha emparejado sin guardar la clave: al desconectarse se olvidará y no podrá volver a conectarse. Olvídalo y vuelve a emparejarlo desde el menú.")
                 }
             }
-            if (unbondedNow.join() !== root.unbondedAddrs.join())   // reasignar solo si cambió, para no redibujar el menú
+            if (unbondedNow.join() !== root.unbondedAddrs.join())   // Solo si ha cambiado, para no redibujar el menú
                 root.unbondedAddrs = unbondedNow
         }
     }
 
     // --- Reparación ---
-    // Disparado a mano desde el botón "Reparar": olvida el dispositivo y
-    // re-empareja. Solo puede tener éxito si el dispositivo ya está
-    // anunciándose (por eso hace falta ponerlo en modo pairing antes).
+    // Se lanza a mano desde el botón "reparar": olvida el dispositivo y lo vuelve a
+    // emparejar. Solo sale bien si el dispositivo ya se está anunciando (por eso hay que
+    // ponerlo antes en modo de emparejamiento).
     function repairDevice(address) {
-        if (root.repairingAddrs.includes(address)) return   // ya hay una reparación en curso para este dispositivo
+        if (root.repairingAddrs.includes(address)) return   // Ya hay una reparación en marcha para este dispositivo
         const dev = root.deviceByAddress(address)
         if (!dev) return
         root.repairingAddrs = [...root.repairingAddrs, address]
-        root.adapter.discovering = true   // necesario para volver a ver el dispositivo anunciándose tras el forget()
-        dev.forget()                      // borra el link key viejo; dispara repairTimer para reintentar el pairing
+        root.adapter.discovering = true   // Hace falta buscar para volver a ver el dispositivo anunciándose tras el forget()
+        dev.forget()                      // Borra la clave vieja; repairTimer vuelve a intentar el emparejamiento
         repairTimer.address = address
         repairTimer.restart()
     }
 
     Timer {
         id: repairTimer
-        interval: 800   // pequeño margen tras el forget() antes de intentar volver a emparejar
+        interval: 800   // Un poco de margen tras el forget() antes de intentar volver a emparejar
         property string address: ""
         onTriggered: {
             const dev = root.deviceByAddress(address)
-            if (dev) root.pairAndTrust(dev)   // solo tiene éxito si el dispositivo sigue anunciándose (modo pairing)
+            if (dev) root.pairAndTrust(dev)   // Solo sale bien si el dispositivo sigue anunciándose (en modo de emparejamiento)
             pairWatch.address = address
             pairWatch.restart()
         }
@@ -207,14 +204,14 @@ Singleton {
 
     Timer {
         id: pairWatch
-        interval: 8000   // tiempo dado al pairing (incluye confirmación de passkey) antes de comprobar el resultado
+        interval: 8000   // Tiempo que se le da al emparejamiento (incluida la confirmación del código) antes de mirar cómo ha ido
         property string address: ""
         onTriggered: {
             const dev = root.deviceByAddress(pairWatch.address)
-            if (dev && dev.paired) dev.connect()                 // el pairing sí cuajó: ya se puede conectar
-            if (root.adapter) root.adapter.discovering = root.menuOpen  // deja el escaneo como estaba según el menú
+            if (dev && dev.paired) dev.connect()                 // Se ha emparejado: ya se puede conectar
+            if (root.adapter) root.adapter.discovering = root.menuOpen  // Deja la búsqueda como diga el menú (abierto: buscando)
             root.repairingAddrs = root.repairingAddrs.filter(a => a !== pairWatch.address)
-            root.clearRepairNeeded(pairWatch.address)   // se intentó; si falló, stateChanged() lo volverá a marcar
+            root.clearRepairNeeded(pairWatch.address)   // Ya se ha intentado; si ha fallado, stateChanged() lo volverá a marcar
         }
     }
 

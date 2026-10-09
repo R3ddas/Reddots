@@ -1,4 +1,3 @@
-// StateFile.qml
 // JSON con estado de la interfaz que se guarda solo: el tema, el fondo, las medidas, el uso
 // de las apps del lanzador... Vive en el directorio de estado de Quickshell
 // (~/.local/state/quickshell), fuera del repo, así que sobrevive a reiniciar Quickshell.

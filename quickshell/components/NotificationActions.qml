@@ -1,4 +1,3 @@
-// NotificationActions.qml
 // Botones con las acciones de una notificación (notify-send -A si=Sí -A no=No ...), en
 // las tarjetas emergentes y en la lista de SystemStats. La acción "default" no sale: es
 // la que se lanza al hacer clic en la propia notificación. Si no caben en una fila,

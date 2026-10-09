@@ -1,4 +1,3 @@
-// Osd.qml
 // Indicador que aparece un momento abajo en el centro al cambiar el volumen o el
 // brillo, o al silenciar el micrófono, con las teclas multimedia. Lo abren los atajos
 // de hypr/keybinds.lua con "qs ipc call osd volume" / "... brightness" / "... mic"

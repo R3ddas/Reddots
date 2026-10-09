@@ -1,4 +1,3 @@
-// NotificationIcon.qml
 // Icono de una notificación (tarjetas emergentes y lista de SystemStats). Prueba en orden:
 //   1. la imagen que manda la app (avatar, captura...),
 //   2. el icono de la app que pide la notificación (appIcon),

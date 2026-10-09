@@ -1,4 +1,3 @@
-// Clipboard.qml
 // Historial del portapapeles: ventana en el centro de la pantalla que se abre con
 // Super + V ("qs ipc call clipboard toggle", ver hypr/keybinds.lua). El historial lo
 // guarda cliphist, que Hyprland arranca al iniciar ("wl-paste --watch cliphist store",

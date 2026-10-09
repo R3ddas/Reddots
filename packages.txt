@@ -26,6 +26,7 @@ git                     # Para el botón de actualizar Reddots (scripts/update-r
 pacman-contrib          # Trae checkupdates, para el contador de actualizaciones pendientes (Updates.qml)
 cliphist                # Historial del portapapeles (Clipboard.qml; lo arranca hypr/hyprland.lua con wl-paste de wl-clipboard)
 networkmanager          # Redes wifi y cable del widget de red (Network.qml: Quickshell.Networking habla con NetworkManager)
+libpsl                  # Trae psl, para sacar el dominio del usuario en las redes wifi empresariales como eduroam (scripts/wifi-eap-connect.sh)
 bluez                   # El servicio de Bluetooth del que tira Bluetooths.qml (Quickshell.Bluetooth)
 upower                  # Datos de la batería (Battery.qml, BatteryMonitor.qml y Bar.qml: Quickshell.Services.UPower)
 noto-fonts-emoji        # Emojis de color para las apps (Chrome, Zen, Teams, Kate...). La barra ya no los usa: solo glifos de la Nerd Font

@@ -1,4 +1,3 @@
-// InputField.qml
 // Campo de texto con el estilo del tema: recuadro, texto y un texto de ayuda en gris
 // ("placeholder") mientras está vacío. Lo usan los buscadores del Launcher y del
 // portapapeles (Clipboard.qml), los campos de wifi (Network.qml) y la contraseña de

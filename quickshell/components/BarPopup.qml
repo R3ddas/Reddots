@@ -1,4 +1,3 @@
-// BarPopup.qml
 // Desplegable de la barra: sale a la derecha de la barra, a la altura del icono que
 // lo abre ("anchorItem"), con el fondo, el borde y el redondeo del tema, y se cierra
 // al hacer clic fuera. Lo usan todos los iconos de la barra que abren un menú.

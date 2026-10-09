@@ -1,4 +1,3 @@
-// NotificationCard.qml
 // Una notificación: icono, título, mensaje y botones de acción. La usan las tarjetas
 // emergentes (windows/Notifications.qml) y la lista del popup de SystemStats
 // (bar/settings/NotificationList.qml, con compact: true: más pequeña, con la app y la hora

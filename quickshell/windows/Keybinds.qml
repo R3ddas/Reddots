@@ -1,4 +1,3 @@
-// Keybinds.qml
 // Chuleta de atajos de teclado: ventana en el centro de la pantalla que se abre
 // desde el menú de Reddots (Reddots.qml). No lleva una lista escrita a mano: cada
 // vez que se abre le pide a Hyprland sus atajos ("hyprctl binds -j") y pinta los que

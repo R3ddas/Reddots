@@ -1,4 +1,3 @@
-// Lock.qml
 // Pantalla de bloqueo: tapa todos los monitores hasta que se escribe la contraseña del
 // usuario. Se bloquea con Super + L, desde el menú de apagado de la barra (Power.qml, que
 // también bloquea antes de suspender) o con "qs ipc call lock lock" (ver ShellIpc.qml).

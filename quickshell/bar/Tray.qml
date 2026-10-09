@@ -1,4 +1,3 @@
-// Tray.qml
 // Bandeja del sistema: un icono por cada app que deja uno (Steam, Teams, Claude...).
 // Sin esto, al cerrar la ventana de esas apps no había forma de volver a abrirlas.
 //   Clic izquierdo: abre la app (o su menú, si la app solo tiene menú)

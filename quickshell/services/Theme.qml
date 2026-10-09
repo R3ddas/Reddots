@@ -42,8 +42,8 @@ Singleton {
     // Tema por defecto, el mismo en los dos casos en que hace falta uno: en una instalación
     // nueva (aún no hay theme.json) y si el tema guardado ya no existe (p.ej. uno que se ha
     // quitado de la lista). Debe coincidir con el "name" de uno de los temas de "themes".
-    // Si lo cambias, cambia también los colores de arranque de hypr/hyprland.lua (col y
-    // background_color), que son los suyos.
+    // Si lo cambias, cambia también el activeTheme del JsonAdapter (más abajo) y los colores
+    // de arranque de hypr/hyprland.lua (col y background_color), que son los suyos.
     readonly property string defaultTheme: "Original"
 
     // Tema activo: se elige desde el icono de la paleta en la barra
@@ -57,7 +57,12 @@ Singleton {
 
         JsonAdapter {
             id: adapter
-            property string activeTheme: root.defaultTheme
+            // El mismo que defaultTheme, pero escrito tal cual y no "root.defaultTheme": con un
+            // binding, al crearse avisaba de un cambio de tema (onActiveThemeChanged) antes de
+            // leer theme.json y aplicaba este a Alacritty y a Hyprland. El tema guardado, que
+            // llega justo después, a veces no se escribía: el FileView aún devolvía en text() lo
+            // que había antes en el archivo, y parecía que ya estaba puesto
+            property string activeTheme: "Original"
         }
     }
 

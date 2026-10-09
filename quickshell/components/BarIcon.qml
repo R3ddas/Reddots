@@ -1,4 +1,3 @@
-// BarIcon.qml
 // Icono de la barra: un glifo de la Nerd Font con la zona de clic algo más grande
 // que el dibujo, para que sea fácil atinar. clicked() trae el evento, para saber
 // qué botón se ha pulsado (ver acceptedButtons). Con "tooltip" sale una etiqueta

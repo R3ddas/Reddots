@@ -1,4 +1,3 @@
-// Button.qml
 // Botón con borde: los −/+ de GeometrySettings.qml, las acciones de las notificaciones
 // (NotificationActions.qml) y Cancelar/Autenticar de PolkitDialog.qml. Se resalta con el
 // ratón encima y avisa con clicked(). Con "accent" es el botón principal (borde y texto con

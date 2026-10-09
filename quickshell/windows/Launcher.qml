@@ -1,4 +1,3 @@
-// Launcher.qml
 // Widget que aparece al pulsar Super solo (sin combinar con otra tecla), anclado abajo-derecha
 // Lista las aplicaciones instaladas (con icono) y las lanza al hacer clic
 // Al abrirse ya se puede escribir para filtrar: flechas para moverse, Intro para lanzar, Esc para cerrar

@@ -1,4 +1,3 @@
-// OverlayWindow.qml
 // Ventana flotante por encima de todo que se cierra al hacer clic fuera, como los
 // desplegables de la barra (BarPopup.qml) pero suelta en la pantalla. La usan el
 // Launcher, el historial del portapapeles (Clipboard.qml) y la chuleta de atajos

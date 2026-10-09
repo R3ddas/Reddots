@@ -1,4 +1,3 @@
-// SelectionList.qml
 // Lista con una fila seleccionada: la de los buscadores del Launcher y del portapapeles
 // (Clipboard.qml). La selección la mueven las flechas (el InputField con "list") y el ratón
 // al pasar de una fila a otra, se marca con un fondo, y al hacer clic en una fila avisa con

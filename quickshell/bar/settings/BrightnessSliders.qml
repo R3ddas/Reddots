@@ -1,4 +1,3 @@
-// BrightnessSliders.qml
 // Un slider de brillo por cada pantalla que lo permita (services/BrightnessMonitor.qml),
 // con su nombre encima y el icono del brillo a la izquierda (como los del volumen en
 // Volume.qml), para que se sepa qué es esa barra. Sale arriba del selector de tema

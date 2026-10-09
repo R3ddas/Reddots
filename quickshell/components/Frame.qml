@@ -1,4 +1,3 @@
-// Frame.qml
 // Fondo con el estilo de los desplegables de la barra: color "surface", borde con el color
 // de acento y redondeo y grosor del borde editables en GeometrySettings.qml. Lo usan
 // BarPopup.qml y las ventanas sueltas (Osd, Keybinds, Clipboard, Launcher, PolkitDialog),

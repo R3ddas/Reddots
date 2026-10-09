@@ -1,4 +1,3 @@
-// Border.qml
 // Marco redondeado alrededor de la pantalla, del color de la barra, con una sombra
 // hacia dentro. Va a la derecha de la barra (empieza donde ella acaba) y no recoge
 // clics. Grosor, redondeo y sombra salen de Geometry.qml (editables en GeometrySettings.qml).

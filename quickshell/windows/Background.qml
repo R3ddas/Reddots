@@ -1,4 +1,3 @@
-// Background.qml
 // Fondo de pantalla, pintado por Quickshell (sustituye a hyprpaper). Una ventana por
 // monitor en la capa más baja (Background), por debajo de las ventanas y de la barra.
 // La imagen es la de Wallpaper.path (se elige en WallpaperSettings.qml); al cambiarla,

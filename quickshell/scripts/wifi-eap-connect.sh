@@ -23,6 +23,8 @@ args=(type wifi con-name "$ssid" ssid "$ssid" wifi-sec.key-mgmt wpa-eap
 if [[ $3 != --sin-verificar ]]; then
     args+=(802-1x.system-ca-certs yes)
     if [[ $identity == *@* ]]; then
+        # psl (paquete libpsl, en packages.txt) sabe dónde acaba el dominio registrado
+        # (ing.uc3m.es -> uc3m.es, pero cam.ac.uk se queda entero): un corte a mano fallaría
         domain=$(psl --print-reg-domain "${identity#*@}" | sed 's/.*: //')
         [[ -n $domain ]] && args+=(802-1x.domain-suffix-match "$domain")
     fi

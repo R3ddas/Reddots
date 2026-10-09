@@ -1,4 +1,3 @@
-// LockScreen.qml
 // Lo que se ve en cada monitor con la pantalla bloqueada (el estado y la contraseña están
 // en Lock.qml): el fondo de pantalla desenfocado y velado con el fondo del tema, la hora y
 // la fecha, el usuario y el campo de la contraseña (sin recuadro), y abajo los botones de

@@ -1,4 +1,3 @@
-// TooltipArea.qml
 // Zona de ratón de un icono de la barra: algo más grande que el dibujo, para que sea fácil
 // atinar, y con una etiqueta (BarTooltip.qml) al dejar el ratón encima. Al pulsar, la
 // etiqueta se quita (y no vuelve hasta salir y entrar otra vez). La usan BarIcon.qml, el

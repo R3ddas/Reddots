@@ -1,4 +1,3 @@
-// MenuRow.qml
 // Fila de un menú de la barra (Power, Screenshot, Reddots, Tray, Volume): icono, texto y,
 // si hace falta, un aviso debajo ("hint") y una flecha de submenú. Resalta con el
 // ratón encima y avisa con clicked().
