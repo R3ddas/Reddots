@@ -4,6 +4,7 @@
 //   - Actualizar Reddots: baja los cambios del repo (git pull) y ejecuta install.sh, en
 //     un Alacritty para que sudo pueda pedir la contraseña y paru hacer sus preguntas.
 //     El trabajo lo hace scripts/update-reddots.sh; esto solo lo lanza.
+//   - Ver en GitHub: abre la página del repo en el navegador.
 // Va arriba del todo de la barra, encima de los workspaces (Bar.qml), y con un paso más
 // (el popup) para no lanzar sin querer una actualización de todo el sistema.
 import Quickshell
@@ -41,7 +42,7 @@ ColumnLayout {
         Layout.alignment: Qt.AlignHCenter
 
         TooltipArea {
-            tooltip: "Reddots: atajos de teclado y actualizar" + (Updates.count > 0 ? "\n" + Updates.summary : "")
+            tooltip: "Reddots: atajos de teclado, actualizar y GitHub" + (Updates.count > 0 ? "\n" + Updates.summary : "")
             popup: menu
             onClicked: menu.toggle()
             // Updates.qml no mira por su cuenta: se consulta al acercar el ratón, y el
@@ -63,7 +64,12 @@ ColumnLayout {
               hint: "Baja los cambios del repo y ejecuta install.sh en un terminal. Actualiza todo el sistema y pide la contraseña."
                     + (Updates.count > 0 ? "\n" + Updates.summary + "." : ""),
               run: () => Quickshell.execDetached(["alacritty", "--title", "Actualizar Reddots", "-e",
-                            Quickshell.shellPath("scripts/update-reddots.sh")]) }
+                            Quickshell.shellPath("scripts/update-reddots.sh")]) },
+            // La página del repo, en el navegador por defecto (xdg-open, de xdg-utils en packages.txt).
+            // La dirección va escrita tal cual, como en el README: es la del repo original aunque
+            // este equipo lo haya clonado de otro sitio
+            { icon: 0xF02A4, label: "Ver en GitHub",                                                  // github
+              run: () => Quickshell.execDetached(["xdg-open", "https://github.com/R3ddas/Reddots"]) }
         ]
     }
 }
