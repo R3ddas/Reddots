@@ -84,7 +84,7 @@ ColumnLayout {
         Repeater {
             model: root.visibleDevices   // La lista ya filtrada, no todos los del adaptador
 
-            delegate: Rectangle {
+            delegate: HoverRect {
                 id: deviceRow
                 required property var modelData
                 readonly property bool needsRepair: BluetoothMonitor.repairNeeded.includes(modelData.address)   // Enseña el botón "reparar"
@@ -92,8 +92,12 @@ ColumnLayout {
 
                 Layout.fillWidth: true
                 implicitHeight: 26
-                radius: 4
-                color: deviceMouse.containsMouse ? Theme.surfaceHover : "transparent"
+                onClicked: {
+                    if (modelData.pairing) modelData.cancelPair()           // Clic mientras se empareja: lo cancela
+                    else if (modelData.connected) modelData.disconnect()
+                    else if (modelData.paired) modelData.connect()          // Ya conocido: solo volver a conectar
+                    else BluetoothMonitor.pairAndTrust(modelData)           // Nuevo: emparejarlo por primera vez (y marcarlo de confianza)
+                }
 
                 Text {
                     id: deviceLabel
@@ -110,18 +114,6 @@ ColumnLayout {
                     }
                     color: modelData.connected ? Theme.textActive : Theme.textDisabled
                     elide: Text.ElideRight
-                }
-
-                MouseArea {
-                    id: deviceMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: {
-                        if (modelData.pairing) modelData.cancelPair()           // Clic mientras se empareja: lo cancela
-                        else if (modelData.connected) modelData.disconnect()
-                        else if (modelData.paired) modelData.connect()          // Ya conocido: solo volver a conectar
-                        else BluetoothMonitor.pairAndTrust(modelData)           // Nuevo: emparejarlo por primera vez (y marcarlo de confianza)
-                    }
                 }
 
                 TextButton {

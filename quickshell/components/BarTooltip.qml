@@ -1,8 +1,8 @@
 // Etiqueta que aparece a la derecha de un icono de la barra al dejar el ratón encima
-// un momento (red, volumen, batería...). Quien la usa le dice junto a qué icono sale
-// ("anchorItem"), qué texto pone y si el ratón está encima ("hovered"); aquí se espera
-// el retardo y se coloca como los desplegables (BarPopup.qml), pero sin grab: no roba
-// ni el foco ni los clics.
+// un momento (red, volumen, batería...). Solo existe mientras el ratón está encima: la crea
+// TooltipArea.qml al entrar y la destruye al salir. Quien la usa le dice junto a qué icono
+// sale ("anchorItem") y qué texto pone; aquí se espera el retardo y se coloca como los
+// desplegables (BarPopup.qml), pero sin grab: no roba ni el foco ni los clics.
 import Quickshell
 import QtQuick
 import qs.services
@@ -12,7 +12,6 @@ PopupWindow {
 
     property Item anchorItem: null
     property string text: ""
-    property bool hovered: false        // El ratón está sobre el icono
     property int delay: 500             // ms con el ratón quieto encima antes de aparecer
 
     visible: false
@@ -27,17 +26,13 @@ PopupWindow {
     anchor.gravity: Edges.Bottom | Edges.Right
     anchor.onAnchoring: if (anchorItem) anchor.rect.y = Geometry.popupY(anchorItem, anchor.rect.x, implicitHeight)  // Centrada con el icono
 
-    Component.onCompleted: if (hovered && text !== "") showTimer.restart()   // Si se crea ya con el ratón encima (BarIcon), onHoveredChanged no salta
-    onHoveredChanged: {
-        if (hovered && text !== "") showTimer.restart()
-        else { showTimer.stop(); visible = false }
-    }
+    Component.onCompleted: showTimer.start()                // Se crea al entrar el ratón: sale tras el retardo
     onTextChanged: if (text === "") visible = false        // Si deja de tener texto (p.ej. se abre el menú del icono), se quita
 
     Timer {
         id: showTimer
         interval: root.delay
-        onTriggered: root.visible = root.hovered && root.text !== ""
+        onTriggered: root.visible = root.text !== ""
     }
 
     Rectangle {

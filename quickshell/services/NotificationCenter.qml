@@ -28,6 +28,17 @@ Singleton {
     // Hay alguna crítica activa: pone en rojo el icono de SystemStats (y el engranaje plegado), como una temperatura alta
     readonly property bool hasCritical: active.some(n => n.urgency === NotificationUrgency.Critical)
     property var popups: []             // id de las que se enseñan como tarjeta, en orden de llegada
+
+    // Puesto de cada tarjeta entre las que se enseñan (id -> 0, 1, 2...), en el orden de las
+    // activas, que es en el que las pinta windows/Notifications.qml. Se calcula aquí una vez
+    // por cambio, y no en cada tarjeta recorriendo toda la lista. Las que no salen como
+    // tarjeta no están.
+    readonly property var popupRanks: {
+        const ranks = {}
+        let rank = 0
+        for (const n of active) if (popups.includes(n.id)) ranks[n.id] = rank++
+        return ranks
+    }
     property var history: []            // Copias de las cerradas, la más reciente primero
     readonly property int maxHistory: 20
 

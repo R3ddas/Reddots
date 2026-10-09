@@ -129,13 +129,6 @@ local function bestModes(force)
 end
 bestModes(true)                     -- Solo hace algo al recargar (al arrancar aún no hay monitores)
 
-local function bestModesSoon()      -- En diferido, por lo mismo que applyLidSoon (más abajo)
-    hl.timer(bestModes, { timeout = 200, type = "oneshot" })
-end
-hl.on("monitor.added",   bestModesSoon)
-hl.on("config.reloaded", bestModesSoon)
-hl.on("hyprland.start",  bestModesSoon)
-
 -- Tapa del portátil. Al cerrarla, si hay un monitor externo, el panel se desactiva y
 -- el externo se queda como único monitor (ventanas, workspaces y barra pasan a él).
 -- Sin monitor externo el panel solo se apaga (DPMS) y la sesión sigue igual.
@@ -145,10 +138,11 @@ hl.on("hyprland.start",  bestModesSoon)
 -- libinput) y no la señal PropertiesChanged de logind, que no llegaba de forma fiable.
 -- Además se vuelve a aplicar al enchufar/desenchufar un monitor con la tapa cerrada
 -- y tras recargar la config (por si acaso: la regla del panel ya se pone según la tapa
--- al cargar, ver "Recargar sin apagar la pantalla"). El estado inicial de la tapa
--- (lidClosed) se lee de logind más arriba.
+-- al cargar, ver "Recargar sin apagar la pantalla"), ver monitorsSoon más abajo. El estado
+-- inicial de la tapa (lidClosed) se lee de logind más arriba.
+local applyLid                      -- nil en un sobremesa (sin panel no hay tapa)
 if internalPanel then
-    local function applyLid()
+    applyLid = function()
         local panelOn, hasExternal = panelState(hl.get_monitors())
         if lidClosed and hasExternal then
             if panelOn then hl.monitor({ output = internalPanel, disabled = true }) end
@@ -158,19 +152,26 @@ if internalPanel then
         end
     end
 
-    -- En diferido: se llama desde eventos de monitores y aplicar reglas ahí dentro
-    -- volvería a disparar esos mismos eventos
-    local function applyLidSoon()
-        hl.timer(applyLid, { timeout = 200, type = "oneshot" })
-    end
-
     hl.bind("switch:on:Lid Switch",  function() lidClosed = true;  applyLid() end, { locked = true })
     hl.bind("switch:off:Lid Switch", function() lidClosed = false; applyLid() end, { locked = true })
-    hl.on("monitor.added",   applyLidSoon)
-    hl.on("monitor.removed", applyLidSoon)
-    hl.on("config.reloaded", applyLidSoon)
-    hl.on("hyprland.start",  applyLidSoon)     -- Por si Hyprland arranca con la tapa ya cerrada
 end
+
+-- Cuando cambian los monitores (se enchufa o se quita uno, se recarga la config o arranca
+-- Hyprland, por si arranca con la tapa ya cerrada): primero la mejor frecuencia de cada uno
+-- (bestModes) y después la tapa (applyLid), siempre en ese orden y con un solo temporizador.
+-- En diferido: se llama desde eventos de monitores, y aplicar reglas ahí dentro volvería a
+-- disparar esos mismos eventos. Al quitar un monitor bestModes no suele hacer nada (los que
+-- quedan ya están a su mejor frecuencia), pero así todos los eventos hacen lo mismo.
+local function monitorsSoon()
+    hl.timer(function()
+        bestModes()
+        if applyLid then applyLid() end
+    end, { timeout = 200, type = "oneshot" })
+end
+hl.on("monitor.added",   monitorsSoon)
+hl.on("monitor.removed", monitorsSoon)
+hl.on("config.reloaded", monitorsSoon)
+hl.on("hyprland.start",  monitorsSoon)
 
 
 ----------------------

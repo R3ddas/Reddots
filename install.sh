@@ -67,13 +67,22 @@ fi
 
 echo "Paquetes no utilizados"
 
-# pacman -Qq comprueba si existe; si no está, la parte de la derecha no se ejecuta y el script sigue como si nada.
-pacman -Qq dolphin &>/dev/null && sudo pacman -Rns --noconfirm dolphin || true     # Quito Dolphin porque instalo Nemo como explorador de archivos
-pacman -Qq kitty &>/dev/null && sudo pacman -Rns --noconfirm kitty || true         # Quito Kitty porque uso Alacritty como terminal
-pacman -Qq meld &>/dev/null && sudo pacman -Rns --noconfirm meld || true           # Quito Meld porque no lo uso
-pacman -Qq firefox &>/dev/null && sudo pacman -Rns --noconfirm firefox || true     # Quito firefox porque instalo chrome y zen
-pacman -Qq hyprpaper &>/dev/null && sudo pacman -Rns --noconfirm hyprpaper || true # Quito hyprpaper porque el fondo lo pinta Quickshell (quickshell/windows/Background.qml)
-pacman -Qq polkit-gnome &>/dev/null && sudo pacman -Rns --noconfirm polkit-gnome || true # Quito polkit-gnome: otro agente de polkit, y el que se usa es el de Quickshell (quickshell/windows/PolkitDialog.qml)
+# Los que trae CachyOS (o instalaban versiones anteriores de Reddots) y sobran
+unwanted=(
+    dolphin         # Instalo Nemo como explorador de archivos
+    kitty           # Uso Alacritty como terminal
+    meld            # No lo uso
+    firefox         # Instalo Chrome y Zen
+    hyprpaper       # El fondo lo pinta Quickshell (quickshell/windows/Background.qml)
+    polkit-gnome    # Otro agente de polkit, y el que se usa es el de Quickshell (quickshell/windows/PolkitDialog.qml)
+)
+# Solo los que están instalados (pacman -Qq escribe los que encuentra y se queja de los demás:
+# esa queja se descarta), todos en una sola llamada. Si pacman no puede quitarlos (otro paquete
+# depende de alguno), se avisa y se sigue: no merece la pena cortar la instalación por esto
+mapfile -t installed < <(pacman -Qq "${unwanted[@]}" 2>/dev/null)
+if (( ${#installed[@]} )); then
+    sudo pacman -Rns --noconfirm "${installed[@]}" || echo "Aviso: no se han podido quitar ${installed[*]}"
+fi
 
 
 echo "Servicios"
@@ -115,7 +124,8 @@ fi
 
 echo "Sistema de archivos"
 
-mkdir -p ~/.config/hypr ~/.config/fish ~/.config/alacritty ~/.config/fastfetch ~/.config/Code/User # Creo las carpetas si no existen
+# Enlaza "$1" (del repo) en "$2", creando antes la carpeta que lo contiene si aún no existe
+link() { mkdir -p "$(dirname "$2")"; ln -sfn "$1" "$2"; }
 
 # Quickshell se enlaza como carpeta entera (no archivo a archivo) para que los
 # widgets nuevos que se añadan al repo aparezcan solos, sin volver a ejecutar esto.
@@ -128,12 +138,12 @@ if [[ -d ~/.config/quickshell && ! -L ~/.config/quickshell ]]; then
     mv ~/.config/quickshell "$backup"
     echo "Aviso: ~/.config/quickshell era una carpeta propia, movida a $backup"
 fi
-ln -sfn "$DOTS/quickshell"                 ~/.config/quickshell   # Incluye scripts/ (los que lanza la barra)
-ln -sfn "$DOTS"/hypr/*                     ~/.config/hypr/
-ln -sfn "$DOTS/apps/fish/config.fish"           ~/.config/fish/config.fish
-ln -sfn "$DOTS/apps/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
-ln -sfn "$DOTS/apps/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
-ln -sfn "$DOTS/apps/vscode/settings.json"       ~/.config/Code/User/settings.json  # Ajustes de Visual Studio Code
+link "$DOTS/quickshell"                      ~/.config/quickshell   # Incluye scripts/ (los que lanza la barra)
+for file in "$DOTS"/hypr/*; do link "$file"  ~/.config/hypr/"${file##*/}"; done
+link "$DOTS/apps/fish/config.fish"           ~/.config/fish/config.fish
+link "$DOTS/apps/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
+link "$DOTS/apps/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
+link "$DOTS/apps/vscode/settings.json"       ~/.config/Code/User/settings.json  # Ajustes de Visual Studio Code
 
 # Restos de una config de Hyprland anterior (la que trae CachyOS, o archivos que
 # ya no están en el repo): se apartan a una copia para que no se mezclen con la
@@ -151,9 +161,7 @@ fi
 # Los fondos van a la carpeta de imágenes del sistema (~/Imágenes en español), la misma
 # que las capturas de pantalla. xdg-user-dirs-update la crea si aún no existe.
 xdg-user-dirs-update
-pictures="$(xdg-user-dir PICTURES)"
-mkdir -p "$pictures"
-ln -sfn "$DOTS/wallpapers"   "$pictures/Wallpapers"
+link "$DOTS/wallpapers" "$(xdg-user-dir PICTURES)/Wallpapers"
 
 echo "Otras configuraciones"
 

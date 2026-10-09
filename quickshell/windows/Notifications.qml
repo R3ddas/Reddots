@@ -65,15 +65,9 @@ Scope{
                 delegate: NotificationCard{
                     id: card
                     required property var modelData
-                    required property int index
 
                     // Puesto entre las emergentes, en el orden en que se pintan (-1 = oculta, solo en SystemStats)
-                    readonly property int popupRank: {
-                        const popups = NotificationCenter.popups
-                        if (!popups.includes(modelData.id)) return -1
-                        const before = NotificationCenter.active.slice(0, index)
-                        return before.filter(n => popups.includes(n.id)).length
-                    }
+                    readonly property int popupRank: NotificationCenter.popupRanks[modelData.id] ?? -1
 
                     // Las que no caben esperan ocultas (el layout no les deja hueco). Se hace
                     // así, y no recortando el modelo, para que las que ya se ven no se
@@ -100,14 +94,16 @@ Scope{
                 }
             }
 
-            Rectangle{                                      // "+N más": las que esperan en cola
+            HoverRect{                                      // "+N más": las que esperan en cola
                 Layout.fillWidth: true
                 visible: root.hiddenCount > 0
                 implicitHeight: moreText.implicitHeight + 12
                 radius: 8
-                color: moreMouse.containsMouse ? Theme.surfaceHover : Theme.background
+                idleColor: Theme.background
                 border.width: 1
                 border.color: Theme.border
+                acceptedButtons: Qt.RightButton                 // Derecho, como para cerrar una sola: así no se borran todas por un clic sin querer
+                onClicked: NotificationCenter.dismissPopups()   // Las de la pantalla; las que ya solo están en SystemStats, no
 
                 Text{
                     id: moreText
@@ -116,14 +112,6 @@ Scope{
                           + "  ·  clic derecho: cerrar todas"
                     color: Theme.textActive
                     font.pixelSize: 11
-                }
-
-                MouseArea{
-                    id: moreMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    acceptedButtons: Qt.RightButton                 // Derecho, como para cerrar una sola: así no se borran todas por un clic sin querer
-                    onClicked: NotificationCenter.dismissPopups()   // Las de la pantalla; las que ya solo están en SystemStats, no
                 }
             }
         }

@@ -50,33 +50,20 @@ ColumnLayout {
         }
     }
 
-    BarPopup {
+    ActionMenu {
         id: menu
         anchorItem: logo
         implicitWidth: 240
 
         // Una fila por opción, como en Power.qml: icono, texto, qué hace al pulsarla
         // y, si hace falta, un aviso debajo de lo que va a pasar ("hint")
-        Repeater {
-            model: [
-                { icon: 0xF030C, label: "Atajos de teclado",  run: () => root.keybindsRequested() },     // keyboard
-                { icon: 0xF06B0, label: "Actualizar Reddots",                                             // update
-                  hint: "Baja los cambios del repo y ejecuta install.sh en un terminal. Actualiza todo el sistema y pide la contraseña."
-                        + (Updates.count > 0 ? "\n" + Updates.summary + "." : ""),
-                  run: () => Quickshell.execDetached(["alacritty", "--title", "Actualizar Reddots", "-e",
-                                Quickshell.shellPath("scripts/update-reddots.sh")]) }
-            ]
-
-            delegate: MenuRow {
-                required property var modelData
-                icon: String.fromCodePoint(modelData.icon)
-                text: modelData.label
-                hint: modelData.hint ?? ""
-                onClicked: {
-                    menu.visible = false
-                    modelData.run()
-                }
-            }
-        }
+        actions: [
+            { icon: 0xF030C, label: "Atajos de teclado",  run: () => root.keybindsRequested() },     // keyboard
+            { icon: 0xF06B0, label: "Actualizar Reddots",                                             // update
+              hint: "Baja los cambios del repo y ejecuta install.sh en un terminal. Actualiza todo el sistema y pide la contraseña."
+                    + (Updates.count > 0 ? "\n" + Updates.summary + "." : ""),
+              run: () => Quickshell.execDetached(["alacritty", "--title", "Actualizar Reddots", "-e",
+                            Quickshell.shellPath("scripts/update-reddots.sh")]) }
+        ]
     }
 }

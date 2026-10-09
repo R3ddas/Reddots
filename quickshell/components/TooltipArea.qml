@@ -29,7 +29,6 @@ MouseArea {
         BarTooltip {
             anchorItem: root.target
             text: root.popup && root.popup.visible ? "" : root.tooltip
-            hovered: true
         }
     }
 }

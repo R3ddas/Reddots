@@ -21,31 +21,19 @@ ColumnLayout {
         popup: menu
     }
 
-    BarPopup {
+    ActionMenu {
         id: menu
         anchorItem: iconText                // A la altura del icono; como está al final de la barra, en la práctica queda pegado abajo
         implicitWidth: 170
 
         // Una fila por opción: icono, texto y qué hace al pulsarla
-        Repeater {
-            model: [
-                { icon: 0xF0425, label: "Apagar",         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
-                { icon: 0xF0709, label: "Reiniciar",      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
-                { icon: 0xF033E, label: "Bloquear",       run: () => ShellIpc.lockRequested() },                            // lock
-                { icon: 0xF0904, label: "Suspender",      run: () => ShellIpc.suspendRequested() },                         // power-sleep: bloquea antes de suspender (Lock.qml)
-                { icon: 0xF0379, label: "Salvapantallas", run: () => root.launchScreensaver() }                            // monitor
-            ]
-
-            delegate: MenuRow {
-                required property var modelData
-                icon: String.fromCodePoint(modelData.icon)
-                text: modelData.label
-                onClicked: {
-                    menu.visible = false
-                    modelData.run()
-                }
-            }
-        }
+        actions: [
+            { icon: 0xF0425, label: "Apagar",         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
+            { icon: 0xF0709, label: "Reiniciar",      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
+            { icon: 0xF033E, label: "Bloquear",       run: () => ShellIpc.lockRequested() },                            // lock
+            { icon: 0xF0904, label: "Suspender",      run: () => ShellIpc.suspendRequested() },                         // power-sleep: bloquea antes de suspender (Lock.qml)
+            { icon: 0xF0379, label: "Salvapantallas", run: () => root.launchScreensaver() }                            // monitor
+        ]
     }
 
     // Cambia aquí el comando si en el futuro quieres otro salvapantallas.

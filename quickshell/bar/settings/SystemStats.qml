@@ -39,6 +39,19 @@ ColumnLayout {
         Text { text: line.value; color: line.valueColor; font.pixelSize: 11; font.bold: true }
     }
 
+    // Una StatLine con su barra debajo (procesador, memoria...). "fraction" es lo lleno de la
+    // barra, de 0 a 1; sin datos todavía (negativo), vacía
+    component StatBar: ColumnLayout {
+        id: statBar
+        property alias label: barLine.label
+        property alias value: barLine.value
+        property real fraction: 0
+        Layout.fillWidth: true
+        spacing: 4                          // Lo mismo que entre las demás filas del popup
+        StatLine { id: barLine }
+        Slider { interactive: false; value: Math.max(0, statBar.fraction) }
+    }
+
     readonly property int notificationCount: NotificationCenter.active.length
     readonly property color iconColor: SystemMonitor.overheating || NotificationCenter.hasCritical ? SystemMonitor.hotColor : Theme.textActive
 
@@ -67,35 +80,33 @@ ColumnLayout {
         anchorItem: iconText
         implicitWidth: 340                              // Más ancho que el resto de menús: las notificaciones necesitan sitio para el texto
 
-        StatLine { label: "Procesador"; value: SystemMonitor.cpu < 0 ? "…" : "" }
-        Slider { interactive: false; value: Math.max(0, SystemMonitor.cpu) }
+        StatBar { label: "Procesador"; value: SystemMonitor.cpu < 0 ? "…" : ""; fraction: SystemMonitor.cpu }
 
-        StatLine {
+        StatBar {
             Layout.topMargin: 4
             label: "Memoria"
             value: SystemMonitor.memTotal ? root.gib(SystemMonitor.memUsed) + " / " + root.gib(SystemMonitor.memTotal) + " GiB" : "…"
+            fraction: SystemMonitor.memTotal ? SystemMonitor.memUsed / SystemMonitor.memTotal : 0
         }
-        Slider { interactive: false; value: SystemMonitor.memTotal ? SystemMonitor.memUsed / SystemMonitor.memTotal : 0 }
 
-        StatLine {
+        StatBar {
             visible: SystemMonitor.swapTotal > 0        // Sin swap no se pinta
             Layout.topMargin: 4
             label: "Swap"
             value: root.gib(SystemMonitor.swapUsed) + " / " + root.gib(SystemMonitor.swapTotal) + " GiB"
+            fraction: SystemMonitor.swapTotal ? SystemMonitor.swapUsed / SystemMonitor.swapTotal : 0
         }
-        Slider { visible: SystemMonitor.swapTotal > 0; interactive: false; value: SystemMonitor.swapTotal ? SystemMonitor.swapUsed / SystemMonitor.swapTotal : 0 }
 
         // La gráfica, como el procesador y la memoria. Sin datos (no es una AMD) no se pinta
-        StatLine { visible: SystemMonitor.gpu >= 0; Layout.topMargin: 4; label: "Gráfica"; value: "" }
-        Slider { visible: SystemMonitor.gpu >= 0; interactive: false; value: Math.max(0, SystemMonitor.gpu) }
+        StatBar { visible: SystemMonitor.gpu >= 0; Layout.topMargin: 4; label: "Gráfica"; fraction: SystemMonitor.gpu }
 
-        StatLine {
+        StatBar {
             visible: SystemMonitor.vramTotal > 0
             Layout.topMargin: 4
             label: "Memoria de vídeo"
             value: root.gib(SystemMonitor.vramUsed) + " / " + root.gib(SystemMonitor.vramTotal) + " GiB"
+            fraction: SystemMonitor.vramTotal ? SystemMonitor.vramUsed / SystemMonitor.vramTotal : 0
         }
-        Slider { visible: SystemMonitor.vramTotal > 0; interactive: false; value: SystemMonitor.vramTotal ? SystemMonitor.vramUsed / SystemMonitor.vramTotal : 0 }
 
         Separator {                                     // Antes de las temperaturas
             visible: SystemMonitor.temps.length > 0
@@ -117,16 +128,11 @@ ColumnLayout {
 
         // Las notificaciones, con su propio desplazamiento: crecen hasta un máximo y a partir
         // de ahí se mueven con la rueda, sin que el uso del sistema se salga de la vista
-        Flickable {
-            Layout.fillWidth: true
-            Layout.preferredHeight: Math.min(notificationList.implicitHeight, 420)
-            contentHeight: notificationList.implicitHeight
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
+        ScrollColumn {
+            maxHeight: 420
 
             NotificationList {
-                id: notificationList
-                width: parent.width
+                Layout.fillWidth: true
                 onActionInvoked: menu.visible = false
             }
         }

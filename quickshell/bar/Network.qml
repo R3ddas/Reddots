@@ -108,11 +108,18 @@ ColumnLayout{
                 Layout.fillWidth: true
                 spacing: 2
 
-                Rectangle {
+                HoverRect {
                     Layout.fillWidth: true
                     implicitHeight: 26
-                    radius: 4
-                    color: netMouse.containsMouse ? Theme.surfaceHover : "transparent"
+                    onClicked: {
+                        if (modelData.connected) {
+                            modelData.disconnect()
+                        } else if (modelData.known || modelData.security === WifiSecurityType.Open) {
+                            NetworkMonitor.connectKnown(modelData)
+                        } else {
+                            NetworkMonitor.expandedNetwork = (NetworkMonitor.expandedNetwork === modelData) ? null : modelData
+                        }
+                    }
 
                     RowLayout {
                         anchors.fill: parent
@@ -133,21 +140,6 @@ ColumnLayout{
                             text: String.fromCodePoint(0xF033E)    // lock (Nerd Font, con el color del tema; antes un emoji 🔒)
                             color: modelData.connected ? Theme.textSelected : Theme.textActive   // Como el nombre de la red
                             font.pixelSize: 11
-                        }
-                    }
-
-                    MouseArea {
-                        id: netMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: {
-                            if (modelData.connected) {
-                                modelData.disconnect()
-                            } else if (modelData.known || modelData.security === WifiSecurityType.Open) {
-                                NetworkMonitor.connectKnown(modelData)
-                            } else {
-                                NetworkMonitor.expandedNetwork = (NetworkMonitor.expandedNetwork === modelData) ? null : modelData
-                            }
                         }
                     }
                 }
