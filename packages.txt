@@ -1,3 +1,5 @@
+# Paquetes que instala install.sh, uno por línea (lo que va tras # es un comentario).
+# Van con paru, así que pueden ser de los repos o de AUR.
 quickshell      # El gestor de widgets, barra, etc
 alacritty       # La terminal (install.sh quita kitty, así que tiene que estar sí o sí)
 
@@ -46,3 +48,9 @@ xdg-user-dirs   # Trae xdg-user-dir, para guardar en la carpeta de imágenes (~/
 texlive-basic       # Lo básico de LaTeX (antes se llamaba texlive-core)
 texlive-latexextra  # Paquetes de LaTeX adicionales
 texlive-binextra    # Programas auxiliares (latexmk, que usa LaTeX Workshop para compilar)
+
+# De AUR
+visual-studio-code-bin  # Visual Studio Code (sus extensiones las instala install.sh)
+claude-desktop          # Claude
+google-chrome           # Chrome
+zen-browser-bin         # Zen

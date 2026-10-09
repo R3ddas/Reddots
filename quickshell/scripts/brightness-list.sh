@@ -16,7 +16,8 @@ done
 # responde por DDC: su brillo va por brightnessctl, arriba. Preguntarle igualmente costaba más
 # que todo lo demás (~0,25 s esperando a que fallase), así que se salta por su conector, que
 # ddcutil da en cada pantalla ("DRM connector: card1-eDP-1"): eDP, o LVDS en hardware antiguo.
-# Es el mismo criterio que usa hypr/scripts/internal-panel.sh para saber cuál es el panel.
+# Es el mismo criterio que usan hypr/hyprland.lua (readInternalPanel) y quickshell/shell.qml
+# para saber cuál es el panel.
 command -v ddcutil >/dev/null || exit 0
 ddcutil detect --brief 2>/dev/null | awk '
     /I2C bus:/       { bus = $3; sub("/dev/i2c-", "", bus); internal = 0 }   # Empieza una pantalla nueva

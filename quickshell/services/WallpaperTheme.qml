@@ -3,12 +3,12 @@ import Quickshell
 import Quickshell.Io                // FileView y JsonAdapter
 import QtQuick
 
-// Tema "Wallpaper": un tema Base16 (16 colores, como todos los de Theme.qml) sacado del
+// Tema "Wallpaper": un tema Base16 (16 colores, como todos los de themes.js) sacado del
 // fondo de pantalla activo. Se crea desde el selector de tema (ThemeSettings.qml) con
 // generate(); al crearlo de nuevo a partir de otro fondo, se sobrescribe: solo hay uno.
 //
 // Se guarda en wallpaperTheme.json, en el directorio de estado de Quickshell (junto a
-// theme.json y wallpaper.json) y no en Theme.qml: Theme.qml es del repo, y reescribirlo
+// theme.json y wallpaper.json) y no en themes.js: themes.js es del repo, y reescribirlo
 // dejaría un cambio local que haría fallar las actualizaciones (git merge --ff-only en
 // scripts/update-reddots.sh) en cuanto una de ellas tocase ese archivo. Theme.qml lo añade
 // a su lista de temas al cargar ("themes"), así que en el selector sale como uno más.
@@ -18,10 +18,10 @@ import QtQuick
 //   - ColorQuantizer reduce la imagen a 16 colores que ocupan, cada uno, más o menos la
 //     misma parte de la imagen. Su luminosidad media dice si el tema es claro u oscuro.
 //   - base00–07 (del fondo al texto): grises con una luminosidad fija (la de los temas
-//     claros u oscuros de Theme.qml), teñidos con el tono medio de la imagen.
+//     claros u oscuros de themes.js), teñidos con el tono medio de la imagen.
 //   - base08–0E (rojo, naranja, amarillo, verde, cian, azul, morado): cada uno en su tono
 //     de siempre, para que en la terminal el verde siga siendo verde (el mismo criterio que
-//     los temas de Caelestia en Theme.qml). Si la imagen tiene un color vivo cerca de ese
+//     los temas de Caelestia en themes.js). Si la imagen tiene un color vivo cerca de ese
 //     tono, la casilla toma su saturación y se acerca algo a su tono. Luminosidad fija,
 //     para que se lean sobre el fondo. base0F (marrón): un naranja oscuro y apagado.
 //   - Acento: la casilla del color más vivo de la imagen. Nunca el rojo (base08), que
@@ -32,7 +32,7 @@ Singleton {
 
     readonly property string themeName: "Wallpaper"
 
-    // El tema guardado, con la forma de los de Theme.qml ({ name, accent, base }), o null si
+    // El tema guardado, con la forma de los de themes.js ({ name, accent, base }), o null si
     // aún no se ha creado. Cambia (y con él Theme.themes) cada vez que se crea de nuevo.
     readonly property var theme: adapter.base.length === 16
         ? { name: themeName, accent: adapter.accent, base: adapter.base }
@@ -98,7 +98,7 @@ Singleton {
 
     // --- El tema a partir de la paleta ----------------------------------------------------
 
-    // Luminosidad (L de OKLCH) de los grises base00–07. Salen de los temas de Theme.qml:
+    // Luminosidad (L de OKLCH) de los grises base00–07. Salen de los temas de themes.js:
     // fondos de 0,2–0,3 en los oscuros y de 0,93–0,97 en los claros, y el texto (base05) con
     // contraste de sobra en los dos.
     readonly property var darkRamp:  [0.22, 0.27, 0.33, 0.48, 0.62, 0.86, 0.91, 0.95]

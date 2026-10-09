@@ -31,9 +31,8 @@ Singleton {
             onStreamFinished: {
                 const lines = text.split("\n").filter(l => l !== "")
                 if (lines[lines.length - 1] !== "ok") return        // No se ha podido consultar: se queda con lo de antes
-                const list = kind => lines.filter(l => l.startsWith(kind + "|")).map(l => l.slice(kind.length + 1))
-                root.repos = list("repos")
-                root.aur = list("aur")
+                root.repos = Utils.parseLines(text, "repos")
+                root.aur = Utils.parseLines(text, "aur")
             }
         }
     }

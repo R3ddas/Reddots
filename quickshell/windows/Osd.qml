@@ -7,7 +7,6 @@
 import Quickshell
 import Quickshell.Io                  // Para el Process de brightnessctl
 import Quickshell.Wayland
-import Quickshell.Services.Pipewire   // Para leer el volumen
 import QtQuick
 import QtQuick.Layouts
 import qs.components
@@ -20,27 +19,14 @@ PanelWindow {
     property string mode: "volume"          // "volume", "brightness" o "mic": qué se está mostrando
     property int brightness: 0              // Porcentaje de brillo, leído de brightnessctl
 
-    readonly property var sink: Pipewire.defaultAudioSink
-    readonly property bool muted: sink ? sink.audio.muted : true
-    readonly property int volume: sink ? Math.round(sink.audio.volume * 100) : 0
-
-    readonly property var source: Pipewire.defaultAudioSource              // El micrófono
-    readonly property bool micMuted: source ? source.audio.muted : true
-    readonly property int micVolume: source ? Math.round(source.audio.volume * 100) : 0
-
-    readonly property int value: mode === "volume" ? (muted ? 0 : volume)
-                               : mode === "mic" ? (micMuted ? 0 : micVolume)
+    // Volumen y micro, de services/Audio.qml (los mismos iconos que el popup de la barra)
+    readonly property int value: mode === "volume" ? (Audio.muted ? 0 : Math.round(Audio.volume * 100))
+                               : mode === "mic" ? (Audio.micMuted ? 0 : Math.round(Audio.micVolume * 100))
                                : brightness
 
-    // Mismos glifos que Volume.qml para el volumen
-    readonly property string icon: {
-        if (mode === "brightness") return String.fromCodePoint(0xF00DF)  // brightness-6
-        if (mode === "mic") return String.fromCodePoint(micMuted ? 0xF036D : 0xF036C)   // microphone-off / microphone
-        if (muted || volume === 0) return String.fromCodePoint(0xF075F)  // volume-mute
-        if (volume >= 66) return String.fromCodePoint(0xF057E)            // volume-high
-        if (volume >= 33) return String.fromCodePoint(0xF0580)            // volume-medium
-        return String.fromCodePoint(0xF057F)                              // volume-low
-    }
+    readonly property string icon: mode === "brightness" ? String.fromCodePoint(0xF00DF)   // brightness-6
+                                 : mode === "mic" ? Audio.micIcon
+                                 : Audio.volumeIcon
 
     anchors.bottom: true
     margins.bottom: 10
@@ -84,9 +70,9 @@ PanelWindow {
             Slider {                            // Barra de nivel con el porcentaje (la misma que en la barra, sin poder moverla)
                 interactive: false
                 barHeight: 8
-                maxValue: root.mode === "volume" ? VolumeBoost.maxVolume : 1   // Con el aumento activado la barra llega a 150 %
+                maxValue: root.mode === "volume" ? Audio.maxVolume : 1   // Con el aumento activado la barra llega a 150 %
                 value: root.value / 100
-                dimmed: (root.mode === "volume" && root.muted) || (root.mode === "mic" && root.micMuted)
+                dimmed: (root.mode === "volume" && Audio.muted) || (root.mode === "mic" && Audio.micMuted)
             }
         }
     }
@@ -114,12 +100,8 @@ PanelWindow {
                 brightnessProc.running = false
                 brightnessProc.running = true
             } else {
-                root.show(mode)             // Volumen y micro: el valor se lee en vivo de Pipewire, aunque llegue un poco después
+                root.show(mode)             // Volumen y micro: el valor se lee en vivo de Audio.qml, aunque llegue un poco después
             }
         }
-    }
-
-    PwObjectTracker {                       // Mantiene enganchados la salida y el micro para que volumen y silencio estén al día
-        objects: [root.sink, root.source].filter(n => n)
     }
 }

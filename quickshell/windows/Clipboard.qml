@@ -47,9 +47,9 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
     }
 
     property var filteredEntries: {
-        const query = Search.normalize(searchInput.text.trim())
+        const query = Utils.normalize(searchInput.text.trim())
         if (query === "") return entries
-        return entries.filter(e => Search.normalize(e.image ? "imagen " + e.info : e.text).includes(query))   // Las imágenes se encuentran escribiendo "imagen"
+        return entries.filter(e => Utils.normalize(e.image ? "imagen " + e.info : e.text).includes(query))   // Las imágenes se encuentran escribiendo "imagen"
     }
 
     function copy(entry) {

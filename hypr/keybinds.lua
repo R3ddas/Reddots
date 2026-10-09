@@ -34,7 +34,7 @@ hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true, descr
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true, description = "Ventanas: Cambiar el tamaño de la ventana (arrastrando)" })
 
 -- Teclas multimedia del portátil: volumen y brillo de la pantalla
--- Subir/bajar volumen va por Quickshell (VolumeBoost.qml) para respetar el tope de 100 % / 150 % y ya muestra el indicador.
+-- Subir/bajar volumen va por Quickshell (services/Audio.qml) para respetar el tope de 100 % / 150 % y ya muestra el indicador.
 -- El "qs ipc call osd ..." de detrás muestra el indicador (quickshell/windows/Osd.qml) con el nuevo valor
 local osdVolume     = " && qs ipc call osd volume"
 local osdBrightness = " && qs ipc call osd brightness"

@@ -1,0 +1,174 @@
+.pragma library
+// Los temas de color de Reddots, en formato Base16 (https://github.com/tinted-theming/home):
+// cada tema son 16 colores en un orden fijo, así que un tema nuevo se añade copiando los 16
+// de su esquema (hay cientos en https://github.com/tinted-theming/schemes, carpeta base16):
+//   base00–base07: del fondo al texto. 00 fondo, 01 fondo más claro (desplegables),
+//                  02 selección y bordes, 03 comentarios, 04 texto apagado, 05 texto,
+//                  06–07 texto más claro (en los temas claros, más oscuro)
+//   base08–base0F: rojo, naranja, amarillo, verde, cian, azul, morado y marrón
+// Cada tema dice además qué casilla hace de color de acento ("accent"): casi siempre el
+// azul (base0D), como hacen Omarchy o Stylix, para que el rojo quede para errores y avisos
+// (con un acento rojo todo parecía una alerta). Excepciones: Original (el tema propio, con
+// su naranja), Rosé Pine (Foam, base0C, como en Omarchy), Caelestia y Zenburn (su color
+// principal es un cian, base0C) y Dark Green (el verde es su razón de ser, base0B).
+//
+// Solo datos: qué se hace con ellos (los colores de la barra, de Alacritty y de los bordes
+// de Hyprland) está en Theme.qml, que es quien carga este archivo. Va aparte para que
+// añadir o quitar un tema no toque el código.
+//
+// De dónde sale cada tema (lo dice el comentario de su línea):
+//   - "Base16: <nombre>": el esquema de tinted-theming tal cual.
+//   - "reordenados": GitHub y Tokyo Night tienen en su esquema Base16 los acentos fuera de
+//     sitio (el rojo en la casilla del morado...): son sus colores oficiales, cada uno en su casilla.
+//     El esquema de GitHub no tiene cian: su casilla lleva el cian de terminal de Primer, el
+//     sistema de diseño de GitHub (ansi.cyan: #1b7c83 en el claro, #39c5cf en el oscuro).
+//   - Everblush, Nightfox y Sonokai no tienen esquema Base16: salen de sus paletas oficiales.
+//   - Old World, Shado Theme, Dark Green y Caelestia son esquemas Material de Caelestia
+//     (https://github.com/caelestia-dots/cli/tree/main/src/caelestia/data/schemes), en los que
+//     todos los colores son tonos del principal: los grises, el principal y el rojo (su color
+//     de error) son suyos; los demás acentos se han generado a juego (misma luminosidad y
+//     saturación, cada uno con su tono), para que en la terminal el verde sea verde.
+//   - Original: hecho a mano, con el mismo criterio para los acentos que le faltaban.
+//   - Wallpaper: no está aquí. Lo saca del fondo de pantalla services/WallpaperTheme.qml
+//     (se crea desde el selector), se guarda fuera del repo y Theme.qml lo añade al final de
+//     su lista ("themes").
+//
+// Cada tema: nombre, casilla del acento y sus 16 colores (base00–07 en la primera línea,
+// base08–0F en la segunda). El orden de aquí es el del selector de la barra.
+var presets = [
+    { name: "Original", accent: "base09",     // hecho a mano: grises y rojo/naranja/verde/azul propios, el resto a juego
+      base: ["#454138", "#454138", "#5a4d3e", "#837564", "#a8957c", "#f5e2c5", "#f5e2c5", "#f5e2c5",
+             "#c1502e", "#db911a", "#9e8934", "#7c8b53", "#079e9e", "#6f8fa3", "#a774b2", "#964f2c"] },
+    { name: "Gruvbox Claro", accent: "base0D",     // Base16: gruvbox-light
+      base: ["#fbf1c7", "#ebdbb2", "#d5c4a1", "#bdae93", "#7c6f64", "#3c3836", "#282828", "#1d2021",
+             "#cc241d", "#d65d0e", "#d79921", "#98971a", "#689d6a", "#458588", "#b16286", "#9d0006"] },
+    { name: "Gruvbox Oscuro", accent: "base0D",     // Base16: gruvbox-dark
+      base: ["#282828", "#3c3836", "#504945", "#665c54", "#928374", "#ebdbb2", "#fbf1c7", "#f9f5d7",
+             "#cc241d", "#d65d0e", "#d79921", "#98971a", "#689d6a", "#458588", "#b16286", "#9d0006"] },
+    { name: "Everforest Claro", accent: "base0D",     // Base16: everforest-light-medium
+      base: ["#fdf6e3", "#f4f0d9", "#e6e2cc", "#939f91", "#829181", "#5c6a72", "#475258", "#2d353b",
+             "#f85552", "#f57d26", "#dfa000", "#8da101", "#35a77c", "#3a94c5", "#df69ba", "#829181"] },
+    { name: "Everforest Oscuro", accent: "base0D",     // Base16: everforest
+      base: ["#2d353b", "#343f44", "#475258", "#859289", "#9da9a0", "#d3c6aa", "#e6e2cc", "#fdf6e3",
+             "#e67e80", "#e69875", "#dbbc7f", "#a7c080", "#83c092", "#7fbbb3", "#d699b6", "#9da9a0"] },
+    { name: "Rosé Pine Claro", accent: "base0C",     // Base16: rose-pine-dawn
+      base: ["#faf4ed", "#fffaf3", "#f2e9de", "#9893a5", "#797593", "#575279", "#575279", "#cecacd",
+             "#b4637a", "#ea9d34", "#d7827e", "#286983", "#56949f", "#907aa9", "#ea9d34", "#cecacd"] },
+    { name: "Rosé Pine Oscuro", accent: "base0C",     // Base16: rose-pine
+      base: ["#191724", "#1f1d2e", "#26233a", "#6e6a86", "#908caa", "#e0def4", "#e0def4", "#524f67",
+             "#eb6f92", "#f6c177", "#ebbcba", "#31748f", "#9ccfd8", "#c4a7e7", "#f6c177", "#524f67"] },
+    { name: "Catppuccin Claro", accent: "base0D",     // Base16: catppuccin-latte
+      base: ["#eff1f5", "#e6e9ef", "#ccd0da", "#bcc0cc", "#acb0be", "#4c4f69", "#dc8a78", "#7287fd",
+             "#d20f39", "#fe640b", "#df8e1d", "#40a02b", "#179299", "#1e66f5", "#8839ef", "#dd7878"] },
+    { name: "Catppuccin Oscuro", accent: "base0D",     // Base16: catppuccin-mocha
+      base: ["#1e1e2e", "#181825", "#313244", "#45475a", "#585b70", "#cdd6f4", "#f5e0dc", "#b4befe",
+             "#f38ba8", "#fab387", "#f9e2af", "#a6e3a1", "#94e2d5", "#89b4fa", "#cba6f7", "#f2cdcd"] },
+    { name: "Nord Oscuro", accent: "base0D",     // Base16: nord
+      base: ["#2e3440", "#3b4252", "#434c5e", "#4c566a", "#d8dee9", "#e5e9f0", "#eceff4", "#8fbcbb",
+             "#bf616a", "#d08770", "#ebcb8b", "#a3be8c", "#88c0d0", "#81a1c1", "#b48ead", "#5e81ac"] },
+    { name: "Dracula Oscuro", accent: "base0D",     // Base16: dracula
+      base: ["#282a36", "#21222c", "#44475a", "#6272a4", "#9ea8c7", "#f8f8f2", "#f8f8f2", "#ffffff",
+             "#ff5555", "#ffb86c", "#f1fa8c", "#50fa7b", "#8be9fd", "#bd93f9", "#ff79c6", "#993333"] },
+    { name: "Solarized Claro", accent: "base0D",     // Base16: solarized-light
+      base: ["#fdf6e3", "#eee8d5", "#93a1a1", "#839496", "#657b83", "#586e75", "#073642", "#002b36",
+             "#dc322f", "#cb4b16", "#b58900", "#859900", "#2aa198", "#268bd2", "#6c71c4", "#d33682"] },
+    { name: "Solarized Oscuro", accent: "base0D",     // Base16: solarized-dark
+      base: ["#002b36", "#073642", "#586e75", "#657b83", "#839496", "#93a1a1", "#eee8d5", "#fdf6e3",
+             "#dc322f", "#cb4b16", "#b58900", "#859900", "#2aa198", "#268bd2", "#6c71c4", "#d33682"] },
+    { name: "Tokyo Night Oscuro", accent: "base0D",     // tokyo-night-dark (acentos reordenados)
+      base: ["#1a1b26", "#16161e", "#2f3549", "#444b6a", "#787c99", "#a9b1d6", "#cbccd1", "#d5d6db",
+             "#f7768e", "#ff9e64", "#e0af68", "#9ece6a", "#7dcfff", "#7aa2f7", "#bb9af7", "#d18616"] },
+    { name: "One Dark Oscuro", accent: "base0D",     // Base16: onedark
+      base: ["#282c34", "#353b45", "#3e4451", "#545862", "#565c64", "#abb2bf", "#b6bdca", "#c8ccd4",
+             "#e06c75", "#d19a66", "#e5c07b", "#98c379", "#56b6c2", "#61afef", "#c678dd", "#be5046"] },
+    { name: "Everblush Oscuro", accent: "base0D",     // everblush (Caelestia)
+      base: ["#141b1e", "#232a2d", "#3a4145", "#8a8f94", "#b3b9be", "#e8e8e8", "#e8e8e8", "#e8e8e8",
+             "#e57474", "#e59a84", "#e5c76b", "#8ccfb0", "#6cbfbf", "#67b0e8", "#c47fd5", "#e5a5c5"] },
+    { name: "Old World Oscuro", accent: "base0D",     // oldworld (Caelestia; acentos a juego)
+      base: ["#121317", "#1e2023", "#43474f", "#8e909a", "#c4c6d0", "#e3e2e7", "#e3e2e7", "#ffffff",
+             "#ffb4ab", "#f5ba92", "#dac886", "#a5d8a6", "#80dada", "#aac7ff", "#e2b6ec", "#c18367"] },
+    { name: "Shado Theme Oscuro", accent: "base0D",     // shadotheme (Caelestia; acentos a juego)
+      base: ["#131317", "#1f1f23", "#46464f", "#918f9a", "#c7c5d1", "#e5e1e7", "#e5e1e7", "#ffffff",
+             "#ffb4ab", "#f6ba92", "#dac986", "#a5d8a6", "#7fdbda", "#bfc1ff", "#e3b7ed", "#c28367"] },
+    { name: "Dark Green Oscuro", accent: "base0B",     // darkgreen (Caelestia; acentos a juego)
+      base: ["#23262d", "#23262c", "#343434", "#979797", "#c9c9c9", "#f5f5f6", "#f5f5f6", "#ffffff",
+             "#c66e73", "#d9792b", "#af9314", "#24bd5c", "#02abab", "#5197ee", "#bd75cd", "#b04a0d"] },
+    { name: "Caelestia Claro", accent: "base0C",     // caelestia (Caelestia; acentos a juego)
+      base: ["#f6faf9", "#e7f0ee", "#a9b4b3", "#727d7c", "#566160", "#2a3433", "#2a3433", "#0a0f0f",
+             "#a83836", "#8f4d15", "#725f03", "#327036", "#1c6a66", "#31619e", "#7c4a87", "#732d02"] },
+    { name: "Caelestia Oscuro", accent: "base0C",     // caelestia (Caelestia; acentos a juego)
+      base: ["#0a0f0f", "#131b1a", "#3f4a49", "#6d7876", "#a2adac", "#dce8e6", "#dce8e6", "#f6faf9",
+             "#fa746f", "#eaa16e", "#cab35c", "#86c788", "#9bd0cc", "#83b7f9", "#d39ddf", "#bb6e4a"] },
+    { name: "Monokai Oscuro", accent: "base0D",     // Base16: monokai
+      base: ["#272822", "#383830", "#49483e", "#75715e", "#a59f85", "#f8f8f2", "#f5f4f1", "#f9f8f5",
+             "#f92672", "#fd971f", "#f4bf75", "#a6e22e", "#a1efe4", "#66d9ef", "#ae81ff", "#cc6633"] },
+    { name: "Kanagawa Oscuro", accent: "base0D",     // Base16: kanagawa
+      base: ["#1f1f28", "#16161d", "#223249", "#54546d", "#727169", "#dcd7ba", "#c8c093", "#717c7c",
+             "#c34043", "#ffa066", "#c0a36e", "#76946a", "#6a9589", "#7e9cd8", "#957fb8", "#d27e99"] },
+    { name: "Ayu Claro", accent: "base0D",     // Base16: ayu-light
+      base: ["#f8f9fa", "#edeff1", "#d2d4d8", "#a0a6ac", "#8a9199", "#5c6166", "#4e5257", "#404447",
+             "#f07171", "#fa8d3e", "#f2ae49", "#6cbf49", "#4cbf99", "#399ee6", "#a37acc", "#e6ba7e"] },
+    { name: "Ayu Mirage", accent: "base0D",     // Base16: ayu-mirage
+      base: ["#1f2430", "#242936", "#323844", "#4a5059", "#707a8c", "#cccac2", "#d9d7ce", "#f3f4f5",
+             "#f28779", "#ffad66", "#ffd173", "#d5ff80", "#95e6cb", "#73d0ff", "#d4bfff", "#f27983"] },
+    { name: "Ayu Oscuro", accent: "base0D",     // Base16: ayu-dark
+      base: ["#0b0e14", "#131721", "#202229", "#3e4b59", "#bfbdb6", "#e6e1cf", "#ece8db", "#f2f0e7",
+             "#f07178", "#ff8f40", "#ffb454", "#aad94c", "#95e6cb", "#59c2ff", "#d2a6ff", "#e6b450"] },
+    { name: "Nightfox Claro", accent: "base0D",     // dayfox (nightfox.nvim)
+      base: ["#f6f2ee", "#e4dcd4", "#dbd1dd", "#837a72", "#643f61", "#3d2b5a", "#302b5d", "#352c24",
+             "#a5222f", "#955f61", "#ac5402", "#396847", "#287980", "#2848a9", "#6e33ce", "#a440b5"] },
+    { name: "Nightfox Oscuro", accent: "base0D",     // nightfox (nightfox.nvim)
+      base: ["#192330", "#212e3f", "#29394f", "#738091", "#aeafb0", "#cdcecf", "#d6d6d7", "#dfdfe0",
+             "#c94f6d", "#f4a261", "#dbc074", "#81b29a", "#63cdcf", "#719cd6", "#9d79d6", "#d67ad2"] },
+    { name: "Oxocarbon Claro", accent: "base0D",     // Base16: oxocarbon-light
+      base: ["#f2f4f8", "#dde1e6", "#bec6cf", "#a1acba", "#68788d", "#525f70", "#3d4652", "#272d35",
+             "#ff7eb6", "#ee5396", "#ff6f00", "#42be65", "#673ab7", "#0f62fe", "#be95ff", "#803800"] },
+    { name: "Oxocarbon Oscuro", accent: "base0D",     // Base16: oxocarbon-dark
+      base: ["#161616", "#262626", "#393939", "#525252", "#dde1e6", "#f2f4f8", "#ffffff", "#08bdba",
+             "#ee5396", "#ff7eb6", "#ff6f00", "#42be65", "#3ddbd9", "#33b1ff", "#be95ff", "#82cfff"] },
+    { name: "GitHub Claro", accent: "base0D",     // github (acentos reordenados; cian de terminal de Primer)
+      base: ["#ffffff", "#f6f8fa", "#afb8c1", "#8c959f", "#6e7781", "#424a53", "#32383f", "#1f2328",
+             "#cf222e", "#953800", "#bf8700", "#116329", "#1b7c83", "#0550ae", "#8250df", "#82071e"] },
+    { name: "GitHub Oscuro", accent: "base0D",     // github-dark (acentos reordenados; cian de terminal de Primer)
+      base: ["#0d1117", "#161b22", "#484f58", "#6e7681", "#8b949e", "#c9d1d9", "#f0f6fc", "#ffffff",
+             "#ff7b72", "#ffa657", "#bb8009", "#7ee787", "#39c5cf", "#79c0ff", "#d2a8ff", "#ffa198"] },
+    { name: "Zenburn Oscuro", accent: "base0C",     // Base16: zenburn
+      base: ["#383838", "#404040", "#606060", "#6f6f6f", "#808080", "#dcdccc", "#c0c0c0", "#ffffff",
+             "#dca3a3", "#dfaf8f", "#e0cf9f", "#5f7f5f", "#93e0e3", "#7cb8bb", "#dc8cc3", "#000000"] },
+    { name: "Sonokai Oscuro", accent: "base0D",     // sonokai (paleta oficial)
+      base: ["#2c2e34", "#33353f", "#414550", "#595f6f", "#7f8490", "#e2e2e3", "#e2e2e3", "#e2e2e3",
+             "#fc5d7c", "#f39660", "#e7c664", "#9ed072", "#76cce0", "#85d3f2", "#b39df3", "#ff6077"] },
+    { name: "Horizon Oscuro", accent: "base0D",     // Base16: horizon-terminal-dark
+      base: ["#1c1e26", "#232530", "#2e303e", "#6f6f70", "#9da0a2", "#cbced0", "#dcdfe4", "#e3e6ee",
+             "#e95678", "#fab795", "#fac29a", "#29d398", "#59e1e3", "#26bbd9", "#ee64ac", "#f09383"] },
+    { name: "Flexoki Claro", accent: "base0D",     // Base16: flexoki-light
+      base: ["#fffcf0", "#f2f0e5", "#e6e4d9", "#cecdc3", "#9f9d96", "#403e3c", "#282726", "#100f0f",
+             "#af3029", "#bc5215", "#ad8301", "#66800b", "#24837b", "#205ea6", "#5e409d", "#a02f6f"] },
+    { name: "Flexoki Oscuro", accent: "base0D",     // Base16: flexoki-dark
+      base: ["#100f0f", "#1c1b1a", "#282726", "#575653", "#878580", "#cecdc3", "#e6e4d9", "#fffcf0",
+             "#d14d41", "#da702c", "#d0a215", "#879a39", "#3aa99f", "#4385be", "#8b7ec8", "#ce5d97"] },
+    { name: "Pastelón de Amarillos Claro", accent: "base0D",     // Base16: pastelon-de-amarillos
+      base: ["#fff4d6", "#f2d083", "#d69b45", "#80616b", "#684653", "#432c3b", "#2f1c2e", "#1c0f20",
+             "#bd3548", "#ad570f", "#946400", "#167451", "#007270", "#1e5da8", "#8d3f89", "#7c3528"] },
+    { name: "Selenized Oscuro", accent: "base0D",     // Base16: selenized-dark
+      base: ["#103c48", "#184956", "#2d5b69", "#72898f", "#72898f", "#adbcbc", "#cad8d9", "#cad8d9",
+             "#fa5750", "#ed8649", "#dbb32d", "#75b938", "#41c7b9", "#4695f7", "#af88eb", "#f275be"] },
+    { name: "Paraíso Oscuro", accent: "base0D",     // Base16: paraiso
+      base: ["#2f1e2e", "#41323f", "#4f424c", "#776e71", "#8d8687", "#a39e9b", "#b9b6b0", "#e7e9db",
+             "#ef6155", "#f99b15", "#fec418", "#48b685", "#5bc4bf", "#06b6ef", "#815ba4", "#e96ba8"] },
+    { name: "Brasa Oscuro", accent: "base0D",     // Base16: brasa
+      base: ["#1a0f0a", "#2b1c14", "#45261a", "#7a6150", "#b59d88", "#f0d8c0", "#f6e1cc", "#fbead8",
+             "#f2685a", "#ff7a4d", "#f0b23a", "#b8c24a", "#6bc8b8", "#9aa6e0", "#e68aa2", "#5a3a28"] },
+    { name: "Apprentice Oscuro", accent: "base0D",     // Base16: apprentice
+      base: ["#262626", "#303030", "#3a3a3a", "#444444", "#6c6c6c", "#bcbcbc", "#dfdfdf", "#ffffff",
+             "#af5f5f", "#ff8700", "#87875f", "#5f875f", "#5f8787", "#5f87af", "#5f5f87", "#af5f5f"] },
+    { name: "Deep Oceanic Next Oscuro", accent: "base0D",     // Base16: deep-oceanic-next
+      base: ["#001c1f", "#002931", "#003640", "#004852", "#0093a3", "#d4e1e8", "#e0e9ef", "#f2f7f9",
+             "#d3464d", "#e37552", "#f3b863", "#63b784", "#4fb7ae", "#568ccf", "#8b66d6", "#d0658e"] },
+    { name: "Outrun Oscuro", accent: "base0D",     // Base16: outrun-dark
+      base: ["#00002a", "#20204a", "#30305a", "#50507a", "#b0b0da", "#d0d0fa", "#e0e0ff", "#f5f5ff",
+             "#ff4242", "#fc8d28", "#f3e877", "#59f176", "#0ef0f0", "#66b0ff", "#f10596", "#f003ef"] },
+    { name: "Evenok Oscuro", accent: "base0D",     // Base16: evenok-dark
+      base: ["#000000", "#202020", "#303030", "#505050", "#b0b0b0", "#d0d0d0", "#e0e0e0", "#ffffff",
+             "#f5708a", "#ee8122", "#b8a300", "#54bc5c", "#00bab3", "#00aff2", "#9095ff", "#d47ada"] }
+];

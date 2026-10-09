@@ -8,7 +8,6 @@
 import Quickshell
 import QtQuick
 import Quickshell.Services.Polkit   // Agente de polkit: pide la contraseña cuando una app necesita permisos (windows/PolkitDialog.qml)
-import Quickshell.Io                // Para lanzar hypr/scripts/internal-panel.sh
 // Las piezas de la interfaz, por carpetas: bar/ (la barra), windows/ (ventanas y capas),
 // services/ (singletons con el estado: tema, medidas...) y components/ (piezas comunes)
 import qs.bar
@@ -18,32 +17,17 @@ import qs.windows
 ShellRoot {
     id: root
 
-    // Nombre del panel interno del portátil ("eDP-1"...), "" en un sobremesa. Lo averigua
-    // hypr/scripts/internal-panel.sh, el mismo que usa hypr/hyprland.lua.
-    property string panelName: ""
-    property bool panelKnown: false     // Ya ha respondido el script (hasta entonces no se crea la barra, ver laptopScreen)
-
-    Process {
-        running: true
-        command: ["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/internal-panel.sh"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.panelName = text.trim()
-                root.panelKnown = true
-            }
-        }
-    }
-
     // Pantalla del portátil si está presente (con la tapa abierta), si no la primera disponible.
     // Así la barra siempre vive en el portátil en vez de en el monitor que Quickshell elija por defecto.
-    // null hasta saber cuál es el panel: si no, en el portátil con un monitor externo la barra
-    // podría salir un instante en el externo y luego saltar al portátil.
+    // El panel se reconoce por el nombre de su conector, que es el mismo en Quickshell y en
+    // Hyprland: "eDP-1", o "LVDS-1" en hardware más antiguo (el mismo criterio que
+    // readInternalPanel() en hypr/hyprland.lua). Con la tapa cerrada el panel está apagado y
+    // no sale en la lista, así que la barra pasa al monitor externo.
     readonly property var laptopScreen: {
-        if (!panelKnown) return null
         for (let i = 0; i < Quickshell.screens.length; i++) {
-            if (Quickshell.screens[i].name === panelName) return Quickshell.screens[i]
+            if (/^(eDP|LVDS)-/.test(Quickshell.screens[i].name)) return Quickshell.screens[i]
         }
-        return Quickshell.screens[0]
+        return Quickshell.screens.length > 0 ? Quickshell.screens[0] : null
     }
 
     // Agente de polkit (sustituye a hyprpolkitagent). Aquí y no dentro del Variants de

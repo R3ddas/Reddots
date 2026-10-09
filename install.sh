@@ -9,23 +9,20 @@ listFile() { sed 's/#.*//' "$1" | awk 'NF { print $1 }'; }
 
 echo "Instalando"
 
-sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes (aquí y no en packages.txt: hace falta ya para el "paru -Syu" de abajo)
+sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes (aquí y no en packages.txt: hace falta ya para instalarlo y para el "paru -Syu" de abajo)
 
 echo "Actualizando el sistema"
 
 paru -Syu --noconfirm   # Actualiza el sistema por completo antes de instalar (repos oficiales + AUR)
 
 
-echo "Instalando paquetes (via pacman)"
+echo "Instalando paquetes"
 
-listFile packages.txt | xargs -r sudo pacman -S --needed  --noconfirm
-
-echo "Instalando paquetes (via paru)"
-
-paru -S --needed --noconfirm visual-studio-code-bin   # Visual code
-paru -S --needed --noconfirm claude-desktop           # Claude
-paru -S --needed --noconfirm google-chrome            # Chrome
-paru -S --needed --noconfirm zen-browser-bin          # Zen
+# Con paru y no con pacman: así packages.txt puede tener tanto paquetes de los repos como de
+# AUR (los de los repos, paru se los pasa a pacman). En una sola llamada y no con xargs, para
+# que paru siga teniendo el terminal (sudo pide ahí la contraseña al instalar los de AUR)
+mapfile -t packages < <(listFile packages.txt)
+paru -S --needed --noconfirm "${packages[@]}"
 
 echo "Paquetes opcionales"
 

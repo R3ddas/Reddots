@@ -11,14 +11,19 @@
 -- Nada de nombres de máquina ni de conector: valen igual en el portátil y en el sobremesa.
 
 -- Nombre del panel interno del portátil ("eDP-1", o "LVDS-1" en hardware más antiguo),
--- o nil si no hay (PC de sobremesa). Lo averigua scripts/internal-panel.sh, el mismo
--- que usa la barra (quickshell/shell.qml). No vale hl.get_monitors(): al cargar la
--- config todavía está vacío, porque Hyprland crea los monitores después de leer las
--- reglas. Se pregunta una sola vez por carga: el portátil no cambia de panel.
+-- o nil si no hay (PC de sobremesa). Se saca de los conectores de /sys/class/drm
+-- ("card1-eDP-1"...), que existen desde el arranque y aunque el panel esté apagado. No vale
+-- hl.get_monitors(): al cargar la config todavía está vacío, porque Hyprland crea los
+-- monitores después de leer las reglas, y con la tapa cerrada el panel no sale. La barra
+-- (quickshell/shell.qml) lo reconoce por el mismo nombre. Se pregunta una sola vez por
+-- carga: el portátil no cambia de panel.
 local function readInternalPanel()
-    local out = io.popen("bash " .. os.getenv("HOME") .. "/.config/hypr/scripts/internal-panel.sh")
+    local out = io.popen("ls /sys/class/drm")      -- Lua no sabe listar una carpeta por sí solo
     if not out then return nil end
-    local name = out:read("l")      -- nil si no ha escrito nada
+    local name
+    for entry in out:lines() do                     -- Se leen todas (y no se para en la primera) para cerrar bien el ls
+        name = name or entry:match("^card%d+%-(eDP%-.+)$") or entry:match("^card%d+%-(LVDS%-.+)$")
+    end
     out:close()
     return name
 end

@@ -1,10 +1,10 @@
 // Widget que aparece al pulsar Super solo (sin combinar con otra tecla), anclado abajo-derecha
 // Lista las aplicaciones instaladas (con icono) y las lanza al hacer clic
 // Al abrirse ya se puede escribir para filtrar: flechas para moverse, Intro para lanzar, Esc para cerrar
-// La rueda junto al buscador pasa a elegir qué apps se ocultan (ver "editing") o se desinstalan (ver "uninstall")
+// La rueda junto al buscador pasa a elegir qué apps se ocultan (ver "editing") o se desinstalan (UninstallPanel.qml)
 
 import Quickshell
-import Quickshell.Io        // Para el JsonAdapter (cuántas veces se ha abierto cada app) y los Process de desinstalar
+import Quickshell.Io        // Para el JsonAdapter (cuántas veces se ha abierto cada app y cuáles se ocultan)
 import Quickshell.Wayland
 import Quickshell.Widgets  // Para el IconImage
 import QtQuick
@@ -26,7 +26,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         if (visible) {
             searchInput.text = ""                       // Cada vez que se abre empieza sin filtro
             editing = false                             // ...y lanzando apps, no ocultándolas
-            cancelUninstall()                           // ...y sin el aviso de desinstalar de la vez anterior (salvo si sigue desinstalando)
+            uninstallPanel.cancel()                     // ...y sin el aviso de desinstalar de la vez anterior (salvo si sigue desinstalando)
             list.currentIndex = 0
             searchInput.input.forceActiveFocus()
         }
@@ -58,102 +58,17 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         else launch(entry)
     }
 
-    // --- Desinstalar ---
-    // Mientras se eligen las ocultas, la papelera de cada fila (o Shift + Supr) abre abajo un
-    // aviso con lo que pasaría al quitar su paquete, y solo se desinstala al confirmarlo.
-    // Antes se mira con scripts/uninstall-check.sh (no cambia nada) si:
-    //   - otro paquete la necesita: pacman no deja quitarla, así que se ofrece ocultarla
-    //   - la instala el repo (packages.txt...): se puede quitar, pero install.sh la volvería a
-    //     poner, así que se avisa para quitarla también de ahí
-    //   - el paquete trae más apps, que también se irían, o dependencias que se quedan sin uso
-    // Se desinstala con pkexec (la contraseña la pide PolkitDialog.qml) y "pacman -Rns".
-    //   null, o { entry, state: "checking" | "ready" | "running",
-    //             pkg, remove: [], apps: [], repo: [], blocked: [], error }
-    // Objeto nuevo en cada cambio, no uninstall.state = ...: si se cambia por dentro, QML no se entera
-    property var uninstall: null
-    readonly property bool canUninstall: uninstall?.state === "ready" && !uninstall.error && uninstall.blocked.length === 0
-
-    function askUninstall(entry) {
-        if (!entry || uninstall?.state === "running") return   // Mientras desinstala una, no se pide otra
-        uninstall = { entry: entry, state: "checking" }
-        checkProc.exec([Quickshell.shellPath("scripts/uninstall-check.sh"), entry.id])     // exec: si estaba mirando otra, la corta
-    }
-
-    function confirmUninstall() {
-        if (!canUninstall) return
-        uninstall = Object.assign({}, uninstall, { state: "running" })
-        // La salida de pacman y luego su código, para saber cómo ha ido sin depender de en qué
-        // orden llegan el final de la salida y el exited() del proceso
-        removeProc.exec(["sh", "-c", 'pkexec pacman -Rns --noconfirm "$1" 2>&1; echo "exit|$?"', "sh", uninstall.pkg])
-    }
-
-    function cancelUninstall() {
-        if (uninstall?.state !== "running") uninstall = null    // Ya desinstalando no se corta: el aviso se queda hasta que acabe
-    }
-
-    // Lo que dice uninstall-check.sh (una línea "tipo|valor" por dato): los valores de un tipo
-    function parseLines(text, kind) {
-        return text.split("\n").filter(l => l.startsWith(kind + "|")).map(l => l.slice(kind.length + 1))
-    }
-
-    Process {
-        id: checkProc
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const u = root.uninstall
-                // Solo si sigue esperando justo esta: entretanto se ha podido cancelar o pedir otra
-                if (u?.state !== "checking" || root.parseLines(text, "id")[0] !== u.entry.id) return
-                root.uninstall = Object.assign({}, u, {
-                    state: "ready",
-                    pkg: root.parseLines(text, "pkg")[0] ?? "",
-                    remove: root.parseLines(text, "remove"),
-                    apps: root.parseLines(text, "app"),
-                    repo: root.parseLines(text, "repo"),
-                    blocked: root.parseLines(text, "blocked"),
-                    error: root.parseLines(text, "error")[0] ?? ""
-                })
-            }
-        }
-    }
-
-    Process {
-        id: removeProc
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const u = root.uninstall
-                if (u?.state !== "running") return
-                const code = parseInt(root.parseLines(text, "exit")[0] ?? "-1")
-                if (code === 0) {
-                    // Ya no hace falta tenerla en la lista de ocultas (ni las otras apps del paquete):
-                    // si algún día se vuelve a instalar, que salga
-                    const gone = [u.entry.id, ...u.apps]
-                    usage.hidden = usage.hidden.filter(id => !gone.includes(id))
-                    NotificationCenter.notify("Launcher", "edit-delete", "Desinstalada " + u.entry.name,
-                                              "Se ha quitado el paquete " + u.pkg + ".")
-                    root.uninstall = null           // Su fila se va sola: DesktopEntries ve que ya no está el .desktop
-                } else if (code === 126 || code === 127) {
-                    // pkexec: se ha cancelado la contraseña o no era la buena. Se vuelve al aviso, por si se reintenta
-                    root.uninstall = Object.assign({}, u, { state: "ready" })
-                } else {
-                    // Ha fallado pacman (otro pacman en marcha...): su última línea, para saber por qué
-                    const lines = text.split("\n").filter(l => l !== "" && !l.startsWith("exit|"))
-                    root.uninstall = Object.assign({}, u, { state: "ready", error: "pacman: " + (lines[lines.length - 1] ?? "ha fallado") })
-                }
-            }
-        }
-    }
-
     // Qué tal coincide una app con lo escrito: cuanto más bajo, más arriba sale; -1 = no coincide.
     //   0: el nombre empieza por lo escrito                     ("fi" -> "Firefox")
     //   1: alguna palabra del nombre empieza por lo escrito     ("code" -> "Visual Studio Code")
     //   2: el nombre lo contiene en medio
     //   3: lo contiene el nombre genérico ("Navegador web") o las palabras clave del .desktop
     function matchRank(entry, query) {
-        const name = Search.normalize(entry.name)
+        const name = Utils.normalize(entry.name)
         if (name.startsWith(query)) return 0
         if (name.split(/[\s\-_.]+/).some(word => word.startsWith(query))) return 1
         if (name.includes(query)) return 2
-        if (Search.normalize([entry.genericName, ...(entry.keywords || [])].join(" ")).includes(query)) return 3
+        if (Utils.normalize([entry.genericName, ...(entry.keywords || [])].join(" ")).includes(query)) return 3
         return -1
     }
 
@@ -179,7 +94,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
     // luego el resto por nombre. Escribiendo: por cómo coinciden (matchRank) y, dentro de
     // cada grupo, igual: las más usadas primero y luego por nombre.
     property var filteredApps: {
-        const query = Search.normalize(searchInput.text.trim())
+        const query = Utils.normalize(searchInput.text.trim())
         const list = apps.map(e => ({ entry: e, rank: query === "" ? 0 : matchRank(e, query), uses: usage.counts[e.id] ?? 0 }))
                          .filter(a => a.rank >= 0)
         list.sort((a, b) => a.rank - b.rank || b.uses - a.uses || a.entry.name.localeCompare(b.entry.name))
@@ -222,20 +137,20 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                     list: list
                     // Con el aviso de desinstalar abierto, Intro es su botón principal (ver más abajo)
                     onAccepted: {
-                        if (root.uninstall) uninstallPanel.primary()
+                        if (uninstallPanel.request) uninstallPanel.primary()
                         else root.activate(root.filteredApps[list.currentIndex])
                     }
                     // Esc primero cierra el aviso de desinstalar, luego sale de elegir las ocultas
                     // (como si se pulsara la rueda) y por último cierra el launcher
                     onEscapePressed: {
-                        if (root.uninstall) root.cancelUninstall()
+                        if (uninstallPanel.request) uninstallPanel.cancel()
                         else if (root.editing) root.editing = false
                         else root.visible = false
                     }
                     onKeyPressed: event => {
                         // Shift + Supr como en el portapapeles: Supr sola borra letras del buscador
                         if (root.editing && event.key === Qt.Key_Delete && (event.modifiers & Qt.ShiftModifier)) {
-                            root.askUninstall(root.filteredApps[list.currentIndex])
+                            uninstallPanel.ask(root.filteredApps[list.currentIndex])
                             event.accepted = true
                         }
                     }
@@ -252,7 +167,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                     Layout.alignment: Qt.AlignVCenter
                     onClicked: {
                         root.editing = !root.editing
-                        root.cancelUninstall()      // El aviso de desinstalar es del modo de elegir: se va con él
+                        uninstallPanel.cancel()     // El aviso de desinstalar es del modo de elegir: se va con él
                     }
                 }
             }
@@ -275,7 +190,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                     // si cae en la papelera es para desinstalar, no para ocultar
                     function handleClick(x, y) {
                         if (!trash.visible || !trash.contains(trash.mapFromItem(appDelegate, x, y))) return false
-                        root.askUninstall(modelData)
+                        uninstallPanel.ask(modelData)
                         return true
                     }
 
@@ -310,7 +225,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                             visible: root.editing
                             text: String.fromCodePoint(0xF0A7A)     // trash-can-outline
                             // Marcada la de la app del aviso de desinstalar, para saber de cuál es
-                            color: root.uninstall?.entry === appDelegate.modelData ? Theme.textSelected : Theme.textActive
+                            color: uninstallPanel.request?.entry === appDelegate.modelData ? Theme.textSelected : Theme.textActive
                             font.pixelSize: 16
                             Layout.alignment: Qt.AlignVCenter
                         }
@@ -319,7 +234,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
             }
 
             Text {                                  // Recordatorio mientras se eligen las ocultas (como el de Clipboard.qml)
-                visible: root.editing && !root.uninstall
+                visible: root.editing && !uninstallPanel.request
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -328,100 +243,13 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                 font.pixelSize: 11
             }
 
-            // Aviso antes de desinstalar (ver "uninstall"): ocupa el sitio del recordatorio y
-            // la lista se encoge para dejarle sitio
-            Rectangle {
+            // Aviso antes de desinstalar (UninstallPanel.qml): ocupa el sitio del recordatorio
+            UninstallPanel {
                 id: uninstallPanel
-                readonly property var u: root.uninstall ?? ({})
-                readonly property bool blocked: (u.blocked ?? []).length > 0
-
-                // Intro: lo mismo que el botón principal que se esté viendo
-                function primary() {
-                    if (root.canUninstall) root.confirmUninstall()
-                    else if (u.state === "ready" && blocked) {
-                        if (!root.isHidden(u.entry)) root.toggleHidden(u.entry)     // Si ya estaba oculta, no se vuelve a mostrar
-                        root.cancelUninstall()
-                    }
-                    else if (u.state === "ready") root.cancelUninstall()        // Con error solo hay "Cerrar"
-                }
-
-                // Lo que se cuenta, una línea por cosa (con su icono las advertencias)
-                readonly property var lines: {
-                    if (u.state === "checking") return ["Comprobando…"]
-                    if (u.state === "running") return ["Desinstalando " + u.pkg + "…"]
-                    if (u.error) return [u.error]
-                    if (blocked) return ["No se puede: la necesita " + u.blocked.join(", ") + ". Puedes ocultarla en su lugar."]
-                    const out = []
-                    const deps = (u.remove ?? []).filter(p => p !== u.pkg)
-                    out.push("Se quita el paquete " + u.pkg + (deps.length ? " y " + deps.length + (deps.length === 1 ? " dependencia que ya no usa nada" : " dependencias que ya no usa nada") : ""))
-                    if (u.apps?.length)                     // Las otras apps del paquete, por su nombre si se puede
-                        out.push(String.fromCodePoint(0xF0026) + "  También se va: " + u.apps.map(id => DesktopEntries.byId(id)?.name ?? id).join(", "))
-                    for (const file of u.repo ?? [])
-                        out.push(String.fromCodePoint(0xF0026) + "  " + (file === "packages_opt.txt"
-                            ? "Está en packages_opt.txt: install.sh volverá a preguntar si instalarla"
-                            : "La instala el repo (" + file + "): install.sh la volverá a poner. Quítala también de ahí"))
-                    return out
-                }
-
-                visible: root.uninstall !== null
-                Layout.fillWidth: true
-                implicitHeight: panelColumn.implicitHeight + 20
-                radius: 8
-                color: Theme.background
-                border.color: Theme.border
-
-                ColumnLayout {
-                    id: panelColumn
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    spacing: 6
-
-                    Text {
-                        Layout.fillWidth: true
-                        text: "Desinstalar " + (uninstallPanel.u.entry?.name ?? "")
-                        color: Theme.textActive
-                        font.bold: true
-                        elide: Text.ElideRight
-                    }
-
-                    Repeater {
-                        model: uninstallPanel.lines
-                        Text {
-                            required property string modelData
-                            Layout.fillWidth: true
-                            text: modelData
-                            textFormat: Text.PlainText      // Lleva mensajes de pacman: que no se interpreten como HTML
-                            wrapMode: Text.WordWrap
-                            color: Theme.textActive
-                            font.pixelSize: 12
-                        }
-                    }
-
-                    RowLayout {                             // Los botones, a la derecha; mientras mira o desinstala, ninguno
-                        visible: uninstallPanel.u.state === "ready"
-                        Layout.alignment: Qt.AlignRight
-                        spacing: 8
-
-                        Button {
-                            visible: root.canUninstall
-                            text: "Desinstalar"
-                            accent: true
-                            onClicked: root.confirmUninstall()
-                        }
-                        Button {
-                            visible: uninstallPanel.blocked && !uninstallPanel.u.error
-                            // Si ya estaba oculta, no hay nada que ofrecer: solo cerrar
-                            enabled: !root.isHidden(uninstallPanel.u.entry ?? {})
-                            text: "Ocultar"
-                            accent: true
-                            onClicked: uninstallPanel.primary()
-                        }
-                        Button {
-                            text: root.canUninstall || (uninstallPanel.blocked && !uninstallPanel.u.error) ? "Cancelar" : "Cerrar"
-                            onClicked: root.cancelUninstall()
-                        }
-                    }
-                }
+                hiddenIds: usage.hidden
+                onHideRequested: entry => root.toggleHidden(entry)
+                // Ya no hace falta tenerlas en la lista de ocultas: si algún día se vuelven a instalar, que salgan
+                onUninstalled: ids => usage.hidden = usage.hidden.filter(id => !ids.includes(id))
             }
         }
     }

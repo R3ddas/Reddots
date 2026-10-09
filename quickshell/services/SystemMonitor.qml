@@ -122,12 +122,12 @@ Singleton {
         command: [Quickshell.shellPath("scripts/sensors.sh")]
         stdout: StdioCollector {
             onStreamFinished: {
-                const lines = text.split("\n").filter(l => l.includes("|")).map(l => l.split("|"))   // [tipo, nombre, ruta]
                 const order = Object.keys(root.limits)
-                root.sensors = lines.filter(f => f[0] === "temp").map(f => ({ name: f[1], path: f[2] }))
+                root.sensors = Utils.parseLines(text, "temp").map(l => l.split("|"))   // [nombre, ruta]
+                                    .map(f => ({ name: f[0], path: f[1] }))
                                     .sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name))
                 const gpu = {}
-                for (const f of lines.filter(f => f[0] === "gpu")) gpu[f[1]] = f[2]
+                for (const [key, path] of Utils.parseLines(text, "gpu").map(l => l.split("|"))) gpu[key] = path   // busy, vramUsed, vramTotal
                 root.gpuFiles = gpu
             }
         }

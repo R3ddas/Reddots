@@ -44,11 +44,11 @@ Singleton {
         function brightness(): void { root.osdRequested("brightness") }
     }
 
-    // Teclas de volumen: suben/bajan de 5 en 5 respetando el tope de VolumeBoost (100 % o 150 %)
+    // Teclas de volumen: suben/bajan de 5 en 5 respetando el tope de Audio.qml (100 % o 150 %)
     IpcHandler {
         target: "volume"
-        function up(): void { VolumeBoost.step(0.05); root.osdRequested("volume") }
-        function down(): void { VolumeBoost.step(-0.05); root.osdRequested("volume") }
+        function up(): void { Audio.step(0.05); root.osdRequested("volume") }
+        function down(): void { Audio.step(-0.05); root.osdRequested("volume") }
     }
 
     IpcHandler {

@@ -8,8 +8,8 @@
 #   remove|<paquete>            lo que se quitaría con él (él mismo y las dependencias que ya
 #                               no necesita nadie), uno por línea
 #   app|<id>                    otros .desktop del mismo paquete, que también desaparecen
-#   repo|<archivo>              lo instala el repo (packages.txt, packages_opt.txt o install.sh):
-#                               al volver a pasar install.sh volvería
+#   repo|<archivo>              lo instala el repo (packages.txt o packages_opt.txt): al volver
+#                               a pasar install.sh volvería
 #   blocked|<paquete>           otro paquete lo necesita: pacman no deja quitarlo, uno por línea
 #   error|<mensaje>             no se puede ni mirar (no hay .desktop, no es de ningún paquete...)
 # No cambia nada ni pide contraseña: "pacman -Rsp" solo simula la desinstalación.
@@ -43,9 +43,6 @@ dots="$(dirname "$(realpath "$0")")/../.."
 listFile() { sed 's/#.*//' "$1" | awk 'NF { print $1 }'; }     # Igual que en install.sh
 listFile "$dots/packages.txt"     | grep -qxF "$pkg" && echo "repo|packages.txt"
 listFile "$dots/packages_opt.txt" | grep -qxF "$pkg" && echo "repo|packages_opt.txt"
-# Los de AUR van uno por línea en install.sh: "paru -S --needed --noconfirm <paquete>"
-sed 's/#.*//' "$dots/install.sh" | awk '$1 == "paru" && $2 == "-S" { print $NF }' \
-    | grep -qxF "$pkg" && echo "repo|install.sh"
 
 # --- Otras apps del mismo paquete ---
 # Al quitar el paquete se van todas (qv4l2 y qvidcap son los dos de v4l-utils)

@@ -76,7 +76,7 @@ ColumnLayout {
                 spacing: 2
 
                 // Dos secciones, Claros y Oscuros (según el fondo del tema, ver Theme.isLight()),
-                // cada una con los temas en el orden de Theme.qml
+                // cada una con los temas en el orden de services/themes.js
                 Repeater {
                     model: [{ title: "Claros", light: true }, { title: "Oscuros", light: false }]
 
