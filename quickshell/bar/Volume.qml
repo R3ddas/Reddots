@@ -25,6 +25,9 @@ ColumnLayout{
     readonly property bool muted: sink ? sink.audio.muted : true
     readonly property real volume: sink ? sink.audio.volume : 0
 
+    // Aumento del volumen hasta el 150 %: el estado vive en services/VolumeBoost.qml, porque
+    // lo comparten las teclas de volumen y el indicador (Osd.qml)
+
     readonly property var source: Pipewire.defaultAudioSource              // El micrófono que se usa
     readonly property bool micMuted: source ? source.audio.muted : true
 
@@ -119,10 +122,11 @@ ColumnLayout{
     readonly property var visibleSources: root.sources.filter(n => n.audio && !root.isUnplugged(n))   // Sin audio = nodos MIDI y similares
     readonly property var visibleStreams: root.streams.filter(n => n.audio)
 
-    // Volumen de un nodo (salida, micrófono o aplicación), entre 0 y 1. Subirlo quita el silencio.
-    function setNodeVolume(node, fraction) {
+    // Volumen de un nodo (salida, micrófono o aplicación), entre 0 y max (1 salvo en la salida con
+    // el aumento activado). Subirlo quita el silencio.
+    function setNodeVolume(node, fraction, max = 1) {
         if (!node || !node.audio) return
-        const v = Math.max(0, Math.min(1, fraction))
+        const v = Math.max(0, Math.min(max, fraction))
         node.audio.volume = v
         if (v > 0) node.audio.muted = false
     }
@@ -182,7 +186,7 @@ ColumnLayout{
         text: root.icon
         color: root.muted ? Theme.textDisabled : Theme.textActive
         tooltip: !root.sink ? ""
-               : (root.muted ? "Silenciado" : "Volumen " + Math.round(Math.min(root.volume, 1) * 100) + " %")
+               : (root.muted ? "Silenciado" : "Volumen " + Math.round(root.volume * 100) + " %")
                  + " · " + (root.sink.nickname || root.sink.description || root.sink.name)
                  + (root.source && root.micMuted ? "\nMicrófono silenciado" : "")
                  + (root.player && root.player.isPlaying && root.player.trackTitle     // "Sonando: Canción · Artista"
@@ -370,16 +374,27 @@ ColumnLayout{
         PartSeparator { visible: root.player !== null }
 
         // --- Salida ---
-        PartTitle { text: "Salida" }
+        RowLayout {                             // Título + interruptor del aumento (en la misma línea: no ocupa espacio extra)
+            Layout.fillWidth: true
+            PartTitle { text: "Salida" }
+            TextButton {                        // Resaltado cuando está activo; pasar de 100 % solo se puede con él
+                text: VolumeBoost.boost ? "<150%" : "<100%"      // Muestra el tope actual; al pulsar cambia al otro
+                font.pixelSize: 11
+                font.bold: VolumeBoost.boost
+                color: VolumeBoost.boost ? Theme.textSelected : (hovered ? Theme.textActive : Theme.textDisabled)
+                onClicked: VolumeBoost.setBoost(!VolumeBoost.boost)
+            }
+        }
 
         RowLayout {                             // Silenciar + volumen (arrastrar o rueda)
             Layout.fillWidth: true
             spacing: 6
             MuteIcon { node: root.sink; text: root.icon }
             Slider {
+                maxValue: VolumeBoost.maxVolume
                 value: root.volume
                 dimmed: root.muted
-                onMoved: v => root.setNodeVolume(root.sink, v)
+                onMoved: v => root.setNodeVolume(root.sink, v, VolumeBoost.maxVolume)
             }
         }
 

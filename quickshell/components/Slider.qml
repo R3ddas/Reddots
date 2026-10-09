@@ -13,14 +13,15 @@ import qs.services
 RowLayout {
     id: root
 
-    property real value: 0              // De 0 a 1 (lo que pase de 1 se pinta lleno)
+    property real maxValue: 1           // Valor que llena la barra entera (1.5 en el volumen con el aumento activado)
+    property real value: 0              // De 0 a maxValue (lo que pase se pinta lleno)
     property bool dimmed: false         // Relleno en gris (p.ej. con el sonido silenciado)
     property bool interactive: true
     property int barHeight: 14
-    signal moved(real value)            // Valor pedido (0-1 al arrastrar; con la rueda puede salirse de ese rango)
+    signal moved(real value)            // Valor pedido (0-maxValue al arrastrar; con la rueda puede salirse de ese rango)
 
-    readonly property real shown: Math.max(0, Math.min(value, 1))
-    property string label: Math.round(shown * 100) + "%"   // Texto de la derecha: el porcentaje, salvo que se ponga otro (el tiempo de la canción en Volume.qml)
+    readonly property real shown: Math.max(0, Math.min(value, maxValue)) / maxValue   // Fracción de barra rellena (0-1)
+    property string label: Math.round(shown * maxValue * 100) + "%"   // Texto de la derecha: el porcentaje, salvo que se ponga otro (el tiempo de la canción en Volume.qml)
 
     Layout.fillWidth: true
     spacing: 6
@@ -44,8 +45,8 @@ RowLayout {
         MouseArea {
             anchors.fill: parent
             enabled: root.interactive
-            onPressed: mouse => root.moved(mouse.x / width)
-            onPositionChanged: mouse => { if (pressed) root.moved(mouse.x / width) }
+            onPressed: mouse => root.moved(mouse.x / width * root.maxValue)
+            onPositionChanged: mouse => { if (pressed) root.moved(mouse.x / width * root.maxValue) }
             onWheel: wheel => root.moved(root.value + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))
         }
     }

@@ -34,12 +34,13 @@ hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true, descr
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true, description = "Ventanas: Cambiar el tamaño de la ventana (arrastrando)" })
 
 -- Teclas multimedia del portátil: volumen y brillo de la pantalla
+-- Subir/bajar volumen va por Quickshell (VolumeBoost.qml) para respetar el tope de 100 % / 150 % y ya muestra el indicador.
 -- El "qs ipc call osd ..." de detrás muestra el indicador (quickshell/windows/Osd.qml) con el nuevo valor
 local osdVolume     = " && qs ipc call osd volume"
 local osdBrightness = " && qs ipc call osd brightness"
 local osdMic        = " && qs ipc call osd mic"
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+" .. osdVolume), { locked = true, repeating = true, description = "Multimedia: Subir el volumen" })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-" .. osdVolume),      { locked = true, repeating = true, description = "Multimedia: Bajar el volumen" })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("qs ipc call volume up"),   { locked = true, repeating = true, description = "Multimedia: Subir el volumen" })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("qs ipc call volume down"), { locked = true, repeating = true, description = "Multimedia: Bajar el volumen" })
 hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle" .. osdVolume),     { locked = true, description = "Multimedia: Silenciar el sonido" })  -- Sin repeating: al mantenerla pulsada alternaría en bucle
 hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle" .. osdMic),      { locked = true, description = "Multimedia: Silenciar el micrófono" })
 hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+" .. osdBrightness),              { locked = true, repeating = true, description = "Multimedia: Subir el brillo" })

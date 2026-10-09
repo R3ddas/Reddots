@@ -85,6 +85,7 @@ PanelWindow {
             Slider {                            // Barra de nivel con el porcentaje (la misma que en la barra, sin poder moverla)
                 interactive: false
                 barHeight: 8
+                maxValue: root.mode === "volume" ? VolumeBoost.maxVolume : 1   // Con el aumento activado la barra llega a 150 %
                 value: root.value / 100
                 dimmed: (root.mode === "volume" && root.muted) || (root.mode === "mic" && root.micMuted)
             }
