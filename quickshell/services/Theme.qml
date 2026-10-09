@@ -33,6 +33,8 @@ import qs.components                // HyprConfigFile y StateFile
 //     de error) son suyos; los demás acentos se han generado a juego (misma luminosidad y
 //     saturación, cada uno con su tono), para que en la terminal el verde sea verde.
 //   - Original: hecho a mano, con el mismo criterio para los acentos que le faltaban.
+//   - Wallpaper: no está aquí. Lo saca del fondo de pantalla services/WallpaperTheme.qml
+//     (se crea desde el selector), se guarda fuera del repo y se añade al final de "themes".
 
 Singleton {
     // Tema activo: se elige desde el icono de la paleta en la barra
@@ -57,9 +59,22 @@ Singleton {
         return themes.find(t => t.name === themeName) ?? themes[0]     // Si no existe (p.ej. un tema que se ha quitado), el primero
     }
 
+    // Todos los temas: los de aquí y, si ya se ha creado, el sacado del fondo de pantalla
+    // (al final, para que "themes[0]", el de reserva de themeByName(), siga siendo Original)
+    readonly property var themes: WallpaperTheme.theme ? presetThemes.concat([WallpaperTheme.theme]) : presetThemes
+
+    // Si se vuelve a crear el tema Wallpaper estando activo, sus colores cambian aunque el
+    // nombre no: se aplican también a Alacritty y a Hyprland (onActiveThemeChanged no salta)
+    Connections {
+        target: WallpaperTheme
+        function onThemeChanged() {
+            if (activeTheme === WallpaperTheme.themeName) syncAll()
+        }
+    }
+
     // Cada tema: nombre, casilla del acento y sus 16 colores (base00–07 en la primera
     // línea, base08–0F en la segunda). El orden de aquí es el del selector de la barra.
-    readonly property var themes: [
+    readonly property var presetThemes: [
         { name: "Original", accent: "base09",     // hecho a mano: grises y rojo/naranja/verde/azul propios, el resto a juego
           base: ["#454138", "#454138", "#5a4d3e", "#837564", "#a8957c", "#f5e2c5", "#f5e2c5", "#f5e2c5",
                  "#c1502e", "#db911a", "#9e8934", "#7c8b53", "#079e9e", "#6f8fa3", "#a774b2", "#964f2c"] },

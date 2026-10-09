@@ -5,6 +5,8 @@
 // Arriba del todo, los sliders del brillo de las pantallas (BrightnessSliders.qml): al
 // elegir tema es cuando más se mira cómo se ve la pantalla. Es el único sitio de la barra
 // donde está el brillo (las teclas de brillo del portátil van aparte, en hypr/keybinds.lua).
+// Debajo, el botón para crear el tema Wallpaper a partir del fondo de pantalla
+// (services/WallpaperTheme.qml), que sale el primero de su sección (Claros u Oscuros).
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
@@ -32,6 +34,24 @@ ColumnLayout {
         // Fuera del Flickable de los temas: así se quedan siempre arriba, aunque se baje
         // con la rueda para ver más temas
         BrightnessSliders {}
+
+        Separator {
+            Layout.topMargin: 4
+            Layout.bottomMargin: 4
+        }
+
+        // Crea el tema Wallpaper a partir del fondo activo (services/WallpaperTheme.qml) y lo
+        // aplica. Si ya existía, lo sustituye. También fuera del Flickable, siempre a mano.
+        MenuRow {
+            icon: String.fromCodePoint(0xF02E9)         // image
+            text: WallpaperTheme.generating ? "Creando tema…" : "Crear tema desde el fondo"
+            active: !WallpaperTheme.generating
+            onClicked: WallpaperTheme.generate()
+        }
+        Connections {
+            target: WallpaperTheme
+            function onGenerated() { Theme.activeTheme = WallpaperTheme.themeName }
+        }
 
         Separator {
             Layout.topMargin: 4
@@ -77,7 +97,13 @@ ColumnLayout {
                         }
 
                         Repeater {
-                            model: Theme.themes.filter(t => Theme.isLight(t) === section.modelData.light)
+                            // El tema Wallpaper (si existe), el primero de su sección: es el que se
+                            // crea desde aquí arriba, y así no hay que bajar a buscarlo al final
+                            model: {
+                                const list = Theme.themes.filter(t => Theme.isLight(t) === section.modelData.light)
+                                const isWallpaper = t => t.name === WallpaperTheme.themeName
+                                return list.filter(isWallpaper).concat(list.filter(t => !isWallpaper(t)))
+                            }
 
                             delegate: Rectangle {
                                 id: themeRow
