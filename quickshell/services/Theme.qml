@@ -37,11 +37,17 @@ import qs.components                // HyprConfigFile y StateFile
 //     (se crea desde el selector), se guarda fuera del repo y se añade al final de "themes".
 
 Singleton {
+    id: root
+
+    // Tema por defecto, el mismo en los dos casos en que hace falta uno: en una instalación
+    // nueva (aún no hay theme.json) y si el tema guardado ya no existe (p.ej. uno que se ha
+    // quitado de la lista). Debe coincidir con el "name" de uno de los temas de "themes".
+    // Si lo cambias, cambia también los colores de arranque de hypr/hyprland.lua (col y
+    // background_color), que son los suyos.
+    readonly property string defaultTheme: "Original"
+
     // Tema activo: se elige desde el icono de la paleta en la barra
     // (ThemeSettings.qml) y se guarda solo, gracias al StateFile de más abajo.
-    // El de por defecto (instalación nueva) es el del JsonAdapter, "Gruvbox Claro";
-    // si lo cambias, cambia también los colores de arranque de col en hypr/hyprland.lua.
-    // Debe coincidir con el "name" de uno de los temas de "themes".
     property alias activeTheme: adapter.activeTheme
 
     StateFile {
@@ -51,16 +57,17 @@ Singleton {
 
         JsonAdapter {
             id: adapter
-            property string activeTheme: "Gruvbox Claro"
+            property string activeTheme: root.defaultTheme
         }
     }
 
     function themeByName(themeName) {
-        return themes.find(t => t.name === themeName) ?? themes[0]     // Si no existe (p.ej. un tema que se ha quitado), el primero
+        return themes.find(t => t.name === themeName)
+            ?? themes.find(t => t.name === root.defaultTheme)          // Si no existe (p.ej. un tema que se ha quitado), el de por defecto
     }
 
     // Todos los temas: los de aquí y, si ya se ha creado, el sacado del fondo de pantalla
-    // (al final, para que "themes[0]", el de reserva de themeByName(), siga siendo Original)
+    // (al final de la lista)
     readonly property var themes: WallpaperTheme.theme ? presetThemes.concat([WallpaperTheme.theme]) : presetThemes
 
     // Si se vuelve a crear el tema Wallpaper estando activo, sus colores cambian aunque el
@@ -215,7 +222,7 @@ Singleton {
     // Color de acento de un tema: la casilla que dice "accent" ("base0D" -> casilla 13).
     // Aparte de roles() para quien solo necesita el acento (la muestra de cada tema en
     // ThemeSettings.qml, los bordes de Hyprland): roles() calcula además contrastes
-    // WCAG, y el selector lo llamaría para los 45 temas cada vez que se abre.
+    // WCAG, y el selector lo llamaría para todos los temas cada vez que se abre.
     function accentOf(theme) {
         return theme.base[parseInt(theme.accent.slice(4), 16)]
     }

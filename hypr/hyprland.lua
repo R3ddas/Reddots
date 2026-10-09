@@ -202,30 +202,26 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -----------------
 
 -- Ver https://wiki.hypr.land/Configuring/Basics/Variables/
--- Como gaps_in/gaps_out/border_size más abajo, solo el valor de ARRANQUE: el
--- panel GeometrySettings.qml ("Opacidad de ventanas") lo sobrescribe vía
--- hypr/shellOverrides.lua en active/inactive/fullscreen_opacity.
-local opacity = 0.9
+--
+-- Valores de ARRANQUE. Lo marcado con [Quickshell] más abajo solo vale en una instalación
+-- nueva, antes de que Quickshell arranque por primera vez: a partir de ahí lo pone
+-- Quickshell, que lo aplica en caliente (hyprctl eval) y lo guarda para los siguientes
+-- arranques en un archivo que gana siempre a estos valores (ver loadIfExists, más abajo):
+--   - Medidas y opacidad de las ventanas: el panel GeometrySettings.qml (Geometry.qml),
+--     en hypr/shellOverrides.lua. Sus valores por defecto son estos mismos.
+--   - Colores: el tema elegido (Theme.qml), en hypr/shellTheme.lua. Estos son los del
+--     tema por defecto, "Original" (Theme.defaultTheme).
+-- Editar a mano lo marcado no tiene efecto una vez que existen esos archivos.
+local opacity = 0.9     -- [Quickshell] Las tres opacidades de decoration, iguales
 hl.config({
     general = {
-        -- gaps_in, gaps_out y border_size de aquí son solo el valor de
-        -- ARRANQUE (para una instalación nueva, antes de tocar nada).
-        -- En cuanto se cambia algo en el panel GeometrySettings.qml de
-        -- Quickshell, Geometry.qml los aplica en caliente (hyprctl eval)
-        -- y los guarda en hypr/shellOverrides.lua (ver loadIfExists al final
-        -- de este hl.config, más abajo), que gana siempre a estos valores. Editar
-        -- estas líneas a mano no tiene efecto una vez que existe ese archivo.
-        gaps_in  = 5,       -- Distancia entre ventanas
-        gaps_out = 12,      -- Distancia entre ventana y borde de pantalla
-        border_size = 2,    -- Grosor del borde de cada ventana
+        gaps_in  = 5,       -- [Quickshell] Distancia entre ventanas
+        gaps_out = 12,      -- [Quickshell] Distancia entre ventana y borde de pantalla
+        border_size = 2,    -- [Quickshell] Grosor del borde de cada ventana
 
-        -- Igual que lo de arriba, solo el valor de ARRANQUE: en cuanto Quickshell
-        -- arranca, Theme.qml los sobrescribe con los del tema elegido vía
-        -- hypr/shellTheme.lua (ver loadIfExists más abajo). Son los del tema
-        -- "Gruvbox Claro", el que usa Theme.qml por defecto.
-        col = {
-            active_border   = 0xff458588,   -- El acento (base0D), liso y opaco como en Stylix
-            inactive_border = 0xffbdae93,   -- base03, como en Stylix
+        col = {             -- [Quickshell] Bordes lisos y opacos, como en Stylix
+            active_border   = 0xffdb911a,   -- El acento (en Original, base09)
+            inactive_border = 0xff837564,   -- base03
         },
 
         resize_on_border = false, -- A true permite redimensionar las ventanas arrastrando sus bordes y los huecos entre ellas
@@ -238,7 +234,7 @@ hl.config({
     },
 
     decoration = {
-        rounding       = 16, -- Igual que gaps_in/gaps_out/border_size arriba: solo el valor de arranque, sobrescrito por el panel/shellOverrides.lua
+        rounding       = 16, -- [Quickshell] Redondeo de las esquinas de las ventanas
         rounding_power = 2,
 
         -- Transparencia de las ventanas
@@ -270,9 +266,7 @@ hl.config({
     misc = {
         -- Color que pinta Hyprland donde no hay nada encima: solo se ve mientras Quickshell no
         -- está en marcha (luego lo tapa el fondo de pantalla, quickshell/windows/Background.qml).
-        -- Como los colores de los bordes de arriba, solo el valor de ARRANQUE: Theme.qml lo
-        -- sobrescribe con base00 del tema elegido vía hypr/shellTheme.lua. Es el de "Gruvbox Claro".
-        background_color = 0xfffbf1c7,  -- base00
+        background_color = 0xff454138,  -- [Quickshell] base00
 
         force_default_wallpaper = 0,    -- 0 o 1 quita los fondos por defecto de la mascota anime
         disable_hyprland_logo   = true, -- Quita el logo de Hyprland / la chica anime del fondo

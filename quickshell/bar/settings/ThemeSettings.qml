@@ -58,7 +58,7 @@ ColumnLayout {
             Layout.bottomMargin: 4
         }
 
-        // Flickable en vez de Repeater suelto porque hay 45 temas: con
+        // Flickable en vez de Repeater suelto porque hay decenas de temas: con
         // todos desplegados no cabrían en pantalla, así que se recorta a
         // 360px (con los márgenes del popup) y se puede hacer scroll con la rueda del ratón.
         Flickable {

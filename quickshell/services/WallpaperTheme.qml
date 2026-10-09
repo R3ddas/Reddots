@@ -51,7 +51,7 @@ Singleton {
         path: Quickshell.statePath("wallpaperTheme.json")     // Junto a theme.json (StateFile)
         // Se lee ya al crearse: Theme.qml lo necesita en su lista antes de aplicar el tema
         // guardado al arrancar (si el activo es "Wallpaper" y aún no estuviese, aplicaría
-        // el primero de la lista a Alacritty y a Hyprland)
+        // el de por defecto, Theme.defaultTheme, a Alacritty y a Hyprland)
         blockLoading: true
         printErrors: false              // Lo normal es que no exista hasta que se cree
 
