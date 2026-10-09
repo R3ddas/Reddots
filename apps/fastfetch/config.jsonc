@@ -1,12 +1,16 @@
 { // Inicio del objeto de configuración
     "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json", // Esquema JSON para autocompletado y validación en el editor
-    "logo": null, // Desactiva el logo/ASCII art (no se muestra ninguno)
+    "logo": null, // Sin logo de fastfetch: el "Reddots" en ASCII art va dentro de las líneas del recuadro (ver "modules")
     "display": { // Opciones generales de presentación de la salida
         "separator": "  ", // Texto que separa la clave del valor en cada módulo
         "color": "white", // Color por defecto del texto
-        "constants": ["\u001b[37m", "\u001b[38;5;16m", "\u001b[38;5;17m", "\u001b[38;5;18m"] // Códigos ANSI reutilizables (referenciados como $1, $2... en otros valores)
+        "constants": ["\u001b[37m", "\u001b[38;5;16m", "\u001b[38;5;17m", "\u001b[38;5;18m", "\u001b[31m"] // Códigos ANSI reutilizables (referenciados como $1, $2... en otros valores); $5 es el rojo del tema activo (base08 en colors.toml), el del dibujo de Reddots
     }, // Cierra "display"
     "modules": [ // Lista ordenada de módulos que se mostrarán
+        // El dibujo de "Reddots" va pegado a la derecha del recuadro: una línea suya al final del
+        // "format" de cada módulo, de kernel a hname. Con el logo de fastfetch no se puede: su
+        // posición "right" lo lleva al borde derecho de la ventana, no al lado del recuadro.
+        // En JSON cada "\" del dibujo se escribe "\\".
         "break",
         {
             "type": "custom",
@@ -15,37 +19,37 @@
         {
             "type": "kernel",
             "key": "│ {$2}{$1}  kernel",
-            "format": "{$2}{release>22}{$1} │"
+            "format": "{$2}{release>22}{$1} │   {$5} ____               __      __          __{$1}"
         },
         { // Módulos propios de fastfetch y no "command": un "command" lanza un sh cada vez que se abre una terminal
             "type": "uptime",
             "key": "│   uptime",
-            "format": "{formatted>22} │"
+            "format": "{formatted>22} │   {$5}/\\  _`\\            /\\ \\    /\\ \\        /\\ \\__{$1}"
         },
         {
             "type": "shell",
             "key": "│ {$2}{$1}  shell ",
-            "format": "{$2}{pretty-name>22}{$1} │"
+            "format": "{$2}{pretty-name>22}{$1} │   {$5}\\ \\ \\L\\ \\     __   \\_\\ \\   \\_\\ \\    ___\\ \\ ,_\\   ____{$1}"
         },
         {
             "type": "memory",
             "key": "│ {$3}{$1}  mem   ",
-            "format": "{$3}{used>10} / {total>9}{$1} │"  // 10 + " / " + 9 = 22, el ancho de las demás líneas
+            "format": "{$3}{used>10} / {total>9}{$1} │   {$5} \\ \\ ,  /   /'__`\\ /'_` \\  /'_` \\  / __`\\ \\ \\/  /',__\\{$1}"  // 10 + " / " + 9 = 22, el ancho de las demás líneas
         },
         {
             "type": "packages",
             "key": "│   pkgs  ",
-            "format": "{all>22} │"
+            "format": "{all>22} │   {$5}  \\ \\ \\\\ \\ /\\  __//\\ \\L\\ \\/\\ \\L\\ \\/\\ \\L\\ \\ \\ \\_/\\__, `\\{$1}"
         },
         { // El módulo "title" ya sabe el usuario y el nombre del equipo
             "type": "title",
             "key": "│ {$2}{$1}  user  ",
-            "format": "{$2}{user-name>22}{$1} │"
+            "format": "{$2}{user-name>22}{$1} │   {$5}   \\ \\_\\ \\_\\ \\____\\ \\___,_\\ \\___,_\\ \\____/\\ \\__\\/\\____/{$1}"
         },
         {
             "type": "title",
             "key": "│   hname ",
-            "format": "{host-name>22} │"
+            "format": "{host-name>22} │   {$5}    \\/_/\\/ /\\/____/\\/__,_ /\\/__,_ /\\/___/  \\/__/\\/___/{$1}"
         },
         {
             "type": "os",
