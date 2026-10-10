@@ -45,10 +45,13 @@ jq              # Para leer las ventanas y monitores que da hyprctl en JSON
 xdg-user-dirs   # Trae xdg-user-dir, para guardar en la carpeta de imágenes (~/Imágenes)
 
 # LaTeX (con la extensión LaTeX Workshop de Visual Studio Code, ver install.sh)
-texlive         # TeX Live entero: es un grupo de 22 paquetes (texlive-basic, texlive-latexextra,
-                # texlive-binextra con latexmk, que usa LaTeX Workshop para compilar...). Ocupa más
-                # (~2 GB extra) que ir instalando paquete a paquete, pero así no falta ninguno al compilar
-biber           # Procesa la bibliografía de biblatex (el sustituto de bibtex). No va en el grupo texlive
+texlive-basic             # Lo básico de LaTeX (antes se llamaba texlive-core)
+texlive-latexextra        # Paquetes de LaTeX adicionales
+texlive-binextra          # Programas auxiliares (latexmk, que usa LaTeX Workshop para compilar)
+texlive-bibtexextra       # Estilos y paquetes extra de bibliografía (biblatex...)
+biber                     # Procesa la bibliografía de biblatex (el sustituto de bibtex)
+texlive-fontsrecommended  # Fuentes recomendadas (las Type 1 de las fuentes estándar, para el PDF)
+texlive-plaingeneric      # Paquetes genéricos (válidos para LaTeX y plain TeX) que piden otros paquetes
 
 # De AUR
 visual-studio-code-bin  # Visual Studio Code (sus extensiones las instala install.sh)
