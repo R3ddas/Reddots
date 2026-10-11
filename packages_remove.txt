@@ -1,0 +1,9 @@
+# Paquetes que quita install.sh si están instalados, uno por línea (lo que va tras # es un
+# comentario): los que trae CachyOS (o instalaban versiones anteriores de Reddots) y sobran.
+# update.sh no los toca: si vuelves a instalar uno, se queda hasta que pases otra vez install.sh.
+dolphin         # Instalo Nemo como explorador de archivos
+kitty           # Uso Alacritty como terminal
+meld            # No lo uso
+firefox         # Instalo Chrome y Zen
+hyprpaper       # El fondo lo pinta Quickshell (quickshell/windows/Background.qml)
+polkit-gnome    # Otro agente de polkit, y el que se usa es el de Quickshell (quickshell/windows/PolkitDialog.qml)

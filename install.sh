@@ -78,19 +78,16 @@ fi
 
 echo "Paquetes no utilizados"
 
-# Los que trae CachyOS (o instalaban versiones anteriores de Reddots) y sobran
-unwanted=(
-    dolphin         # Instalo Nemo como explorador de archivos
-    kitty           # Uso Alacritty como terminal
-    meld            # No lo uso
-    firefox         # Instalo Chrome y Zen
-    hyprpaper       # El fondo lo pinta Quickshell (quickshell/windows/Background.qml)
-    polkit-gnome    # Otro agente de polkit, y el que se usa es el de Quickshell (quickshell/windows/PolkitDialog.qml)
-)
-# Solo los que están instalados (pacman -Qq escribe los que encuentra y se queja de los demás:
-# esa queja se descarta), todos en una sola llamada. Si pacman no puede quitarlos (otro paquete
-# depende de alguno), se avisa y se sigue: no merece la pena cortar la instalación por esto
-mapfile -t installed < <(pacman -Qq "${unwanted[@]}" 2>/dev/null)
+# Los de packages_remove.txt que están instalados (pacman -Qq escribe los que encuentra y se
+# queja de los demás: esa queja se descarta), todos en una sola llamada. Si pacman no puede
+# quitarlos (otro paquete depende de alguno), se avisa y se sigue: no merece la pena cortar la
+# instalación por esto. Ojo: con la lista vacía no se llama a pacman, porque "pacman -Qq" sin
+# nada más saca TODOS los paquetes instalados, y se quitarían todos
+mapfile -t unwanted < <(listFile packages_remove.txt)
+installed=()
+if (( ${#unwanted[@]} )); then
+    mapfile -t installed < <(pacman -Qq "${unwanted[@]}" 2>/dev/null)
+fi
 if (( ${#installed[@]} )); then
     sudo pacman -Rns --noconfirm "${installed[@]}" || echo "Aviso: no se han podido quitar ${installed[*]}"
 fi

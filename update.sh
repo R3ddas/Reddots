@@ -10,7 +10,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 DOTS="$PWD" # Guardo la ruta en una variable para no acceder todo el rato
 
-# Los nombres de una de las listas del repo (packages.txt, packages_opt.txt; también lo usa install.sh),
+# Los nombres de una de las listas del repo (packages*.txt; también lo usa install.sh),
 # uno por línea: sin comentarios (lo que va tras #), sin líneas vacías y sin espacios
 listFile() { sed 's/#.*//' "$1" | awk 'NF { print $1 }'; }
 

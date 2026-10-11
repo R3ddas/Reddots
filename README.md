@@ -64,4 +64,5 @@ git pull
 - `apps/`: configuración de cada programa, una carpeta por programa (`alacritty/`, `fish/`, `fastfetch/`, `vscode/`).
 - `wallpapers/`: los fondos de pantalla.
 - `packages.txt`: los paquetes que necesita Reddots; los instala `update.sh`, así que vuelven en cada actualización.
-- `packages_opt.txt`: las apps (Chrome, VS Code, LaTeX, Steam...); solo las ofrece `install.sh`, que pregunta antes de instalarlas. Las apps que no salen en el lanzador se eligen desde él, con la rueda junto al buscador.
+- `packages_opt.txt`: las apps (Chrome, VS Code, LaTeX, Steam...); solo las ofrece `install.sh`, que pregunta antes de instalarlas.
+- `packages_remove.txt`: los que sobran (Firefox, Kitty, Dolphin...); solo los quita `install.sh`. Las apps que no salen en el lanzador se eligen desde él, con la rueda junto al buscador.
