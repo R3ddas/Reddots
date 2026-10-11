@@ -30,6 +30,7 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xF0E09)  // wallpaper
         tooltip: Lang.tr("Fondo de pantalla")
+        hint: Lang.tr("Clic: abrir el menú")
         popup: menu
     }
 

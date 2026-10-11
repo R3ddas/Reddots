@@ -51,6 +51,7 @@ ColumnLayout {
                : !root.powered ? Lang.tr("Bluetooth apagado")
                : !root.active ? Lang.tr("Bluetooth: nada conectado")
                : root.active.name + (root.active.batteryAvailable ? " · " + Lang.tr("batería %1 %", Math.round(root.active.battery * 100)) : "")
+        hint: Lang.tr("Clic: abrir el menú") + "\n" + Lang.tr("Clic derecho: encender / apagar el Bluetooth")
         popup: menu                                                                     // Clic izquierdo: abre o cierra el menú de dispositivos
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => {

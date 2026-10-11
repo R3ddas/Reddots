@@ -16,6 +16,7 @@ Text {
 
     property alias acceptedButtons: area.acceptedButtons  // Por defecto solo el izquierdo
     property string tooltip: ""
+    property string hint: ""            // Qué hace cada botón o la rueda, debajo del tooltip (ver BarTooltip.qml)
     property PopupWindow popup: null
     signal clicked(var event)
 
@@ -26,6 +27,7 @@ Text {
     TooltipArea {
         id: area
         tooltip: root.tooltip
+        hint: root.hint
         popup: root.popup
         onClicked: event => {
             if (root.popup && event.button === Qt.LeftButton) root.popup.toggle()

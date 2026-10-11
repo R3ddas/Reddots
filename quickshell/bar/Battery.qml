@@ -52,6 +52,7 @@ ColumnLayout{
     BarIcon {
         text: root.icon
         tooltip: root.tooltip
+        hint: Lang.tr("Clic derecho: mostrar / ocultar el porcentaje")
         acceptedButtons: Qt.RightButton
         onClicked: root.showLevel = !root.showLevel     // Con el botón derecho se esconde/muestra el valor de carga
     }
@@ -60,6 +61,8 @@ ColumnLayout{
         visible: root.showLevel
         text: root.level + "%"
         font.pixelSize: 10                              // Si es muy grande no cabe en la barra y descentra los textos
+        tooltip: root.tooltip
+        hint: Lang.tr("Clic derecho: mostrar / ocultar el porcentaje")
         acceptedButtons: Qt.RightButton
         onClicked: root.showLevel = !root.showLevel
     }

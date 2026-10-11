@@ -140,6 +140,7 @@ ColumnLayout{
                  + (Audio.source && Audio.micMuted ? "\n" + Lang.tr("Micrófono silenciado") : "")
                  + (nowPlaying.player && nowPlaying.player.isPlaying && nowPlaying.player.trackTitle     // "Sonando: Canción · Artista"
                     ? "\n" + Lang.tr("Sonando: %1", nowPlaying.player.trackTitle) + (nowPlaying.player.trackArtist ? " · " + nowPlaying.player.trackArtist : "") : "")
+        hint: Lang.tr("Clic: abrir el menú") + "\n" + Lang.tr("Clic derecho: silenciar / activar el sonido")
         popup: menu
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => { if (event.button === Qt.RightButton && Audio.sink) Audio.sink.audio.muted = !Audio.sink.audio.muted }

@@ -18,6 +18,7 @@ ColumnLayout {
         text: String.fromCodePoint(0xF0425)  // power
         font.pixelSize: 20
         tooltip: Lang.tr("Apagar, reiniciar, bloquear o suspender")
+        hint: Lang.tr("Clic: abrir el menú")
         popup: menu
     }
 
@@ -26,13 +27,13 @@ ColumnLayout {
         anchorItem: iconText                // A la altura del icono; como está al final de la barra, en la práctica queda pegado abajo
         implicitWidth: 170
 
-        // Una fila por opción: icono, texto y qué hace al pulsarla
+        // Una fila por opción: icono, texto, qué hace (tooltip, al dejar el ratón encima) y qué hace al pulsarla
         actions: [
-            { icon: 0xF0425, label: Lang.tr("Apagar"),         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
-            { icon: 0xF0709, label: Lang.tr("Reiniciar"),      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
-            { icon: 0xF033E, label: Lang.tr("Bloquear"),       run: () => ShellIpc.lockRequested() },                            // lock
-            { icon: 0xF0904, label: Lang.tr("Suspender"),      run: () => ShellIpc.suspendRequested() },                         // power-sleep: bloquea antes de suspender (Lock.qml)
-            { icon: 0xF0379, label: Lang.tr("Salvapantallas"), run: () => root.launchScreensaver() }                            // monitor
+            { icon: 0xF0425, label: Lang.tr("Apagar"),         tooltip: Lang.tr("Apaga el equipo."), run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
+            { icon: 0xF0709, label: Lang.tr("Reiniciar"),      tooltip: Lang.tr("Reinicia el equipo."), run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
+            { icon: 0xF033E, label: Lang.tr("Bloquear"),       tooltip: Lang.tr("Bloquea la pantalla (se desbloquea con tu contraseña)."), run: () => ShellIpc.lockRequested() },                            // lock
+            { icon: 0xF0904, label: Lang.tr("Suspender"),      tooltip: Lang.tr("Bloquea la pantalla y suspende el equipo."), run: () => ShellIpc.suspendRequested() },                         // power-sleep: bloquea antes de suspender (Lock.qml)
+            { icon: 0xF0379, label: Lang.tr("Salvapantallas"), tooltip: Lang.tr("Caracteres cayendo estilo Matrix en todas las pantallas. Se quita con cualquier tecla."), run: () => root.launchScreensaver() }                            // monitor
         ]
     }
 

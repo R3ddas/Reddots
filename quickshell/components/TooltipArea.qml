@@ -13,6 +13,7 @@ MouseArea {
     id: root
 
     property string tooltip: ""         // Vacío = sin etiqueta
+    property string hint: ""            // Qué hace cada botón o la rueda, debajo del tooltip (ver BarTooltip.qml)
     property Item target: parent        // Junto a qué sale la etiqueta
     property PopupWindow popup: null    // Desplegable que abre el icono: mientras está abierto no sale la etiqueta (lo taparía)
 
@@ -20,7 +21,7 @@ MouseArea {
     anchors.margins: -4                 // Zona de clic algo más grande que el icono
     hoverEnabled: true                  // Para la etiqueta
 
-    onContainsMouseChanged: tooltipLoader.active = containsMouse && tooltip !== ""
+    onContainsMouseChanged: tooltipLoader.active = containsMouse && (tooltip !== "" || hint !== "")
     onClicked: tooltipLoader.active = false
 
     LazyLoader {                        // Solo existe mientras el ratón está encima
@@ -29,6 +30,7 @@ MouseArea {
         BarTooltip {
             anchorItem: root.target
             text: root.popup && root.popup.visible ? "" : root.tooltip
+            hint: root.popup && root.popup.visible ? "" : root.hint
         }
     }
 }

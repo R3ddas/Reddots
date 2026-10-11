@@ -53,6 +53,7 @@ ColumnLayout {
 
         TooltipArea {
             tooltip: Lang.tr("Reddots: atajos de teclado, actualizar, instalar, idioma y GitHub") + (Updates.count > 0 ? "\n" + Updates.summary : "")
+            hint: Lang.tr("Clic: abrir el menú")
             popup: menu
             onClicked: menu.toggle()
             // Updates.qml no mira por su cuenta: se consulta al acercar el ratón, y el

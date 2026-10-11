@@ -7,6 +7,7 @@ import Quickshell
 import Quickshell.Hyprland  // Para acceder a los WorkSpaces
 import QtQuick
 import QtQuick.Layouts      // Para usar RowLayout o ColumnLayout
+import qs.components         // TooltipArea
 import qs.services
 
 Item{
@@ -59,9 +60,10 @@ Item{
                     onRunningChanged: if (!running) wsText.opacity = 1   // Al dejar de pedir atención, que no se quede a medias
                 }
 
-                MouseArea {
-                    anchors.fill: parent
+                TooltipArea {
                     anchors.margins: -5             // Doy un poco de margen para que sea más fácil hacer clic en el número
+                    tooltip: Lang.tr("Workspace %1", index + 1)
+                    hint: Lang.tr("Clic: ir a este workspace") + "\n" + Lang.tr("Rueda: siguiente / anterior")
                     onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + (index + 1) + " })")
                 }
             }

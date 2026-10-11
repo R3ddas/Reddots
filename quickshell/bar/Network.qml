@@ -54,6 +54,7 @@ ColumnLayout{
                : !Networking.wifiEnabled ? Lang.tr("Wifi apagado")
                : !root.active ? Lang.tr("Wifi: sin conexión")
                : root.active.name + " · " + Lang.tr("señal %1 %", Math.round(root.signal * 100))
+        hint: Lang.tr("Clic: abrir el menú") + "\n" + Lang.tr("Clic derecho: encender / apagar el wifi")
         popup: menu
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => { if (event.button === Qt.RightButton) Networking.wifiEnabled = !Networking.wifiEnabled }   // Clic derecho: enciende/apaga el wifi

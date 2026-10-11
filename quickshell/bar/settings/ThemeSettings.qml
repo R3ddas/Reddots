@@ -21,6 +21,7 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xF195A)  // palette-swatch-variant
         tooltip: Lang.tr("Tema: %1", Theme.activeTheme)
+        hint: Lang.tr("Clic: abrir el menú")
         popup: menu
     }
 
@@ -45,6 +46,7 @@ ColumnLayout {
         MenuRow {
             icon: String.fromCodePoint(0xF02E9)         // image
             text: WallpaperTheme.generating ? Lang.tr("Creando tema…") : Lang.tr("Crear tema desde el fondo")
+            tooltip: Lang.tr("Crea un tema con los colores del fondo de pantalla actual y lo aplica. Si ya habías creado uno, lo sustituye.")
             active: !WallpaperTheme.generating
             onClicked: WallpaperTheme.generate()
         }

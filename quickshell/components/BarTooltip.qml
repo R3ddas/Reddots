@@ -13,6 +13,8 @@ PopupWindow {
 
     property Item anchorItem: null
     property string text: ""
+    property string hint: ""            // Qué hace cada botón o la rueda ("Clic: …", una por línea): debajo, en pequeño y en gris
+    readonly property bool hasContent: text !== "" || hint !== ""
     property int delay: 500             // ms con el ratón quieto encima antes de aparecer
     property real offsetX: Geometry.sidebarWidth    // Dónde empieza, desde el borde izquierdo de anchorItem: tras la barra, como los desplegables
     // false (iconos de la barra): se coloca como los desplegables, sin salirse de la pantalla
@@ -24,8 +26,8 @@ PopupWindow {
     color: "transparent"
     mask: Region {}                     // Transparente a los clics: no estorba al icono ni a lo que haya debajo
 
-    implicitWidth: label.implicitWidth + 16
-    implicitHeight: label.implicitHeight + 10
+    implicitWidth: content.implicitWidth + 16
+    implicitHeight: content.implicitHeight + 10
 
     anchor.item: anchorItem
     anchor.rect.x: offsetX
@@ -34,12 +36,12 @@ PopupWindow {
                                                                    : Geometry.popupY(anchorItem, anchor.rect.x, implicitHeight)  // Centrada con el icono
 
     Component.onCompleted: showTimer.start()                // Se crea al entrar el ratón: sale tras el retardo
-    onTextChanged: if (text === "") visible = false        // Si deja de tener texto (p.ej. se abre el menú del icono), se quita
+    onHasContentChanged: if (!hasContent) visible = false  // Si se queda sin texto (p.ej. se abre el menú del icono), se quita
 
     Timer {
         id: showTimer
         interval: root.delay
-        onTriggered: root.visible = root.text !== ""
+        onTriggered: root.visible = root.hasContent
     }
 
     Rectangle {
@@ -49,12 +51,23 @@ PopupWindow {
         border.color: Theme.border
         border.width: 1
 
-        Text {
-            id: label
+        Column {
+            id: content
             anchors.centerIn: parent
-            text: root.text
-            color: Theme.textActive
-            font.pixelSize: 11
+            spacing: 3
+
+            Text {
+                visible: root.text !== ""
+                text: root.text
+                color: Theme.textActive
+                font.pixelSize: 11
+            }
+            Text {
+                visible: root.hint !== ""
+                text: root.hint
+                color: Theme.textDisabled
+                font.pixelSize: 10
+            }
         }
     }
 }

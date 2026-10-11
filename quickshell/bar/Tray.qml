@@ -43,6 +43,9 @@ ColumnLayout {
 
             TooltipArea {                               // Con el nombre de la app al dejar el ratón encima
                 tooltip: trayIcon.modelData.tooltipTitle || trayIcon.modelData.title
+                // Lo que hagan el clic central y la rueda lo decide cada app (volumen, siguiente canción...)
+                hint: trayIcon.modelData.onlyMenu ? Lang.tr("Clic: abrir el menú")
+                    : Lang.tr("Clic: abrir la app") + "\n" + Lang.tr("Clic derecho: menú de la app") + "\n" + Lang.tr("Clic central y rueda: según la app")
                 popup: menu
                 acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                 onClicked: event => {

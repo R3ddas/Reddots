@@ -28,6 +28,7 @@ ColumnLayout{
 
         TooltipArea {                                           // "jueves, 25 de septiembre de 2026" al dejar el ratón encima de la hora
             tooltip: Lang.locale.toString(clock.date, Lang.tr("dddd, d 'de' MMMM 'de' yyyy"))
+            hint: Lang.tr("Clic derecho: mostrar / ocultar la fecha")
             popup: menu
             acceptedButtons: Qt.RightButton
             onClicked: root.showDate = !root.showDate
@@ -44,9 +45,10 @@ ColumnLayout{
         horizontalAlignment: Text.AlignHCenter
         Layout.alignment: Qt.AlignHCenter
 
-        MouseArea{
-            anchors.fill: parent
-            anchors.margins: -4
+        TooltipArea {
+            tooltip: Lang.locale.toString(clock.date, Lang.tr("dddd, d 'de' MMMM 'de' yyyy"))
+            hint: Lang.tr("Clic: abrir el calendario") + "\n" + Lang.tr("Clic derecho: ocultar la fecha")
+            popup: menu
             acceptedButtons: Qt.LeftButton | Qt.RightButton
             onClicked: event => {
                 if (event.button === Qt.LeftButton) menu.toggle()                   // Izquierdo: abre/cierra el calendario
