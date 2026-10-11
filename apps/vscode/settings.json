@@ -14,7 +14,14 @@
     "github.copilot.nextEditSuggestions.allowWhitespaceOnlyChanges": false,
     "github.copilot.nextEditSuggestions.enabled": false,
     "github.copilot.nextEditSuggestions.extendedRange": false,
-    "github.copilot.nextEditSuggestions.fixes": false // Quito el minimapa
+    "github.copilot.nextEditSuggestions.fixes": false,
+    "github.copilot.enable": {
+        "*": false,
+        "plaintext": false,
+        "markdown": false,
+        "scminput": false,
+        "latex-package": false
+    } // Quito el minimapa
     //"[markdown]": { "editor.wordWrap": "on" },    // Puedo hacer las cosas por lenguaje si quisiera
     //"[latex]": { "editor.wordWrap": "on" }
 }
