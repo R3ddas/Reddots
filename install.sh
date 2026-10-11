@@ -1,33 +1,21 @@
 #!/usr/bin/env bash
+# Instalación completa de Reddots: lo mismo que update.sh (que se ejecuta primero) y, además,
+# lo que es solo de la primera vez y no se repite al actualizar: preguntar por las apps de
+# packages_opt.txt, quitar las que sobran (Firefox, Kitty...), el inicio de sesión
+# automático, las extensiones de VS Code, el reloj para el dual boot y el arranque sin texto.
+# Se puede volver a lanzar (también desde la barra, con "Instalar"): pregunta otra vez por
+# los opcionales que no estén instalados y vuelve a quitar los que sobran.
 set -euo pipefail
 cd "$(dirname "$0")"
-DOTS="$PWD" # Guardo la ruta en una variable para no acceder todo el rato
 
-# Los nombres de una de las listas del repo (packages.txt, packages_opt.txt),
-# uno por línea: sin comentarios (lo que va tras #), sin líneas vacías y sin espacios
-listFile() { sed 's/#.*//' "$1" | awk 'NF { print $1 }'; }
-
-echo "Instalando"
-
-sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes (aquí y no en packages.txt: hace falta ya para instalarlo y para el "paru -Syu" de abajo)
-
-echo "Actualizando el sistema"
-
-paru -Syu --noconfirm   # Actualiza el sistema por completo antes de instalar (repos oficiales + AUR)
-
-
-echo "Instalando paquetes"
-
-# Con paru y no con pacman: así packages.txt puede tener tanto paquetes de los repos como de
-# AUR (los de los repos, paru se los pasa a pacman). En una sola llamada y no con xargs, para
-# que paru siga teniendo el terminal (sudo pide ahí la contraseña al instalar los de AUR)
-mapfile -t packages < <(listFile packages.txt)
-paru -S --needed --noconfirm "${packages[@]}"
+# Con source y no ./update.sh: así se comparten DOTS y listFile. Si algo falla ahí, la
+# instalación se corta igual (set -e).
+source ./update.sh
 
 echo "Paquetes opcionales"
 
 # Los de packages_opt.txt que aún no están instalados: los que ya están no se preguntan
-# (ni se reinstalan), así que al actualizar con update-reddots.sh solo se pregunta por los que faltan
+# (ni se reinstalan). update.sh no pasa por aquí, así que al actualizar no se pregunta nada
 optional=()
 while read -r pkg; do
     pacman -Qq "$pkg" &>/dev/null || optional+=("$pkg")
@@ -85,19 +73,6 @@ if (( ${#installed[@]} )); then
 fi
 
 
-echo "Servicios"
-
-# El agente de polkit (la ventana que pide la contraseña al montar un disco, etc.) es
-# ahora quickshell/windows/PolkitDialog.qml. Solo puede haber uno por sesión, y hyprpolkitagent
-# viene instalado y activado de serie: arrancaría antes que Quickshell y le quitaría el
-# sitio. Se para y se desactiva antes de desinstalarlo, porque quitar el paquete no
-# detiene el que ya está en marcha en esta sesión.
-if pacman -Qq hyprpolkitagent &>/dev/null; then
-    systemctl --user disable --now hyprpolkitagent.service &>/dev/null || true
-    systemctl --user reset-failed hyprpolkitagent.service &>/dev/null || true
-    sudo pacman -Rns --noconfirm hyprpolkitagent
-fi
-
 echo "Inicio de sesión"
 
 # No hay gestor de inicio de sesión (SDDM, GDM...): en la TTY1 se entra solo, sin pedir
@@ -122,52 +97,12 @@ if [[ "$(cat "$autologinConf" 2>/dev/null)" != "$autologinText" ]]; then
     sudo systemctl daemon-reload
 fi
 
-echo "Sistema de archivos"
-
-# Enlaza "$1" (del repo) en "$2", creando antes la carpeta que lo contiene si aún no existe
-link() { mkdir -p "$(dirname "$2")"; ln -sfn "$1" "$2"; }
-
-# Quickshell se enlaza como carpeta entera (no archivo a archivo) para que los
-# widgets nuevos que se añadan al repo aparezcan solos, sin volver a ejecutar esto.
-# Si ya existe como carpeta de verdad (la config de otra shell de Quickshell), ln
-# metería el enlace dentro en vez de sustituirla: se aparta antes a una copia. Lo que
-# guarda Quickshell (tema, fondo, medidas...) no vive aquí sino en
-# ~/.local/state/quickshell, así que no se pierde.
-if [[ -d ~/.config/quickshell && ! -L ~/.config/quickshell ]]; then
-    backup=~/.config/quickshell.bak-$(date +%Y%m%d-%H%M%S)
-    mv ~/.config/quickshell "$backup"
-    echo "Aviso: ~/.config/quickshell era una carpeta propia, movida a $backup"
-fi
-link "$DOTS/quickshell"                      ~/.config/quickshell   # Incluye scripts/ (los que lanza la barra)
-for file in "$DOTS"/hypr/*; do link "$file"  ~/.config/hypr/"${file##*/}"; done
-link "$DOTS/apps/fish/config.fish"           ~/.config/fish/config.fish
-link "$DOTS/apps/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
-link "$DOTS/apps/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
-link "$DOTS/apps/vscode/settings.json"       ~/.config/Code/User/settings.json  # Ajustes de Visual Studio Code
-
-# Restos de una config de Hyprland anterior (la que trae CachyOS, o archivos que
-# ya no están en el repo): se apartan a una copia para que no se mezclen con la
-# de verdad. Se queda lo que es un enlace (lo de arriba) y lo que genera
-# Quickshell fuera del repo (ver hypr/hyprland.lua); todo lo demás se mueve.
-mapfile -t restos < <(find ~/.config/hypr -mindepth 1 -maxdepth 1 ! -type l \
-    ! -name shellOverrides.lua ! -name shellTheme.lua)
-if (( ${#restos[@]} )); then
-    backup=~/.config/hypr.bak-$(date +%Y%m%d-%H%M%S)
-    mkdir -p "$backup"
-    mv "${restos[@]}" "$backup"/
-    echo "Aviso: ~/.config/hypr tenía restos de otra config, movidos a $backup"
-fi
-
-# Los fondos van a la carpeta de imágenes del sistema (~/Imágenes en español), la misma
-# que las capturas de pantalla. xdg-user-dirs-update la crea si aún no existe.
-xdg-user-dirs-update
-link "$DOTS/wallpapers" "$(xdg-user-dir PICTURES)/Wallpapers"
-
 echo "Otras configuraciones"
 
 # Extensiones de Visual Studio Code, todas en una sola llamada a "code" (cada una tarda en
 # arrancar). No hace falta mirar antes si ya están: las que lo están solo dan un aviso
-# ("already installed") y no se reinstalan ni se actualizan.
+# ("already installed") y no se reinstalan ni se actualizan. Solo si está instalado: es
+# opcional (packages_opt.txt).
 vscodeExtensions=(
     bbenoist.QML                # QML
     James-Yu.latex-workshop     # LaTeX
@@ -175,7 +110,9 @@ vscodeExtensions=(
 )
 vscodeArgs=()
 for ext in "${vscodeExtensions[@]}"; do vscodeArgs+=(--install-extension "$ext"); done
-code "${vscodeArgs[@]}"
+if command -v code &>/dev/null; then
+    code "${vscodeArgs[@]}"
+fi
 
 echo "Reloj (dual boot con Windows)"
 

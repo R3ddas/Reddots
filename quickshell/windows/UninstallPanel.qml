@@ -3,8 +3,9 @@
 // ask() (la papelera de una fila o Shift + Supr, mientras se eligen las ocultas) y solo se
 // desinstala al confirmarlo. Antes se mira con scripts/uninstall-check.sh (no cambia nada) si:
 //   - otro paquete la necesita: pacman no deja quitarla, así que se ofrece ocultarla
-//   - la instala el repo (packages.txt...): se puede quitar, pero install.sh la volvería a
-//     poner, así que se avisa para quitarla también de ahí
+//   - la instala el repo: si es de packages.txt, se puede quitar pero la siguiente
+//     actualización (update.sh) la volvería a poner, así que se avisa para quitarla también
+//     de ahí; si es de packages_opt.txt, solo install.sh volvería a preguntar por ella
 //   - el paquete trae más apps, que también se irían, o dependencias que se quedan sin uso
 // Se desinstala con pkexec (la contraseña la pide PolkitDialog.qml) y "pacman -Rns".
 //
@@ -123,8 +124,8 @@ Rectangle {
             out.push(String.fromCodePoint(0xF0026) + "  También se va: " + u.apps.map(id => DesktopEntries.byId(id)?.name ?? id).join(", "))
         for (const file of u.repo ?? [])
             out.push(String.fromCodePoint(0xF0026) + "  " + (file === "packages_opt.txt"
-                ? "Está en packages_opt.txt: install.sh volverá a preguntar si instalarla"
-                : "La instala el repo (" + file + "): install.sh la volverá a poner. Quítala también de ahí"))
+                ? "Está en packages_opt.txt: al actualizar no vuelve, solo install.sh preguntará si instalarla"
+                : "La necesita Reddots (" + file + "): volverá en la siguiente actualización. Quítala también de ahí"))
         return out
     }
 

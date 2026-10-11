@@ -188,7 +188,7 @@ Singleton {
              + 'white   = "' + brightWhite + '"\n'
     }
 
-    // install.sh crea ~/.config/alacritty (ahí enlaza alacritty.toml), así que la carpeta ya existe
+    // update.sh crea ~/.config/alacritty (ahí enlaza alacritty.toml), así que la carpeta ya existe
     FileView {
         id: alacrittyFile
         path: Quickshell.env("HOME") + "/.config/alacritty/colors.toml"

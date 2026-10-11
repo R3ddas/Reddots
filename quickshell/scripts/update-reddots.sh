@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Lo lanza el botón de actualizar de la barra (Reddots.qml) dentro de un Alacritty:
-# baja los cambios del repo, ejecuta install.sh y, si el pull ha traído algo, reinicia
-# Quickshell y/o recarga Hyprland. Va en un terminal porque install.sh pide la
-# contraseña con sudo y paru -Syu puede hacer preguntas.
+# Lo lanzan los botones "Actualizar" e "Instalar" de la barra (Reddots.qml) dentro de un
+# Alacritty: baja los cambios del repo, ejecuta update.sh (con "update", lo normal) o
+# install.sh (con "install": además pregunta por los opcionales y quita los que sobran) y,
+# si el pull ha traído algo, reinicia Quickshell y/o recarga Hyprland. Va en un terminal
+# porque los dos piden la contraseña con sudo y paru -Syu puede hacer preguntas.
 #
 # Mientras git escribe los archivos, ni Quickshell ni Hyprland deben estar mirándolos:
 # git no reescribe un archivo por encima, lo borra y lo crea de nuevo, y en ese hueco
 # el archivo no existe. Los dos vigilan su configuración y se recargan solos al verla
 # cambiar, así que podían recargarse a medias: Hyprland sacaba la barra roja de
 # "cannot open .../hyprland.lua" y Quickshell se quedaba con la barra rota ("Theme is
-# not defined") hasta el final del script, después de install.sh. Por eso, antes de
+# not defined") hasta el final del script, después de update.sh. Por eso, antes de
 # bajar los cambios, se cierra Quickshell y se pausa la recarga automática de Hyprland,
 # solo si el pull va a tocar sus archivos.
 
@@ -17,6 +18,9 @@
 # siguiendo el enlace de ~/.config/quickshell: así vale esté donde esté el repo.
 repo="$(dirname "$(dirname "$(dirname "$(readlink -f "$0")")")")"
 cd "$repo" || { echo "No se encuentra el repo"; exec "${SHELL:-bash}"; }
+
+# Qué script se ejecuta después del pull: update.sh salvo que se pida "install"
+if [[ "$1" == install ]]; then script=install.sh; else script=update.sh; fi
 
 echo "Repo: $repo"
 echo
@@ -42,7 +46,7 @@ fi
 
 # A Hyprland basta con pausarle la recarga automática. Se vuelve a activar sola con el
 # "hyprctl reload" del final (hyprland.lua no pone disable_autoreload, así que vuelve a
-# false); hasta entonces sigue en pausa también durante install.sh, que puede crear
+# false); hasta entonces sigue en pausa también durante $script, que puede crear
 # enlaces nuevos en ~/.config/hypr que hyprland.lua necesite (un require() nuevo).
 autoreloadPaused=false
 if grep -q '^hypr/' <<< "$incoming"; then
@@ -53,13 +57,13 @@ fi
 # --ff-only: si hay cambios locales que chocan o las ramas han divergido, no mezcla
 # nada y falla sin tocar el repo; en ese caso se sigue con lo que hay.
 before=$(git rev-parse HEAD)
-git merge --ff-only '@{u}' || echo "Aviso: no se ha podido hacer git pull, se instala lo que hay ahora en el repo"
+git merge --ff-only '@{u}' || echo "Aviso: no se ha podido hacer git pull, se sigue con lo que hay ahora en el repo"
 after=$(git rev-parse HEAD)
 changed=$(git diff --name-only "$before" "$after")    # Archivos que ha traído el pull (vacío si no ha traído nada)
 
-# Quickshell vuelve ya, sin esperar a install.sh (que con paru -Syu puede tardar
+# Quickshell vuelve ya, sin esperar a $script (que con paru -Syu puede tardar
 # minutos): toda la carpeta quickshell/ está enlazada, así que no le hace falta nada
-# de install.sh para ver los archivos nuevos. Se relanza aunque el merge haya fallado,
+# de $script para ver los archivos nuevos. Se relanza aunque el merge haya fallado,
 # porque se cerró antes. Desde Hyprland, para que no dependa de este terminal.
 if $shellStopped; then
     echo "Volviendo a lanzar Quickshell"
@@ -68,17 +72,17 @@ if $shellStopped; then
 fi
 echo
 
-./install.sh
+"./$script"
 code=$?     # Se guarda ya: cualquier comando posterior (hasta un echo) lo sobrescribe
 echo
 if (( code == 0 )); then
-    echo "Instalación terminada"
+    echo "$script ha terminado"
 else
-    echo "install.sh ha fallado (código $code): revisa los mensajes de arriba"
+    echo "$script ha fallado (código $code): revisa los mensajes de arriba"
 fi
 
-# Aplicar a Hyprland lo que ha traído el pull, ahora que install.sh ya ha creado los
-# enlaces nuevos. Se hace aunque install.sh haya fallado, porque el repo ya ha cambiado.
+# Aplicar a Hyprland lo que ha traído el pull, ahora que $script ya ha creado los
+# enlaces nuevos. Se hace aunque haya fallado, porque el repo ya ha cambiado.
 # (Quickshell ya se relanzó justo después del pull, más arriba.)
 if grep -q '^hypr/' <<< "$changed"; then
     echo

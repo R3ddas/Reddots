@@ -34,7 +34,7 @@ ShellRoot {
     // abajo: si se destruyese con la pantalla, se daría de baja en el sistema y una
     // petición que llegase justo entonces se quedaría sin respuesta. Solo puede haber
     // un agente por sesión: si hyprpolkitagent sigue en marcha, este no se registra
-    // (install.sh lo para y lo desinstala).
+    // (update.sh lo para y lo desinstala).
     PolkitAgent { id: polkitAgent }
 
     // Servidor de notificaciones: vive en services/NotificationCenter.qml, fuera del Variants

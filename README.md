@@ -12,9 +12,18 @@ Para instalarlo:
 
 ```bash
 cd ~/Reddots
-chmod +x install.sh
+chmod +x install.sh update.sh
 ./install.sh
 ```
+
+Para actualizarlo, usa **Actualizar Reddots** en el menú del icono de Reddots (arriba de la barra). Baja los cambios del repo y ejecuta `update.sh`, que actualiza el sistema y se asegura de que esté todo lo que necesita Reddots (`packages.txt`, enlaces de la config...). No instala ni quita ninguna otra app: si has desinstalado algo de `packages_opt.txt` o has vuelto a instalar Firefox, se queda así. Desde un terminal es lo mismo que:
+
+```bash
+git pull
+./update.sh
+```
+
+**Instalar Reddots**, en el mismo menú, baja los cambios y vuelve a pasar `install.sh` entero: pregunta por los opcionales que no tengas y vuelve a quitar los que sobran.
 
 ## Si algo falla
 
@@ -36,7 +45,7 @@ chmod +x install.sh
   hyprctl --instance 0 dispatch 'hl.dsp.exec_cmd("quickshell")'
   ```
 
-- **Prefieres que la TTY1 vuelva a pedir usuario y contraseña.** Quita el inicio automático (lo vuelve a poner `install.sh`; la pantalla de bloqueo saldría igual después de entrar):
+- **Prefieres que la TTY1 vuelva a pedir usuario y contraseña.** Quita el inicio automático (solo lo vuelve a poner `install.sh`, no las actualizaciones; la pantalla de bloqueo saldría igual después de entrar):
 
   ```bash
   sudo rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
@@ -54,4 +63,5 @@ chmod +x install.sh
   - `assets/`: el icono de Reddots y la configuración de PAM con la que la pantalla de bloqueo comprueba la contraseña (`assets/pam/lock`).
 - `apps/`: configuración de cada programa, una carpeta por programa (`alacritty/`, `fish/`, `fastfetch/`, `vscode/`).
 - `wallpapers/`: los fondos de pantalla.
-- `packages.txt` y `packages_opt.txt`: los paquetes que instala `install.sh` y los opcionales (pregunta antes de instalarlos). Las apps que no salen en el lanzador se eligen desde él, con la rueda junto al buscador.
+- `packages.txt`: los paquetes que necesita Reddots; los instala `update.sh`, así que vuelven en cada actualización.
+- `packages_opt.txt`: las apps (Chrome, VS Code, LaTeX, Steam...); solo las ofrece `install.sh`, que pregunta antes de instalarlas. Las apps que no salen en el lanzador se eligen desde él, con la rueda junto al buscador.

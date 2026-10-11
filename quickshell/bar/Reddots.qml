@@ -1,9 +1,12 @@
 // Icono en la barra + popup con lo relativo al propio repo Reddots:
 //   - Atajos de teclado: abre la chuleta (Keybinds.qml). Este archivo solo avisa con
 //     keybindsRequested(); quién la abre lo decide shell.qml.
-//   - Actualizar Reddots: baja los cambios del repo (git pull) y ejecuta install.sh, en
-//     un Alacritty para que sudo pueda pedir la contraseña y paru hacer sus preguntas.
-//     El trabajo lo hace scripts/update-reddots.sh; esto solo lo lanza.
+//   - Actualizar Reddots: baja los cambios del repo (git pull) y ejecuta update.sh (el
+//     sistema y lo que necesita Reddots, sin tocar las demás apps).
+//   - Instalar Reddots: lo mismo pero con install.sh, que además pregunta por las apps
+//     opcionales y quita las que sobran.
+//     Los dos van en un Alacritty para que sudo pueda pedir la contraseña y paru hacer sus
+//     preguntas. El trabajo lo hace scripts/update-reddots.sh; esto solo lo lanza.
 //   - Ver en GitHub: abre la página del repo en el navegador.
 // Va arriba del todo de la barra, encima de los workspaces (Bar.qml), y con un paso más
 // (el popup) para no lanzar sin querer una actualización de todo el sistema.
@@ -19,6 +22,12 @@ ColumnLayout {
     spacing: 6
 
     signal keybindsRequested()      // Se ha pulsado "Atajos de teclado"
+
+    // Abre el terminal con scripts/update-reddots.sh: mode es "update" o "install"
+    function runScript(mode, title) {
+        Quickshell.execDetached(["alacritty", "--title", title, "-e",
+                                 Quickshell.shellPath("scripts/update-reddots.sh"), mode])
+    }
 
     // El logo de Reddots (assets/ReddotsIcon.svg) en vez de un glifo de la Nerd Font, así que
     // no es un BarIcon: la zona de clic y el tooltip (TooltipArea.qml) van aquí, como en Tray.qml.
@@ -42,7 +51,7 @@ ColumnLayout {
         Layout.alignment: Qt.AlignHCenter
 
         TooltipArea {
-            tooltip: "Reddots: atajos de teclado, actualizar y GitHub" + (Updates.count > 0 ? "\n" + Updates.summary : "")
+            tooltip: "Reddots: atajos de teclado, actualizar, instalar y GitHub" + (Updates.count > 0 ? "\n" + Updates.summary : "")
             popup: menu
             onClicked: menu.toggle()
             // Updates.qml no mira por su cuenta: se consulta al acercar el ratón, y el
@@ -61,10 +70,12 @@ ColumnLayout {
         actions: [
             { icon: 0xF030C, label: "Atajos de teclado",  run: () => root.keybindsRequested() },     // keyboard
             { icon: 0xF06B0, label: "Actualizar Reddots",                                             // update
-              hint: "Baja los cambios del repo y ejecuta install.sh en un terminal. Actualiza todo el sistema y pide la contraseña."
+              hint: "Baja los cambios del repo y ejecuta update.sh en un terminal. Actualiza todo el sistema y pide la contraseña. No instala ni quita otras apps."
                     + (Updates.count > 0 ? "\n" + Updates.summary + "." : ""),
-              run: () => Quickshell.execDetached(["alacritty", "--title", "Actualizar Reddots", "-e",
-                            Quickshell.shellPath("scripts/update-reddots.sh")]) },
+              run: () => root.runScript("update", "Actualizar Reddots") },
+            { icon: 0xF01DA, label: "Instalar Reddots",                                               // download
+              hint: "Como actualizar, pero con install.sh: además pregunta por las apps opcionales que falten y quita las que sobran (Firefox, Kitty...).",
+              run: () => root.runScript("install", "Instalar Reddots") },
             // La página del repo, en el navegador por defecto (xdg-open, de xdg-utils en packages.txt).
             // La dirección va escrita tal cual, como en el README: es la del repo original aunque
             // este equipo lo haya clonado de otro sitio

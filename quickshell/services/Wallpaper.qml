@@ -24,7 +24,7 @@ Singleton {
         return m ? m[1].replace("$HOME", Quickshell.env("HOME")) : Quickshell.env("HOME") + "/Pictures"
     }
 
-    readonly property string folder: picturesDir + "/Wallpapers"    // Carpeta de los fondos (install.sh la enlaza a Wallpapers/ del repo)
+    readonly property string folder: picturesDir + "/Wallpapers"    // Carpeta de los fondos (update.sh la enlaza a Wallpapers/ del repo)
 
     property alias path: adapter.path   // Ruta del fondo activo: al cambiarla (desde WallpaperSettings.qml) se ve y se guarda sola
     // Ya se ha leído wallpaper.json (o se sabe que no existe). Hasta entonces "path" vale el

@@ -8,8 +8,9 @@
 #   remove|<paquete>            lo que se quitaría con él (él mismo y las dependencias que ya
 #                               no necesita nadie), uno por línea
 #   app|<id>                    otros .desktop del mismo paquete, que también desaparecen
-#   repo|<archivo>              lo instala el repo (packages.txt o packages_opt.txt): al volver
-#                               a pasar install.sh volvería
+#   repo|<archivo>              lo instala el repo: con packages.txt vuelve en la siguiente
+#                               actualización (update.sh); con packages_opt.txt, install.sh
+#                               volvería a preguntar si instalarlo
 #   blocked|<paquete>           otro paquete lo necesita: pacman no deja quitarlo, uno por línea
 #   error|<mensaje>             no se puede ni mirar (no hay .desktop, no es de ningún paquete...)
 # No cambia nada ni pide contraseña: "pacman -Rsp" solo simula la desinstalación.
@@ -37,10 +38,10 @@ fi
 echo "pkg|$pkg"
 
 # --- ¿Lo instala el repo? ---
-# La carpeta de Quickshell es un enlace al repo (lo crea install.sh): siguiéndolo se llega
+# La carpeta de Quickshell es un enlace al repo (lo crea update.sh): siguiéndolo se llega
 # a las listas de paquetes, dos carpetas por encima de este script
 dots="$(dirname "$(realpath "$0")")/../.."
-listFile() { sed 's/#.*//' "$1" | awk 'NF { print $1 }'; }     # Igual que en install.sh
+listFile() { sed 's/#.*//' "$1" | awk 'NF { print $1 }'; }     # Igual que en update.sh
 listFile "$dots/packages.txt"     | grep -qxF "$pkg" && echo "repo|packages.txt"
 listFile "$dots/packages_opt.txt" | grep -qxF "$pkg" && echo "repo|packages_opt.txt"
 
