@@ -1,6 +1,6 @@
 // Fila de un menú de la barra (Power, Screenshot, Reddots, Tray, Volume): icono, texto y,
-// si hace falta, un aviso debajo ("hint") y una flecha de submenú. Resalta con el
-// ratón encima y avisa con clicked().
+// si hace falta, una flecha de submenú y una explicación al dejar el ratón encima
+// ("tooltip"). Resalta con el ratón encima y avisa con clicked().
 import Quickshell
 import Quickshell.Widgets           // Para el IconImage
 import QtQuick
@@ -13,7 +13,7 @@ Rectangle {
     property string icon: ""            // Glifo de la Nerd Font (o "✓", "‹"...); se ignora si hay iconSource
     property string iconSource: ""      // Icono como imagen (los de los menús de la bandeja)
     property string text: ""
-    property string hint: ""            // Aviso de qué va a pasar, en pequeño debajo del texto
+    property string tooltip: ""         // Qué va a pasar, en una etiqueta (BarTooltip.qml) a la derecha del menú al dejar el ratón encima
     property bool arrow: false          // Tiene submenú: flecha a la derecha
     property bool active: true          // false = en gris y sin reaccionar al ratón
     property bool selected: false       // La opción en uso (la salida de audio de Volume.qml...): icono y texto con el color de acento
@@ -21,7 +21,7 @@ Rectangle {
 
     Layout.fillWidth: true
     implicitWidth: label.implicitWidth + 28 + 16 + (arrow ? 20 : 0)    // Lo que pide el texto: para los menús que se ajustan a él (Tray)
-    implicitHeight: hint !== "" ? col.implicitHeight + 10 : 28
+    implicitHeight: 28
     radius: 4
     color: rowMouse.containsMouse && active ? Theme.surfaceHover : "transparent"
 
@@ -75,15 +75,6 @@ Rectangle {
             }
         }
 
-        Text {                                          // Aviso, alineado con el texto y no con el icono
-            visible: row.hint !== ""
-            text: row.hint
-            color: Theme.textDisabled
-            font.pixelSize: 11
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-            Layout.leftMargin: 28
-        }
     }
 
     MouseArea {
@@ -91,6 +82,21 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         enabled: row.active
-        onClicked: row.clicked()
+        onContainsMouseChanged: tooltipLoader.active = containsMouse && row.tooltip !== ""
+        onClicked: {
+            tooltipLoader.active = false        // Como en TooltipArea.qml: al pulsar se quita (y el menú suele cerrarse)
+            row.clicked()
+        }
+    }
+
+    LazyLoader {                                // Solo existe mientras el ratón está encima
+        id: tooltipLoader
+        active: false
+        BarTooltip {
+            anchorItem: row
+            offsetX: row.width + 14             // Fuera del menú: el padding de BarPopup (8), su borde y algo de aire
+            besideItem: true
+            text: row.tooltip
+        }
     }
 }

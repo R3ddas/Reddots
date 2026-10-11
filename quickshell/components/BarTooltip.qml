@@ -2,7 +2,8 @@
 // un momento (red, volumen, batería...). Solo existe mientras el ratón está encima: la crea
 // TooltipArea.qml al entrar y la destruye al salir. Quien la usa le dice junto a qué icono
 // sale ("anchorItem") y qué texto pone; aquí se espera el retardo y se coloca como los
-// desplegables (BarPopup.qml), pero sin grab: no roba ni el foco ni los clics.
+// desplegables (BarPopup.qml), pero sin grab: no roba ni el foco ni los clics. También la
+// usan las filas de los menús (MenuRow.qml), con besideItem: a la derecha del menú.
 import Quickshell
 import QtQuick
 import qs.services
@@ -13,6 +14,11 @@ PopupWindow {
     property Item anchorItem: null
     property string text: ""
     property int delay: 500             // ms con el ratón quieto encima antes de aparecer
+    property real offsetX: Geometry.sidebarWidth    // Dónde empieza, desde el borde izquierdo de anchorItem: tras la barra, como los desplegables
+    // false (iconos de la barra): se coloca como los desplegables, sin salirse de la pantalla
+    // (Geometry.popupY). true (filas de un menú, que ya está dentro de la pantalla): solo
+    // centrada en vertical con anchorItem; popupY no vale ahí, porque mide la ventana del menú
+    property bool besideItem: false
 
     visible: false
     color: "transparent"
@@ -22,9 +28,10 @@ PopupWindow {
     implicitHeight: label.implicitHeight + 10
 
     anchor.item: anchorItem
-    anchor.rect.x: Geometry.sidebarWidth            // Igual que los desplegables: a partir del borde derecho de la barra
+    anchor.rect.x: offsetX
     anchor.gravity: Edges.Bottom | Edges.Right
-    anchor.onAnchoring: if (anchorItem) anchor.rect.y = Geometry.popupY(anchorItem, anchor.rect.x, implicitHeight)  // Centrada con el icono
+    anchor.onAnchoring: if (anchorItem) anchor.rect.y = besideItem ? (anchorItem.height - implicitHeight) / 2
+                                                                   : Geometry.popupY(anchorItem, anchor.rect.x, implicitHeight)  // Centrada con el icono
 
     Component.onCompleted: showTimer.start()                // Se crea al entrar el ratón: sale tras el retardo
     onTextChanged: if (text === "") visible = false        // Si deja de tener texto (p.ej. se abre el menú del icono), se quita

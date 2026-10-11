@@ -67,20 +67,20 @@ ColumnLayout {
         implicitWidth: 240
 
         // Una fila por opción, como en Power.qml: icono, texto, qué hace al pulsarla
-        // y, si hace falta, un aviso debajo de lo que va a pasar ("hint")
+        // y, si hace falta, qué va a pasar al dejar el ratón encima ("tooltip")
         actions: [
             { icon: 0xF030C, label: Lang.tr("Atajos de teclado"),  run: () => root.keybindsRequested() },     // keyboard
             { icon: 0xF06B0, label: Lang.tr("Actualizar Reddots"),                                    // update
-              hint: Lang.tr("Baja los cambios del repo y actualiza el sistema. No instala ni quita otras apps.")
+              tooltip: Lang.tr("Baja los cambios del repo y actualiza el sistema. No instala ni quita otras apps.")
                     + (Updates.count > 0 ? "\n" + Updates.summary + "." : ""),
               run: () => root.runScript("update", Lang.tr("Actualizar Reddots")) },
             { icon: 0xF01DA, label: Lang.tr("Instalar Reddots"),                                      // download
-              hint: Lang.tr("Actualiza y después pregunta por las apps opcionales."),
+              tooltip: Lang.tr("Actualiza y después pregunta por las apps opcionales."),
               run: () => root.runScript("install", Lang.tr("Instalar Reddots")) },
             // El idioma de la interfaz (Lang.qml): cada clic pasa al otro. Va escrito en los dos
             // idiomas aquí mismo, sin Lang.tr(), porque es lo único que tiene que entenderse en ambos
             { icon: 0xF05CA, label: Lang.code === "en" ? "Language: English" : "Idioma: español",          // translate
-              hint: Lang.code === "en" ? "Cambiar a español" : "Switch to English",
+              tooltip: Lang.code === "en" ? "Cambiar a español" : "Switch to English",
               run: () => Lang.toggle() },
             // La página del repo, en el navegador por defecto (xdg-open, de xdg-utils en packages.txt).
             // La dirección va escrita tal cual, como en el README: es la del repo original aunque
