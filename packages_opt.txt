@@ -1,6 +1,8 @@
 # Paquetes opcionales: install.sh pregunta antes de instalarlos (todos, ninguno o uno a uno).
 # Los que ya están instalados no se preguntan, y update.sh no los toca: si desinstalas uno,
 # no vuelve. Van con paru, así que pueden ser de los repos o de AUR.
+# Uno a uno pregunta por cada paquete, salvo los de un grupo: los que van tras una cabecera
+# "## Nombre" (con dos #), hasta la siguiente línea vacía, se preguntan todos juntos.
 
 # Apps
 kate            # Editor de texto estilo notepad
@@ -12,7 +14,7 @@ zip             # Paquete zip para que file-roller comprima zip
 imv             # Visor de imagenes minimalista
 noto-fonts-emoji        # Emojis de color para las apps (Chrome, Zen, Teams, Kate...). La barra ya no los usa: solo glifos de la Nerd Font
 
-# LaTeX (con la extensión LaTeX Workshop de Visual Studio Code, ver install.sh)
+## LaTeX (con la extensión LaTeX Workshop de Visual Studio Code, ver install.sh)
 texlive-basic             # Lo básico de LaTeX (antes se llamaba texlive-core)
 texlive-latexextra        # Paquetes de LaTeX adicionales
 texlive-binextra          # Programas auxiliares (latexmk, que usa LaTeX Workshop para compilar)

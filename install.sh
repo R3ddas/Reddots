@@ -15,11 +15,33 @@ source ./update.sh
 echo "Paquetes opcionales"
 
 # Los de packages_opt.txt que aún no están instalados: los que ya están no se preguntan
-# (ni se reinstalan). update.sh no pasa por aquí, así que al actualizar no se pregunta nada
-optional=()
-while read -r pkg; do
-    pacman -Qq "$pkg" &>/dev/null || optional+=("$pkg")
-done < <(listFile packages_opt.txt)
+# (ni se reinstalan). update.sh no pasa por aquí, así que al actualizar no se pregunta nada.
+# Uno a uno se pregunta por cada paquete, salvo los de un grupo: los que van tras una
+# cabecera "## Nombre" (una sola palabra), hasta la siguiente línea vacía, se preguntan
+# juntos. optList saca una línea "grupo|paquete" por paquete (grupo vacío si va suelto).
+optList() {
+    awk '/^##/ { group = $2; next }     # Empieza un grupo
+         !NF   { group = ""; next }     # Una línea vacía lo termina
+         { sub(/#.*/, "") } NF { print group "|" $1 }' packages_opt.txt
+}
+optional=()     # Todos los que faltan, para "todos"
+units=()        # Por lo que se pregunta uno a uno: un paquete, o los de un grupo separados por espacios
+groups=()       # El grupo de cada uno de units (vacío si es un paquete suelto)
+while IFS='|' read -r group pkg; do
+    if pacman -Qq "$pkg" &>/dev/null; then continue; fi
+    optional+=("$pkg")
+    if [[ -n "$group" ]] && (( ${#groups[@]} )) && [[ "${groups[-1]}" == "$group" ]]; then
+        units[-1]+=" $pkg"      # Otro del mismo grupo: va con los anteriores
+    else
+        units+=("$pkg"); groups+=("$group")
+    fi
+done < <(optList)
+
+# Cómo se nombra cada uno al preguntar: el paquete, o el grupo con los suyos
+labels=()
+for i in "${!units[@]}"; do
+    if [[ -n "${groups[i]}" ]]; then labels+=("${groups[i]} (${units[i]})"); else labels+=("${units[i]}"); fi
+done
 
 chosen=()   # Los que se van a instalar
 if (( ${#optional[@]} == 0 )); then
@@ -36,11 +58,12 @@ else
             [tT]) chosen=("${optional[@]}"); break ;;
             [nN]|"") break ;;
             [uU])
-                for pkg in "${optional[@]}"; do
-                    read -r -p "¿Instalar $pkg? [s/N] " answer
+                for i in "${!units[@]}"; do
+                    read -r -p "¿Instalar ${labels[i]}? [s/N] " answer
                     # Con if y no con "[[ ]] && ...": con set -e, un "no" en el último paquete
-                    # dejaría el bucle con código 1 y cortaría el script
-                    if [[ "$answer" =~ ^[sS]$ ]]; then chosen+=("$pkg"); fi
+                    # dejaría el bucle con código 1 y cortaría el script. read -a separa los
+                    # de un grupo en paquetes sueltos para paru
+                    if [[ "$answer" =~ ^[sS]$ ]]; then read -ra pkgs <<< "${units[i]}"; chosen+=("${pkgs[@]}"); fi
                 done
                 break ;;
             *) echo "Responde t, n o u" ;;
