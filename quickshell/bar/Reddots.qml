@@ -71,11 +71,11 @@ ColumnLayout {
         actions: [
             { icon: 0xF030C, label: Lang.tr("Atajos de teclado"),  run: () => root.keybindsRequested() },     // keyboard
             { icon: 0xF06B0, label: Lang.tr("Actualizar Reddots"),                                    // update
-              hint: Lang.tr("Baja los cambios del repo y ejecuta update.sh en un terminal. Actualiza todo el sistema y pide la contraseña. No instala ni quita otras apps.")
+              hint: Lang.tr("Baja los cambios del repo y actualiza el sistema. No instala ni quita otras apps.")
                     + (Updates.count > 0 ? "\n" + Updates.summary + "." : ""),
               run: () => root.runScript("update", Lang.tr("Actualizar Reddots")) },
             { icon: 0xF01DA, label: Lang.tr("Instalar Reddots"),                                      // download
-              hint: Lang.tr("Como actualizar, pero con install.sh: además pregunta por las apps opcionales que falten y quita las que sobran (Firefox, Kitty...)."),
+              hint: Lang.tr("Actualiza y después pregunta por las apps opcionales."),
               run: () => root.runScript("install", Lang.tr("Instalar Reddots")) },
             // El idioma de la interfaz (Lang.qml): cada clic pasa al otro. Va escrito en los dos
             // idiomas aquí mismo, sin Lang.tr(), porque es lo único que tiene que entenderse en ambos
