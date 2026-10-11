@@ -6,6 +6,8 @@ local mainMod = "SUPER" -- La tecla "Windows" como modificador principal
 -- muestra la chuleta de atajos de la barra (quickshell/windows/Keybinds.qml), que la lee en
 -- vivo con "hyprctl binds -j": un atajo nuevo aparece ahí solo con ponerle descripción.
 -- Los que comparten descripción salen juntos en una sola línea (p.ej. las flechas).
+-- Con la interfaz en inglés, la chuleta traduce la descripción entera con
+-- quickshell/services/en.json: una descripción nueva necesita allí su línea.
 
 hl.bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal), { description = "Aplicaciones: Abrir un terminal" })
 hl.bind(mainMod .. " + Q", hl.dsp.window.close(),     { description = "Ventanas: Cerrar la ventana" })      -- Cierra la ventana sobre la que esté el ratón (aunque no haya pulsado)

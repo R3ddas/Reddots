@@ -49,7 +49,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
     property var filteredEntries: {
         const query = Utils.normalize(searchInput.text.trim())
         if (query === "") return entries
-        return entries.filter(e => Utils.normalize(e.image ? "imagen " + e.info : e.text).includes(query))   // Las imágenes se encuentran escribiendo "imagen"
+        return entries.filter(e => Utils.normalize(e.image ? Lang.tr("Imagen") + " " + e.info : e.text).includes(query))   // Las imágenes se encuentran escribiendo "imagen"
     }
 
     function copy(entry) {
@@ -115,7 +115,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
 
             InputField {                            // Campo de búsqueda (como el del Launcher): ↑ ↓ mueven la selección de la lista
                 id: searchInput
-                placeholder: "Buscar en el portapapeles…"
+                placeholder: Lang.tr("Buscar en el portapapeles…")
                 list: list
                 onAccepted: root.copy(root.filteredEntries[list.currentIndex])
                 onEscapePressed: root.visible = false
@@ -130,7 +130,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
             SelectionList {
                 id: list
                 model: root.filteredEntries
-                emptyText: root.entries.length === 0 ? "El historial está vacío: copia algo" : "Sin resultados"
+                emptyText: root.entries.length === 0 ? Lang.tr("El historial está vacío: copia algo") : Lang.tr("Sin resultados")
                 onActivated: index => root.copy(root.filteredEntries[index])
 
                 delegate: Item {
@@ -183,7 +183,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                         }
 
                         Text {
-                            text: entryDelegate.modelData.image ? "Imagen · " + entryDelegate.modelData.info : entryDelegate.modelData.text
+                            text: entryDelegate.modelData.image ? Lang.tr("Imagen") + " · " + entryDelegate.modelData.info : entryDelegate.modelData.text
                             color: entryDelegate.modelData.image ? Theme.textDisabled : Theme.textActive
                             elide: Text.ElideRight
                             maximumLineCount: 1
@@ -197,7 +197,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
             Text {                                  // Recordatorio de las teclas
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: "Intro: copiar   ·   Shift + Supr: borrar del historial   ·   Esc: cerrar"
+                text: Lang.tr("Intro: copiar   ·   Shift + Supr: borrar del historial   ·   Esc: cerrar")
                 color: Theme.textDisabled
                 font.pixelSize: 11
             }

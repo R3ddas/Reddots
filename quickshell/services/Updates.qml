@@ -16,9 +16,9 @@ Singleton {
     readonly property int count: repos.length + aur.length
 
     // "5 actualizaciones pendientes (3 de los repos, 2 de AUR)"
-    readonly property string summary: count === 0 ? "Sistema al día"
-        : count + (count === 1 ? " actualización pendiente" : " actualizaciones pendientes")
-          + " (" + repos.length + " de los repos, " + aur.length + " de AUR)"
+    readonly property string summary: count === 0 ? Lang.tr("Sistema al día")
+        : (count === 1 ? Lang.tr("1 actualización pendiente") : Lang.tr("%1 actualizaciones pendientes", count))
+          + " " + Lang.tr("(%1 de los repos, %2 de AUR)", repos.length, aur.length)
 
     function refresh() {
         if (!proc.running) proc.running = true      // Si ya está mirando, no se corta: ya llegará ese resultado

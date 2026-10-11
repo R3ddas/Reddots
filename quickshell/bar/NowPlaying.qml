@@ -66,7 +66,7 @@ ColumnLayout {
     RowLayout {                         // Título con el nombre del reproductor + "1/2 ›" para cambiar de uno a otro
         Layout.fillWidth: true
         Text {                          // Como los títulos de las demás partes del popup
-            text: "Reproduciendo" + (root.player && root.player.identity ? " · " + root.player.identity : "")
+            text: Lang.tr("Reproduciendo") + (root.player && root.player.identity ? " · " + root.player.identity : "")
             color: Theme.textDisabled
             font.pixelSize: 11
             font.bold: true
@@ -118,7 +118,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 1
                 Text {
-                    text: root.player ? (root.player.trackTitle || "Sin título") : ""
+                    text: root.player ? (root.player.trackTitle || Lang.tr("Sin título")) : ""
                     textFormat: Text.PlainText                // Viene de la app (como en Notifications.qml)
                     color: Theme.textActive
                     font.bold: true

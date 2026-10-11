@@ -108,8 +108,8 @@ Scope{
                 Text{
                     id: moreText
                     anchors.centerIn: parent
-                    text: "+" + root.hiddenCount + (root.hiddenCount === 1 ? " notificación más" : " notificaciones más")
-                          + "  ·  clic derecho: cerrar todas"
+                    text: (root.hiddenCount === 1 ? Lang.tr("+1 notificación más") : Lang.tr("+%1 notificaciones más", root.hiddenCount))
+                          + "  ·  " + Lang.tr("clic derecho: cerrar todas")
                     color: Theme.textActive
                     font.pixelSize: 11
                 }

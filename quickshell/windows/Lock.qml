@@ -128,12 +128,12 @@ Scope {
                 return
             }
             root.failures++
-            root.message = result === PamResult.MaxTries ? "Demasiados intentos, espera un poco" : "Contraseña incorrecta"
+            root.message = result === PamResult.MaxTries ? Lang.tr("Demasiados intentos, espera un poco") : Lang.tr("Contraseña incorrecta")
             root.messageIsError = true
         }
 
         onError: error => {
-            root.message = "No se pudo comprobar la contraseña (" + PamError.toString(error) + ")"
+            root.message = Lang.tr("No se pudo comprobar la contraseña (%1)", PamError.toString(error))
             root.messageIsError = true
         }
     }

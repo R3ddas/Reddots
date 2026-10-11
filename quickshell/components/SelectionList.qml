@@ -15,7 +15,7 @@ import qs.services
 ListView {
     id: root
 
-    property string emptyText: "Sin resultados"
+    property string emptyText: Lang.tr("Sin resultados")
     signal activated(int index)
 
     Layout.fillWidth: true

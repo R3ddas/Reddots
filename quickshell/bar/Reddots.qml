@@ -7,6 +7,7 @@
 //     opcionales y quita las que sobran.
 //     Los dos van en un Alacritty para que sudo pueda pedir la contraseña y paru hacer sus
 //     preguntas. El trabajo lo hace scripts/update-reddots.sh; esto solo lo lanza.
+//   - Idioma: pasa la interfaz de español a inglés y al revés (services/Lang.qml).
 //   - Ver en GitHub: abre la página del repo en el navegador.
 // Va arriba del todo de la barra, encima de los workspaces (Bar.qml), y con un paso más
 // (el popup) para no lanzar sin querer una actualización de todo el sistema.
@@ -51,7 +52,7 @@ ColumnLayout {
         Layout.alignment: Qt.AlignHCenter
 
         TooltipArea {
-            tooltip: "Reddots: atajos de teclado, actualizar, instalar y GitHub" + (Updates.count > 0 ? "\n" + Updates.summary : "")
+            tooltip: Lang.tr("Reddots: atajos de teclado, actualizar, instalar, idioma y GitHub") + (Updates.count > 0 ? "\n" + Updates.summary : "")
             popup: menu
             onClicked: menu.toggle()
             // Updates.qml no mira por su cuenta: se consulta al acercar el ratón, y el
@@ -68,18 +69,23 @@ ColumnLayout {
         // Una fila por opción, como en Power.qml: icono, texto, qué hace al pulsarla
         // y, si hace falta, un aviso debajo de lo que va a pasar ("hint")
         actions: [
-            { icon: 0xF030C, label: "Atajos de teclado",  run: () => root.keybindsRequested() },     // keyboard
-            { icon: 0xF06B0, label: "Actualizar Reddots",                                             // update
-              hint: "Baja los cambios del repo y ejecuta update.sh en un terminal. Actualiza todo el sistema y pide la contraseña. No instala ni quita otras apps."
+            { icon: 0xF030C, label: Lang.tr("Atajos de teclado"),  run: () => root.keybindsRequested() },     // keyboard
+            { icon: 0xF06B0, label: Lang.tr("Actualizar Reddots"),                                    // update
+              hint: Lang.tr("Baja los cambios del repo y ejecuta update.sh en un terminal. Actualiza todo el sistema y pide la contraseña. No instala ni quita otras apps.")
                     + (Updates.count > 0 ? "\n" + Updates.summary + "." : ""),
-              run: () => root.runScript("update", "Actualizar Reddots") },
-            { icon: 0xF01DA, label: "Instalar Reddots",                                               // download
-              hint: "Como actualizar, pero con install.sh: además pregunta por las apps opcionales que falten y quita las que sobran (Firefox, Kitty...).",
-              run: () => root.runScript("install", "Instalar Reddots") },
+              run: () => root.runScript("update", Lang.tr("Actualizar Reddots")) },
+            { icon: 0xF01DA, label: Lang.tr("Instalar Reddots"),                                      // download
+              hint: Lang.tr("Como actualizar, pero con install.sh: además pregunta por las apps opcionales que falten y quita las que sobran (Firefox, Kitty...)."),
+              run: () => root.runScript("install", Lang.tr("Instalar Reddots")) },
+            // El idioma de la interfaz (Lang.qml): cada clic pasa al otro. Va escrito en los dos
+            // idiomas aquí mismo, sin Lang.tr(), porque es lo único que tiene que entenderse en ambos
+            { icon: 0xF05CA, label: Lang.code === "en" ? "Language: English" : "Idioma: español",          // translate
+              hint: Lang.code === "en" ? "Cambiar a español" : "Switch to English",
+              run: () => Lang.toggle() },
             // La página del repo, en el navegador por defecto (xdg-open, de xdg-utils en packages.txt).
             // La dirección va escrita tal cual, como en el README: es la del repo original aunque
             // este equipo lo haya clonado de otro sitio
-            { icon: 0xF02A4, label: "Ver en GitHub",                                                  // github
+            { icon: 0xF02A4, label: Lang.tr("Ver en GitHub"),                                                  // github
               run: () => Quickshell.execDetached(["xdg-open", "https://github.com/R3ddas/Reddots"]) }
         ]
     }

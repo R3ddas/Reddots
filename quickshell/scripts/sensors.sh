@@ -23,6 +23,8 @@ temp() {    # temp <nombre a mostrar> <carpeta hwmon> <etiquetas preferidas...>
     [[ -f "$dir/temp1_input" ]] && echo "temp|$label|$dir/temp1_input"
 }
 
+# Los nombres ("Procesador"...) son los que enseña la barra: en inglés se traducen con
+# quickshell/services/en.json, así que uno nuevo necesita allí su línea
 for dir in /sys/class/hwmon/hwmon*; do
     case "$(< "$dir/name")" in
         k10temp|zenpower) temp "Procesador" "$dir" Tctl Tdie ;;        # AMD

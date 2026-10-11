@@ -20,7 +20,7 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xF195A)  // palette-swatch-variant
-        tooltip: "Tema: " + Theme.activeTheme
+        tooltip: Lang.tr("Tema: %1", Theme.activeTheme)
         popup: menu
     }
 
@@ -44,7 +44,7 @@ ColumnLayout {
         // aplica. Si ya existía, lo sustituye. También fuera de la lista, siempre a mano.
         MenuRow {
             icon: String.fromCodePoint(0xF02E9)         // image
-            text: WallpaperTheme.generating ? "Creando tema…" : "Crear tema desde el fondo"
+            text: WallpaperTheme.generating ? Lang.tr("Creando tema…") : Lang.tr("Crear tema desde el fondo")
             active: !WallpaperTheme.generating
             onClicked: WallpaperTheme.generate()
         }
@@ -79,7 +79,7 @@ ColumnLayout {
                     spacing: 2
 
                     SectionTitle {                          // Título de la sección, como en la chuleta de atajos
-                        text: section.modelData.title
+                        text: Lang.tr(section.modelData.title)
                         font.pixelSize: 11
                         indent: 6
                         spacing: 2

@@ -109,7 +109,7 @@ ColumnLayout {
         MenuRow {                                   // Solo dentro de un submenú
             visible: menu.depth > 0
             icon: "‹"
-            text: "Atrás"
+            text: Lang.tr("Atrás")
             onClicked: menu.back()
         }
 

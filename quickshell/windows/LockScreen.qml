@@ -18,7 +18,6 @@ Item {
     id: root
 
     property var lock: null             // El Lock.qml que la crea
-    readonly property var spanish: Qt.locale("es_ES")      // Días y meses en español, sea cual sea el idioma del sistema
 
     property real progress: 0           // 0 → 1 al aparecer
     NumberAnimation on progress { from: 0; to: 1; duration: 350; easing.type: Easing.OutCubic }
@@ -126,7 +125,7 @@ Item {
             Text {                          // "Lunes, 6 de octubre"
                 Layout.alignment: Qt.AlignHCenter
                 text: {
-                    const date = root.spanish.toString(clock.date, "dddd, d 'de' MMMM")
+                    const date = Lang.locale.toString(clock.date, Lang.tr("dddd, d 'de' MMMM"))
                     return date.charAt(0).toUpperCase() + date.slice(1)
                 }
                 color: Theme.textActive
@@ -182,7 +181,7 @@ Item {
                     // Borde del color de los números de la hora (el texto del tema, con su misma
                     // transparencia), con foco o sin él: aquí el campo siempre tiene el foco
                     border.color: Qt.alpha(Theme.textActive, 0.85)
-                    placeholder: root.lock && root.lock.checking ? "Comprobando…" : "Contraseña"
+                    placeholder: root.lock && root.lock.checking ? Lang.tr("Comprobando…") : Lang.tr("Contraseña")
                     input.echoMode: TextInput.Password
                     input.passwordCharacter: "•"
                     input.font.pointSize: Qt.application.font.pointSize + 1    // Un punto más que la letra normal (también el texto de ayuda, ver InputField)
@@ -232,9 +231,9 @@ Item {
 
         Repeater {
             model: [
-                { icon: 0xF0425, label: "Apagar",    command: ["systemctl", "poweroff"] },    // power
-                { icon: 0xF0709, label: "Reiniciar", command: ["systemctl", "reboot"] },      // restart
-                { icon: 0xF0904, label: "Suspender", command: ["systemctl", "suspend"] }      // power-sleep
+                { icon: 0xF0425, label: Lang.tr("Apagar"),    command: ["systemctl", "poweroff"] },    // power
+                { icon: 0xF0709, label: Lang.tr("Reiniciar"), command: ["systemctl", "reboot"] },      // restart
+                { icon: 0xF0904, label: Lang.tr("Suspender"), command: ["systemctl", "suspend"] }      // power-sleep
             ]
 
             // El icono va más grande que el texto, así que no cabe en el texto único de Button:

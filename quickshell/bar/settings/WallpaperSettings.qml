@@ -29,7 +29,7 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xF0E09)  // wallpaper
-        tooltip: "Fondo de pantalla"
+        tooltip: Lang.tr("Fondo de pantalla")
         popup: menu
     }
 
@@ -46,7 +46,7 @@ ColumnLayout {
             Text {
                 Layout.fillWidth: true
                 visible: folderModel.status === FolderListModel.Ready && folderModel.count === 0  // Solo si la carpeta ya se ha leído y está vacía
-                text: "No hay imágenes en\n" + Wallpaper.folder.replace(Quickshell.env("HOME"), "~")
+                text: Lang.tr("No hay imágenes en\n%1", Wallpaper.folder.replace(Quickshell.env("HOME"), "~"))
                 color: Theme.textDisabled
                 font.pixelSize: 11
             }
@@ -114,7 +114,7 @@ ColumnLayout {
 
         MenuRow {                                       // Botón "Abrir carpeta": fuera de la lista (con scroll) para que se vea siempre, haya los fondos que haya
             icon: String.fromCodePoint(0xF0770)         // folder-open
-            text: "Abrir carpeta"
+            text: Lang.tr("Abrir carpeta")
             onClicked: {
                 menu.visible = false                                    // Se cierra para no quedar encima de la ventana del explorador
                 Quickshell.execDetached(["xdg-open", Wallpaper.folder]) // Abre el explorador de archivos por defecto (Nemo) en la carpeta de fondos

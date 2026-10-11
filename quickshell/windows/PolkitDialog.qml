@@ -81,7 +81,7 @@ PanelWindow {
                     font.pixelSize: 26
                 }
                 Text {
-                    text: "Se necesita autorización"
+                    text: Lang.tr("Se necesita autorización")
                     color: Theme.textSelected
                     font.pixelSize: 16
                     font.bold: true
@@ -106,7 +106,7 @@ PanelWindow {
                 readonly property var selected: root.flow ? root.flow.selectedIdentity : null
                 visible: selected !== null
                 text: String.fromCodePoint(0xF0004) + "  " + (selected ? (selected.displayName || selected.string) : "")   // account
-                      + (identities.length > 1 ? "   (clic para cambiar)" : "")
+                      + (identities.length > 1 ? "   (" + Lang.tr("clic para cambiar") + ")" : "")
                 textFormat: Text.PlainText
                 color: Theme.textDisabled
                 font.pixelSize: 11
@@ -130,8 +130,8 @@ PanelWindow {
                 // ese se traduce; si pide otra cosa (p.ej. el PIN de una llave de seguridad), se muestra tal cual
                 readonly property string prompt: root.flow ? root.flow.inputPrompt.replace(/:\s*$/, "") : ""
                 placeholder: !root.flow ? ""
-                    : !root.flow.isResponseRequired ? "Comprobando…"
-                    : (prompt === "" || /^password$/i.test(prompt)) ? "Contraseña"
+                    : !root.flow.isResponseRequired ? Lang.tr("Comprobando…")
+                    : (prompt === "" || /^password$/i.test(prompt)) ? Lang.tr("Contraseña")
                     : prompt
                 input.readOnly: root.flow ? !root.flow.isResponseRequired : true       // Mientras se comprueba, no se puede escribir (readOnly y no enabled: así Esc sigue funcionando)
                 input.echoMode: root.flow && root.flow.responseVisible ? TextInput.Normal : TextInput.Password
@@ -144,7 +144,7 @@ PanelWindow {
             Text {
                 readonly property string message: !root.flow ? ""
                     : root.flow.supplementaryMessage !== "" ? root.flow.supplementaryMessage
-                    : root.flow.failed ? "Contraseña incorrecta, prueba otra vez"
+                    : root.flow.failed ? Lang.tr("Contraseña incorrecta, prueba otra vez")
                     : ""
                 readonly property bool isError: root.flow && (root.flow.supplementaryMessage !== "" ? root.flow.supplementaryIsError : root.flow.failed)
                 visible: message !== ""
@@ -164,13 +164,13 @@ PanelWindow {
                 Item { Layout.fillWidth: true }     // Empuja los botones a la derecha
 
                 Button {
-                    text: "Cancelar"
+                    text: Lang.tr("Cancelar")
                     padding: 14
                     implicitHeight: 30
                     onClicked: root.cancel()
                 }
                 Button {
-                    text: "Autenticar"
+                    text: Lang.tr("Autenticar")
                     accent: true
                     idleColor: Theme.background             // El principal se distingue también sin el ratón encima
                     padding: 14

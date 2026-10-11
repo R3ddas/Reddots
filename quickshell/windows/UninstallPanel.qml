@@ -96,8 +96,8 @@ Rectangle {
                     // Ya no hace falta tenerla en la lista de ocultas (ni las otras apps del paquete):
                     // si algún día se vuelve a instalar, que salga
                     root.uninstalled([u.entry.id, ...u.apps])
-                    NotificationCenter.notify("Launcher", "edit-delete", "Desinstalada " + u.entry.name,
-                                              "Se ha quitado el paquete " + u.pkg + ".")
+                    NotificationCenter.notify("Launcher", "edit-delete", Lang.tr("Desinstalada %1", u.entry.name),
+                                              Lang.tr("Se ha quitado el paquete %1.", u.pkg))
                     root.request = null             // Su fila se va sola: DesktopEntries ve que ya no está el .desktop
                 } else if (code === 126 || code === 127) {
                     // pkexec: se ha cancelado la contraseña o no era la buena. Se vuelve al aviso, por si se reintenta
@@ -105,7 +105,7 @@ Rectangle {
                 } else {
                     // Ha fallado pacman (otro pacman en marcha...): su última línea, para saber por qué
                     const lines = text.split("\n").filter(l => l !== "" && !l.startsWith("exit|"))
-                    root.request = Object.assign({}, u, { state: "ready", error: "pacman: " + (lines[lines.length - 1] ?? "ha fallado") })
+                    root.request = Object.assign({}, u, { state: "ready", error: "pacman: " + (lines[lines.length - 1] ?? Lang.tr("ha fallado")) })
                 }
             }
         }
@@ -113,19 +113,22 @@ Rectangle {
 
     // Lo que se cuenta, una línea por cosa (con su icono las advertencias)
     readonly property var lines: {
-        if (u.state === "checking") return ["Comprobando…"]
-        if (u.state === "running") return ["Desinstalando " + u.pkg + "…"]
-        if (u.error) return [u.error]
-        if (blocked) return ["No se puede: la necesita " + u.blocked.join(", ") + ". Puedes ocultarla en su lugar."]
+        if (u.state === "checking") return [Lang.tr("Comprobando…")]
+        if (u.state === "running") return [Lang.tr("Desinstalando %1…", u.pkg)]
+        // Los de uninstall-check.sh van en español; los de pacman ("pacman: …"), tal cual los da
+        if (u.error) return [u.error.startsWith("pacman: ") ? u.error : Lang.tr(u.error)]
+        if (blocked) return [Lang.tr("No se puede: la necesita %1. Puedes ocultarla en su lugar.", u.blocked.join(", "))]
         const out = []
         const deps = (u.remove ?? []).filter(p => p !== u.pkg)
-        out.push("Se quita el paquete " + u.pkg + (deps.length ? " y " + deps.length + (deps.length === 1 ? " dependencia que ya no usa nada" : " dependencias que ya no usa nada") : ""))
+        out.push(Lang.tr("Se quita el paquete %1", u.pkg) + (deps.length === 0 ? ""
+                 : deps.length === 1 ? Lang.tr(" y 1 dependencia que ya no usa nada")
+                 : Lang.tr(" y %1 dependencias que ya no usa nada", deps.length)))
         if (u.apps?.length)                     // Las otras apps del paquete, por su nombre si se puede
-            out.push(String.fromCodePoint(0xF0026) + "  También se va: " + u.apps.map(id => DesktopEntries.byId(id)?.name ?? id).join(", "))
+            out.push(String.fromCodePoint(0xF0026) + "  " + Lang.tr("También se va: %1", u.apps.map(id => DesktopEntries.byId(id)?.name ?? id).join(", ")))
         for (const file of u.repo ?? [])
             out.push(String.fromCodePoint(0xF0026) + "  " + (file === "packages_opt.txt"
-                ? "Está en packages_opt.txt: al actualizar no vuelve, solo install.sh preguntará si instalarla"
-                : "La necesita Reddots (" + file + "): volverá en la siguiente actualización. Quítala también de ahí"))
+                ? Lang.tr("Está en packages_opt.txt: al actualizar no vuelve, solo install.sh preguntará si instalarla")
+                : Lang.tr("La necesita Reddots (%1): volverá en la siguiente actualización. Quítala también de ahí", file)))
         return out
     }
 
@@ -144,7 +147,7 @@ Rectangle {
 
         Text {
             Layout.fillWidth: true
-            text: "Desinstalar " + (root.u.entry?.name ?? "")
+            text: Lang.tr("Desinstalar %1", root.u.entry?.name ?? "")
             color: Theme.textActive
             font.bold: true
             elide: Text.ElideRight
@@ -170,7 +173,7 @@ Rectangle {
 
             Button {
                 visible: root.canUninstall
-                text: "Desinstalar"
+                text: Lang.tr("Desinstalar")
                 accent: true
                 onClicked: root.confirm()
             }
@@ -178,12 +181,12 @@ Rectangle {
                 visible: root.blocked && !root.u.error
                 // Si ya estaba oculta, no hay nada que ofrecer: solo cerrar
                 enabled: !root.isHidden(root.u.entry)
-                text: "Ocultar"
+                text: Lang.tr("Ocultar")
                 accent: true
                 onClicked: root.primary()
             }
             Button {
-                text: root.canUninstall || (root.blocked && !root.u.error) ? "Cancelar" : "Cerrar"
+                text: root.canUninstall || (root.blocked && !root.u.error) ? Lang.tr("Cancelar") : Lang.tr("Cerrar")
                 onClicked: root.cancel()
             }
         }

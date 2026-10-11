@@ -59,10 +59,10 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xF061A)  // chip
         color: root.iconColor
-        tooltip: "Uso del sistema y notificaciones"
-                 + (SystemMonitor.overheating ? "\nTemperatura alta: " + SystemMonitor.warning : "")
-                 + (root.notificationCount === 1 ? "\n1 notificación sin descartar"
-                    : root.notificationCount > 1 ? "\n" + root.notificationCount + " notificaciones sin descartar" : "")
+        tooltip: Lang.tr("Uso del sistema y notificaciones")
+                 + (SystemMonitor.overheating ? "\n" + Lang.tr("Temperatura alta: %1", SystemMonitor.warning) : "")
+                 + (root.notificationCount === 1 ? "\n" + Lang.tr("1 notificación sin descartar")
+                    : root.notificationCount > 1 ? "\n" + Lang.tr("%1 notificaciones sin descartar", root.notificationCount) : "")
         popup: menu
     }
 
@@ -80,11 +80,11 @@ ColumnLayout {
         anchorItem: iconText
         implicitWidth: 340                              // Más ancho que el resto de menús: las notificaciones necesitan sitio para el texto
 
-        StatBar { label: "Procesador"; value: SystemMonitor.cpu < 0 ? "…" : ""; fraction: SystemMonitor.cpu }
+        StatBar { label: Lang.tr("Procesador"); value: SystemMonitor.cpu < 0 ? "…" : ""; fraction: SystemMonitor.cpu }
 
         StatBar {
             Layout.topMargin: 4
-            label: "Memoria"
+            label: Lang.tr("Memoria")
             value: SystemMonitor.memTotal ? root.gib(SystemMonitor.memUsed) + " / " + root.gib(SystemMonitor.memTotal) + " GiB" : "…"
             fraction: SystemMonitor.memTotal ? SystemMonitor.memUsed / SystemMonitor.memTotal : 0
         }
@@ -98,12 +98,12 @@ ColumnLayout {
         }
 
         // La gráfica, como el procesador y la memoria. Sin datos (no es una AMD) no se pinta
-        StatBar { visible: SystemMonitor.gpu >= 0; Layout.topMargin: 4; label: "Gráfica"; fraction: SystemMonitor.gpu }
+        StatBar { visible: SystemMonitor.gpu >= 0; Layout.topMargin: 4; label: Lang.tr("Gráfica"); fraction: SystemMonitor.gpu }
 
         StatBar {
             visible: SystemMonitor.vramTotal > 0
             Layout.topMargin: 4
-            label: "Memoria de vídeo"
+            label: Lang.tr("Memoria de vídeo")
             value: root.gib(SystemMonitor.vramUsed) + " / " + root.gib(SystemMonitor.vramTotal) + " GiB"
             fraction: SystemMonitor.vramTotal ? SystemMonitor.vramUsed / SystemMonitor.vramTotal : 0
         }
@@ -118,7 +118,7 @@ ColumnLayout {
             model: SystemMonitor.temps
             delegate: StatLine {
                 required property var modelData
-                label: String.fromCodePoint(0xF050F) + "  " + modelData.name   // thermometer
+                label: String.fromCodePoint(0xF050F) + "  " + Lang.tr(modelData.name)   // thermometer; el nombre es el de sensors.sh, en español
                 value: modelData.celsius + " °C"
                 valueColor: modelData.hot ? SystemMonitor.hotColor : Theme.textActive   // La que pasa del umbral, en rojo
             }

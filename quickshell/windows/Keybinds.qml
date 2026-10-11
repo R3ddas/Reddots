@@ -51,14 +51,14 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
     // Nombre legible de cada tecla (las que no están aquí salen tal cual: "T", "1"...)
     readonly property var keyNames: ({
         "left": "←", "right": "→", "up": "↑", "down": "↓",
-        "mouse_down": "Rueda ↓", "mouse_up": "Rueda ↑",
-        "mouse:272": "Clic izquierdo", "mouse:273": "Clic derecho", "mouse:274": "Clic central",
-        "TAB": "Tab", "RETURN": "Intro", "SPACE": "Espacio", "ESCAPE": "Esc", "Print": "Impr",
-        "XF86AudioRaiseVolume": "Volumen +", "XF86AudioLowerVolume": "Volumen −",
-        "XF86AudioMute": "Silencio", "XF86AudioMicMute": "Micro",
-        "XF86MonBrightnessUp": "Brillo +", "XF86MonBrightnessDown": "Brillo −",
-        "XF86AudioNext": "Siguiente", "XF86AudioPrev": "Anterior",
-        "XF86AudioPlay": "Play", "XF86AudioPause": "Pausa"
+        "mouse_down": Lang.tr("Rueda ↓"), "mouse_up": Lang.tr("Rueda ↑"),
+        "mouse:272": Lang.tr("Clic izquierdo"), "mouse:273": Lang.tr("Clic derecho"), "mouse:274": Lang.tr("Clic central"),
+        "TAB": "Tab", "RETURN": Lang.tr("Intro"), "SPACE": Lang.tr("Espacio"), "ESCAPE": "Esc", "Print": Lang.tr("Impr"),
+        "XF86AudioRaiseVolume": Lang.tr("Volumen +"), "XF86AudioLowerVolume": Lang.tr("Volumen −"),
+        "XF86AudioMute": Lang.tr("Silencio"), "XF86AudioMicMute": Lang.tr("Micro"),
+        "XF86MonBrightnessUp": Lang.tr("Brillo +"), "XF86MonBrightnessDown": Lang.tr("Brillo −"),
+        "XF86AudioNext": Lang.tr("Siguiente"), "XF86AudioPrev": Lang.tr("Anterior"),
+        "XF86AudioPlay": "Play", "XF86AudioPause": Lang.tr("Pausa")
     })
 
     // Atajos con la misma descripción y los mismos modificadores, en una sola combinación:
@@ -76,10 +76,11 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
             // Los interruptores (la tapa del portátil, en hypr/hyprland.lua) no son atajos que
             // se pulsen: sin esto saldrían en "Otros" como "(sin descripción)"
             if (b.key.startsWith("switch:")) continue
-            const desc = b.description || ""
+            // Las descripciones de hypr/keybinds.lua van en español: se traducen enteras ("Sección: qué hace")
+            const desc = b.description ? Lang.tr(b.description) : ""
             const sep = desc.indexOf(": ")
-            const sectionName = sep > 0 ? desc.slice(0, sep) : "Otros"                     // Sin "Sección: " va al final
-            const text = sep > 0 ? desc.slice(sep + 2) : (desc || "(sin descripción)")     // Así se ve si a alguno le falta
+            const sectionName = sep > 0 ? desc.slice(0, sep) : Lang.tr("Otros")                     // Sin "Sección: " va al final
+            const text = sep > 0 ? desc.slice(sep + 2) : (desc || Lang.tr("(sin descripción)"))     // Así se ve si a alguno le falta
 
             let section = sections.find(s => s.name === sectionName)
             if (!section) { section = { name: sectionName, rows: [] }; sections.push(section) }
@@ -89,7 +90,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
             if (!combo) { combo = { mask: b.modmask, keys: [] }; row.combos.push(combo) }
             combo.keys.push(b.key)
         }
-        const others = sections.findIndex(s => s.name === "Otros")                        // "Otros" siempre la última
+        const others = sections.findIndex(s => s.name === Lang.tr("Otros"))                        // "Otros" siempre la última
         if (others >= 0) sections.push(sections.splice(others, 1)[0])
         return sections.map(s => ({
             name: s.name,
@@ -135,14 +136,14 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                 RowLayout {                         // Título
                     Layout.fillWidth: true
                     Text {
-                        text: "Atajos de teclado"
+                        text: Lang.tr("Atajos de teclado")
                         color: Theme.textSelected
                         font.pixelSize: 16
                         font.bold: true
                         Layout.fillWidth: true
                     }
                     Text {
-                        text: "Esc para cerrar"
+                        text: Lang.tr("Esc para cerrar")
                         color: Theme.textDisabled
                         font.pixelSize: 11
                     }
@@ -150,7 +151,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
 
                 Text {
                     visible: root.sections.length === 0
-                    text: "No se han podido leer los atajos de Hyprland"
+                    text: Lang.tr("No se han podido leer los atajos de Hyprland")
                     color: Theme.textDisabled
                 }
 

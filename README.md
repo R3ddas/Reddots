@@ -51,13 +51,19 @@ git pull
   sudo rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
   ```
 
+- **No quieres que el idioma del sistema cambie con el de Reddots.** Al cambiar el idioma en el menú del icono de Reddots también cambian los textos del sistema (solo los textos: fechas, números y moneda siguen igual), del todo al reiniciar la sesión. Para que el sistema vuelva a su idioma de siempre, borra el archivo donde se apunta y reinicia la sesión:
+
+  ```bash
+  rm ~/.local/state/reddots/lc_messages
+  ```
+
 ## Qué hay en cada carpeta
 
 - `hypr/`: configuración de Hyprland (en Lua: `hyprland.lua` y los atajos en `keybinds.lua`).
 - `quickshell/`: la interfaz (barra, lanzador, notificaciones, fondo...). Todo arranca en `shell.qml`.
   - `bar/`: la barra lateral (`Bar.qml`) y sus widgets; en `bar/settings/`, el engranaje y todo lo que se pliega con él (uso del sistema, capturas, medidas, tema y brillo, y fondo).
   - `windows/`: ventanas y capas sueltas: fondo, borde, lanzador, portapapeles, notificaciones, pantalla de bloqueo (Super + L)...
-  - `services/`: singletons con el estado compartido (tema, medidas, fondo, uso del sistema...), sin nada visible.
+  - `services/`: singletons con el estado compartido (tema, medidas, fondo, uso del sistema, idioma...), sin nada visible. Las traducciones al inglés están en `services/en.json`: la interfaz se pasa de español a inglés desde el menú del icono de Reddots.
   - `components/`: piezas comunes con las que se montan las demás (icono de la barra, desplegable, slider...).
   - `scripts/`: los scripts que lanza la interfaz.
   - `assets/`: el icono de Reddots y la configuración de PAM con la que la pantalla de bloqueo comprueba la contraseña (`assets/pam/lock`).

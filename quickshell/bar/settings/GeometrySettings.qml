@@ -28,7 +28,7 @@ ColumnLayout {
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xEEB0)   // shapes (de Font Awesome)
-        tooltip: "Medidas de la barra y las ventanas"
+        tooltip: Lang.tr("Medidas de la barra y las ventanas")
         popup: menu
     }
 
@@ -58,7 +58,7 @@ ColumnLayout {
                 spacing: 6
 
                 SectionTitle {                          // Título de la sección, como Claros/Oscuros en ThemeSettings.qml
-                    text: section.modelData.title
+                    text: Lang.tr(section.modelData.title)        // Los nombres de Geometry.editable van en español
                     font.pixelSize: 11
                     spacing: 6
                 }
@@ -79,7 +79,7 @@ ColumnLayout {
 
                         Text {
                             Layout.fillWidth: true
-                            text: row.modelData.label
+                            text: Lang.tr(row.modelData.label)
                             color: Theme.textActive
                             font.pixelSize: 11
                             elide: Text.ElideRight              // Por si una etiqueta nueva no cabe: que no empuje al stepper

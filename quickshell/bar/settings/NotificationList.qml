@@ -44,8 +44,8 @@ ColumnLayout {
     }
 
     SectionHeader {
-        title: "Notificaciones"
-        action: root.count > 0 ? "Descartar todas" : ""
+        title: Lang.tr("Notificaciones")
+        action: root.count > 0 ? Lang.tr("Descartar todas") : ""
         onTriggered: NotificationCenter.dismissAll()
     }
 
@@ -53,7 +53,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.leftMargin: 4
         visible: root.count === 0
-        text: NotificationCenter.history.length > 0 ? "Ninguna activa" : "No hay notificaciones"
+        text: NotificationCenter.history.length > 0 ? Lang.tr("Ninguna activa") : Lang.tr("No hay notificaciones")
         color: Theme.textDisabled
         font.pixelSize: 11
     }
@@ -74,8 +74,8 @@ ColumnLayout {
     SectionHeader {
         visible: NotificationCenter.history.length > 0
         Layout.topMargin: 8
-        title: "Descartadas"
-        action: "Borrar"
+        title: Lang.tr("Descartadas")
+        action: Lang.tr("Borrar")
         onTriggered: NotificationCenter.clearHistory()
     }
 

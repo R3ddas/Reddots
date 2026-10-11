@@ -50,10 +50,10 @@ ColumnLayout{
         id: iconText
         text: root.icon
         color: (root.wiredConnected || Networking.wifiEnabled) ? Theme.textActive : Theme.textDisabled
-        tooltip: root.wiredConnected ? "Conectado por cable"
-               : !Networking.wifiEnabled ? "Wifi apagado"
-               : !root.active ? "Wifi: sin conexión"
-               : root.active.name + " · señal " + Math.round(root.signal * 100) + " %"
+        tooltip: root.wiredConnected ? Lang.tr("Conectado por cable")
+               : !Networking.wifiEnabled ? Lang.tr("Wifi apagado")
+               : !root.active ? Lang.tr("Wifi: sin conexión")
+               : root.active.name + " · " + Lang.tr("señal %1 %", Math.round(root.signal * 100))
         popup: menu
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => { if (event.button === Qt.RightButton) Networking.wifiEnabled = !Networking.wifiEnabled }   // Clic derecho: enciende/apaga el wifi
@@ -75,14 +75,14 @@ ColumnLayout{
         Text {
             Layout.fillWidth: true
             visible: !Networking.wifiEnabled
-            text: "Wifi apagado"
+            text: Lang.tr("Wifi apagado")
             color: Theme.textDisabled
         }
 
         Text {
             Layout.fillWidth: true
             visible: Networking.wifiEnabled && (!root.wifiDevice || root.wifiDevice.networks.values.length === 0)
-            text: root.wifiDevice ? "Buscando redes…" : "Sin adaptador wifi"
+            text: root.wifiDevice ? Lang.tr("Buscando redes…") : Lang.tr("Sin adaptador wifi")
             color: Theme.textDisabled
         }
 
@@ -131,7 +131,7 @@ ColumnLayout{
                             Layout.fillWidth: true
                             text: (modelData.connected ? "✓ " : "") + modelData.name
                                   + ((NetworkMonitor.eapRunning && NetworkMonitor.eapNetwork === modelData.name)
-                                     || (modelData.stateChanging && !modelData.connected) ? " · conectando…" : "")
+                                     || (modelData.stateChanging && !modelData.connected) ? " · " + Lang.tr("conectando…") : "")
                             color: modelData.connected ? Theme.textSelected : Theme.textActive
                             elide: Text.ElideRight
                         }
@@ -147,7 +147,7 @@ ColumnLayout{
                 SmallField {                         // Usuario: solo en redes empresariales
                     id: userInput
                     visible: NetworkMonitor.expandedNetwork === modelData && delegateRoot.eap
-                    placeholder: "Usuario"
+                    placeholder: Lang.tr("Usuario")
                     next: pskInput                   // Tab o Intro: a la contraseña
                     input.focus: NetworkMonitor.expandedNetwork === modelData && delegateRoot.eap
                     onAccepted: pskInput.input.forceActiveFocus()
@@ -160,14 +160,14 @@ ColumnLayout{
 
                     SmallField {
                         id: pskInput
-                        placeholder: delegateRoot.eap ? "Contraseña" : ""   // En las normales se sabe que es la contraseña
+                        placeholder: delegateRoot.eap ? Lang.tr("Contraseña") : ""   // En las normales se sabe que es la contraseña
                         input.echoMode: TextInput.Password
                         input.focus: NetworkMonitor.expandedNetwork === modelData && !delegateRoot.eap
                         onAccepted: delegateRoot.submit()
                     }
 
                     TextButton {
-                        text: "Conectar"
+                        text: Lang.tr("Conectar")
                         onClicked: delegateRoot.submit()
                     }
                 }
@@ -184,7 +184,7 @@ ColumnLayout{
 
         TextButton {
             visible: NetworkMonitor.eapUnverified !== null && !NetworkMonitor.eapRunning
-            text: "Conectar sin verificar"
+            text: Lang.tr("Conectar sin verificar")
             onClicked: {
                 const d = NetworkMonitor.eapUnverified
                 NetworkMonitor.tryConnectEap(d.ssid, d.identity, d.password, false)

@@ -4,7 +4,7 @@
 // La rueda junto al buscador pasa a elegir qué apps se ocultan (ver "editing") o se desinstalan (UninstallPanel.qml)
 
 import Quickshell
-import Quickshell.Io        // Para el JsonAdapter (cuántas veces se ha abierto cada app y cuáles se ocultan)
+import Quickshell.Io        // Para el JsonAdapter (cuántas veces se ha abierto cada app y cuáles se ocultan) y el Process de launch()
 import Quickshell.Wayland
 import Quickshell.Widgets  // Para el IconImage
 import QtQuick
@@ -108,9 +108,21 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         const next = Object.assign({}, usage.counts)
         next[entry.id] = (next[entry.id] ?? 0) + 1
         usage.counts = next
-        entry.execute()
+        // Con un idioma del sistema elegido en el menú de Reddots, la app sale ya en ese idioma
+        // sin esperar a reiniciar la sesión: se lanza como entry.execute(), con su LC_MESSAGES.
+        // entry.command ya viene sin los %U, %F... del .desktop
+        if (Lang.systemLocale && !entry.runInTerminal) {
+            appProc.command = entry.command
+            appProc.workingDirectory = entry.workingDirectory || Quickshell.env("HOME")
+            appProc.environment = { "LC_MESSAGES": Lang.systemLocale }
+            appProc.startDetached()
+        } else {
+            entry.execute()
+        }
         root.visible = false
     }
+
+    Process { id: appProc }                     // Para lanzar las apps con otro LC_MESSAGES (ver launch())
 
     Frame {                                     // Como los desplegables de la barra, pero solo con la esquina superior izquierda redondeada:
         id: background                          // el resto llega al borde de la pantalla
@@ -133,7 +145,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
 
                 InputField {                    // Campo de búsqueda: ↑ ↓ mueven la selección de la lista
                     id: searchInput
-                    placeholder: root.editing ? "Buscar app para ocultar…" : "Buscar…"
+                    placeholder: root.editing ? Lang.tr("Buscar app para ocultar…") : Lang.tr("Buscar…")
                     list: list
                     // Con el aviso de desinstalar abierto, Intro es su botón principal (ver más abajo)
                     onAccepted: {
@@ -238,7 +250,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
-                text: "Intro o clic: ocultar / mostrar   ·   Esc: volver\nShift + Supr o papelera: desinstalar"
+                text: Lang.tr("Intro o clic: ocultar / mostrar   ·   Esc: volver\nShift + Supr o papelera: desinstalar")
                 color: Theme.textDisabled
                 font.pixelSize: 11
             }

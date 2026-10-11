@@ -15,7 +15,7 @@ ColumnLayout {
     Text {
         Layout.fillWidth: true
         visible: BrightnessMonitor.displays.count === 0
-        text: BrightnessMonitor.searching ? "Buscando pantallas…" : "Ninguna pantalla permite\ncambiar el brillo"
+        text: BrightnessMonitor.searching ? Lang.tr("Buscando pantallas…") : Lang.tr("Ninguna pantalla permite\ncambiar el brillo")
         color: Theme.textDisabled
         font.pixelSize: 11
     }

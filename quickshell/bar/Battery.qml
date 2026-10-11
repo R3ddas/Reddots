@@ -39,14 +39,14 @@ ColumnLayout{
     }
 
     readonly property string tooltip: {
-        const text = "Batería " + level + " %"
-        if (battery.state === UPowerDeviceState.FullyCharged) return text + " · cargada"
+        const text = Lang.tr("Batería %1 %", level)
+        if (battery.state === UPowerDeviceState.FullyCharged) return text + " · " + Lang.tr("cargada")
         if (charging) {
             const full = duration(battery.timeToFull)
-            return text + " · cargando" + (full ? ", llena en " + full : "")
+            return text + " · " + Lang.tr("cargando") + (full ? Lang.tr(", llena en %1", full) : "")
         }
         const left = duration(battery.timeToEmpty)
-        return text + (left ? " · quedan " + left : "")
+        return text + (left ? " · " + Lang.tr("quedan %1", left) : "")
     }
 
     BarIcon {

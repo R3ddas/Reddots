@@ -14,13 +14,14 @@ ColumnLayout {
 
     function capture(mode) {
         menu.visible = false        // El script espera un momento a que se cierre antes de capturar
-        Quickshell.execDetached([Quickshell.shellPath("scripts/screenshot.sh"), mode])
+        Quickshell.execDetached([Quickshell.shellPath("scripts/screenshot.sh"), mode,
+                                 Lang.tr("Captura"), Lang.tr("Captura guardada y copiada")])   // La notificación, en el idioma de la interfaz
     }
 
     BarIcon {
         id: iconText
         text: String.fromCodePoint(0xF0100)  // camera
-        tooltip: "Capturas de pantalla (clic derecho: región)"
+        tooltip: Lang.tr("Capturas de pantalla (clic derecho: región)")
         popup: menu                                                       // Clic izquierdo: abre/cierra el menú
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => { if (event.button === Qt.RightButton) root.capture("region") }   // Clic derecho: región directamente
@@ -31,10 +32,10 @@ ColumnLayout {
         anchorItem: iconText
         implicitWidth: 170
 
-        MenuRow { icon: String.fromCodePoint(0xF019E); text: "Región";   onClicked: root.capture("region") }     // crop
-        MenuRow { icon: String.fromCodePoint(0xF05AF); text: "Ventana";  onClicked: root.capture("ventana") }    // window-maximize
-        MenuRow { icon: String.fromCodePoint(0xF0E51); text: "Pantalla"; onClicked: root.capture("pantalla") }   // monitor-screenshot
+        MenuRow { icon: String.fromCodePoint(0xF019E); text: Lang.tr("Región");   onClicked: root.capture("region") }     // crop
+        MenuRow { icon: String.fromCodePoint(0xF05AF); text: Lang.tr("Ventana");  onClicked: root.capture("ventana") }    // window-maximize
+        MenuRow { icon: String.fromCodePoint(0xF0E51); text: Lang.tr("Pantalla"); onClicked: root.capture("pantalla") }   // monitor-screenshot
         Separator {}                                    // Antes de la carpeta
-        MenuRow { icon: String.fromCodePoint(0xF0770); text: "Abrir carpeta"; onClicked: root.capture("carpeta") }   // folder-open (como en WallpaperSettings.qml)
+        MenuRow { icon: String.fromCodePoint(0xF0770); text: Lang.tr("Abrir carpeta"); onClicked: root.capture("carpeta") }   // folder-open (como en WallpaperSettings.qml)
     }
 }

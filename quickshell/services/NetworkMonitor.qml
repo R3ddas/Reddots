@@ -27,7 +27,7 @@ Singleton {
     function showError(message, hint) {
         connectError = message
         if (!root.menuOpen)
-            NotificationCenter.notify("Wifi", "network-wireless-disconnected", "No se pudo conectar",
+            NotificationCenter.notify("Wifi", "network-wireless-disconnected", Lang.tr("No se pudo conectar"),
                 message + (hint ? ".\n" + hint : ""))
     }
 
@@ -58,16 +58,16 @@ Singleton {
         const requested = network.name === requestedNetwork
         if (fresh) pskNetwork = ""
         if (requested) requestedNetwork = ""
-        const why = reason === ConnectionFailReason.WifiAuthTimeout ? "no responde a tiempo"
-                  : reason === ConnectionFailReason.WifiNetworkLost ? "se ha perdido la señal"
-                  : "revisa la contraseña"                                  // NoSecrets, WifiClientFailed...: casi siempre la contraseña
-        const message = "No se pudo conectar a " + network.name + ": " + why
+        const why = reason === ConnectionFailReason.WifiAuthTimeout ? Lang.tr("no responde a tiempo")
+                  : reason === ConnectionFailReason.WifiNetworkLost ? Lang.tr("se ha perdido la señal")
+                  : Lang.tr("revisa la contraseña")                                  // NoSecrets, WifiClientFailed...: casi siempre la contraseña
+        const message = Lang.tr("No se pudo conectar a %1: %2", network.name, why)
         const retype = fresh && reason !== ConnectionFailReason.WifiNetworkLost && reason !== ConnectionFailReason.WifiAuthTimeout
         if (retype) {
             if (network.known) network.forget()
             root.expandedNetwork = network                                  // Para escribirla otra vez (se ve al abrir el menú)
         }
-        if (requested) showError(message, retype ? "Abre el menú de wifi para escribir otra vez la contraseña." : "")
+        if (requested) showError(message, retype ? Lang.tr("Abre el menú de wifi para escribir otra vez la contraseña.") : "")
         else connectError = message
     }
 
@@ -104,13 +104,13 @@ Singleton {
         onExited: exitCode => {
             root.eapPassword = ""                                           // Por si no llegó a arrancar
             if (exitCode === 2) {
-                root.showError("No se pudo verificar el servidor de " + root.eapNetwork + ": podría ser una red falsa",
-                               "Si confías en ella, abre el menú de wifi y pulsa «Conectar sin verificar».")
+                root.showError(Lang.tr("No se pudo verificar el servidor de %1: podría ser una red falsa", root.eapNetwork),
+                               Lang.tr("Si confías en ella, abre el menú de wifi y pulsa «Conectar sin verificar»."))
                 return                                                      // Se conservan los datos para "Conectar sin verificar"
             }
             root.eapUnverified = null
-            if (exitCode !== 0) root.showError("No se pudo conectar a " + root.eapNetwork + ": revisa usuario y contraseña",
-                                               "Abre el menú de wifi para intentarlo otra vez.")
+            if (exitCode !== 0) root.showError(Lang.tr("No se pudo conectar a %1: revisa usuario y contraseña", root.eapNetwork),
+                                               Lang.tr("Abre el menú de wifi para intentarlo otra vez."))
         }
     }
 }

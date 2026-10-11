@@ -39,7 +39,8 @@ Singleton {
     // que aparezca un nuevo control en el panel. "key" es el nombre de la propiedad de
     // este singleton. "group" es la sección del panel en la que sale (las secciones van
     // en el orden en que aparecen aquí; con un nombre nuevo, sale una sección nueva).
-    // "unit" es opcional: lo que se muestra tras el número (si falta, "px").
+    // "unit" es opcional: lo que se muestra tras el número (si falta, "px"). "group" y
+    // "label" van en español: GeometrySettings.qml los pasa por Lang.tr() (ver en.json).
     readonly property var editable: [
         { group: "Barra lateral",        key: "sidebarWidth",        label: "Ancho",                  min: 16, max: 80,  step: 1 },
         { group: "Borde de la pantalla", key: "borderThickness",     label: "Grosor",                 min: 0,  max: 20,  step: 1 },

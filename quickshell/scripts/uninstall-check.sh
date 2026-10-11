@@ -12,7 +12,8 @@
 #                               actualización (update.sh); con packages_opt.txt, install.sh
 #                               volvería a preguntar si instalarlo
 #   blocked|<paquete>           otro paquete lo necesita: pacman no deja quitarlo, uno por línea
-#   error|<mensaje>             no se puede ni mirar (no hay .desktop, no es de ningún paquete...)
+#   error|<mensaje>             no se puede ni mirar (no hay .desktop, no es de ningún paquete...).
+#                               En español: UninstallPanel.qml lo traduce con services/en.json
 # No cambia nada ni pide contraseña: "pacman -Rsp" solo simula la desinstalación.
 
 id="$1"

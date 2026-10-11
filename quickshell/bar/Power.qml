@@ -17,7 +17,7 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xF0425)  // power
         font.pixelSize: 20
-        tooltip: "Apagar, reiniciar, bloquear o suspender"
+        tooltip: Lang.tr("Apagar, reiniciar, bloquear o suspender")
         popup: menu
     }
 
@@ -28,11 +28,11 @@ ColumnLayout {
 
         // Una fila por opción: icono, texto y qué hace al pulsarla
         actions: [
-            { icon: 0xF0425, label: "Apagar",         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
-            { icon: 0xF0709, label: "Reiniciar",      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
-            { icon: 0xF033E, label: "Bloquear",       run: () => ShellIpc.lockRequested() },                            // lock
-            { icon: 0xF0904, label: "Suspender",      run: () => ShellIpc.suspendRequested() },                         // power-sleep: bloquea antes de suspender (Lock.qml)
-            { icon: 0xF0379, label: "Salvapantallas", run: () => root.launchScreensaver() }                            // monitor
+            { icon: 0xF0425, label: Lang.tr("Apagar"),         run: () => Quickshell.execDetached(["systemctl", "poweroff"]) },  // power
+            { icon: 0xF0709, label: Lang.tr("Reiniciar"),      run: () => Quickshell.execDetached(["systemctl", "reboot"]) },    // restart
+            { icon: 0xF033E, label: Lang.tr("Bloquear"),       run: () => ShellIpc.lockRequested() },                            // lock
+            { icon: 0xF0904, label: Lang.tr("Suspender"),      run: () => ShellIpc.suspendRequested() },                         // power-sleep: bloquea antes de suspender (Lock.qml)
+            { icon: 0xF0379, label: Lang.tr("Salvapantallas"), run: () => root.launchScreensaver() }                            // monitor
         ]
     }
 

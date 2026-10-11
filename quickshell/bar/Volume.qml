@@ -135,11 +135,11 @@ ColumnLayout{
         text: Audio.volumeIcon
         color: Audio.muted ? Theme.textDisabled : Theme.textActive
         tooltip: !Audio.sink ? ""
-               : (Audio.muted ? "Silenciado" : "Volumen " + Math.round(Audio.volume * 100) + " %")
+               : (Audio.muted ? Lang.tr("Silenciado") : Lang.tr("Volumen %1 %", Math.round(Audio.volume * 100)))
                  + " · " + (Audio.sink.nickname || Audio.sink.description || Audio.sink.name)
-                 + (Audio.source && Audio.micMuted ? "\nMicrófono silenciado" : "")
+                 + (Audio.source && Audio.micMuted ? "\n" + Lang.tr("Micrófono silenciado") : "")
                  + (nowPlaying.player && nowPlaying.player.isPlaying && nowPlaying.player.trackTitle     // "Sonando: Canción · Artista"
-                    ? "\nSonando: " + nowPlaying.player.trackTitle + (nowPlaying.player.trackArtist ? " · " + nowPlaying.player.trackArtist : "") : "")
+                    ? "\n" + Lang.tr("Sonando: %1", nowPlaying.player.trackTitle) + (nowPlaying.player.trackArtist ? " · " + nowPlaying.player.trackArtist : "") : "")
         popup: menu
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => { if (event.button === Qt.RightButton && Audio.sink) Audio.sink.audio.muted = !Audio.sink.audio.muted }
@@ -203,7 +203,7 @@ ColumnLayout{
         // --- Salida ---
         RowLayout {                             // Título + interruptor del aumento (en la misma línea: no ocupa espacio extra)
             Layout.fillWidth: true
-            PartTitle { text: "Salida" }
+            PartTitle { text: Lang.tr("Salida") }
             TextButton {                        // Resaltado cuando está activo; pasar de 100 % solo se puede con él
                 text: Audio.boost ? "<150%" : "<100%"      // Muestra el tope actual; al pulsar cambia al otro
                 font.pixelSize: 11
@@ -228,7 +228,7 @@ ColumnLayout{
         Text {                                  // Cuando, tras filtrar, no queda ninguna salida usable
             Layout.fillWidth: true
             visible: root.visibleSinks.length === 0
-            text: "Sin salidas de audio"
+            text: Lang.tr("Sin salidas de audio")
             color: Theme.textDisabled
         }
 
@@ -247,7 +247,7 @@ ColumnLayout{
 
         // --- Micrófono ---
         PartSeparator {}
-        PartTitle { text: "Micrófono" }
+        PartTitle { text: Lang.tr("Micrófono") }
 
         RowLayout {
             visible: Audio.source !== null
@@ -264,7 +264,7 @@ ColumnLayout{
         Text {
             Layout.fillWidth: true
             visible: root.visibleSources.length === 0
-            text: "Sin micrófonos"
+            text: Lang.tr("Sin micrófonos")
             color: Theme.textDisabled
         }
 
@@ -283,7 +283,7 @@ ColumnLayout{
 
         // --- Aplicaciones (solo si hay alguna sonando) ---
         PartSeparator { visible: root.visibleStreams.length > 0 }
-        PartTitle { visible: root.visibleStreams.length > 0; text: "Aplicaciones" }
+        PartTitle { visible: root.visibleStreams.length > 0; text: Lang.tr("Aplicaciones") }
 
         Repeater {
             model: root.visibleStreams

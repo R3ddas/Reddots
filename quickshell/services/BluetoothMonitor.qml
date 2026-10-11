@@ -52,8 +52,8 @@ Singleton {
     function flagRepairNeeded(dev) {
         if (!root.repairNeeded.includes(dev.address))          // Sin repetidos en la lista
             root.repairNeeded = [...root.repairNeeded, dev.address]  // Lista nueva: si se cambia por dentro, QML no se entera
-        NotificationCenter.notify("Bluetooth", "", "Bluetooth: hay que volver a emparejarlo",
-            dev.name + " ha perdido la clave de emparejamiento. Ponlo en modo de emparejamiento y pulsa \"reparar\" en el menú de Bluetooth.")
+        NotificationCenter.notify("Bluetooth", "", Lang.tr("Bluetooth: hay que volver a emparejarlo"),
+            Lang.tr("%1 ha perdido la clave de emparejamiento. Ponlo en modo de emparejamiento y pulsa \"reparar\" en el menú de Bluetooth.", dev.name))
     }
 
     function clearRepairNeeded(address) {
@@ -166,8 +166,8 @@ Singleton {
                 const m = root.monitorFor(dev)
                 if (!m.warnedUnbonded) {                                     // Un solo aviso por dispositivo desde que arrancó Quickshell
                     m.warnedUnbonded = true
-                    NotificationCenter.notify("Bluetooth", "", "Bluetooth: emparejamiento no guardado",
-                        dev.name + " se ha emparejado sin guardar la clave: al desconectarse se olvidará y no podrá volver a conectarse. Olvídalo y vuelve a emparejarlo desde el menú.")
+                    NotificationCenter.notify("Bluetooth", "", Lang.tr("Bluetooth: emparejamiento no guardado"),
+                        Lang.tr("%1 se ha emparejado sin guardar la clave: al desconectarse se olvidará y no podrá volver a conectarse. Olvídalo y vuelve a emparejarlo desde el menú.", dev.name))
                 }
             }
             if (unbondedNow.join() !== root.unbondedAddrs.join())   // Solo si ha cambiado, para no redibujar el menú

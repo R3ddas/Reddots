@@ -25,10 +25,10 @@ ColumnLayout {
         color: root.owner.expanded ? Theme.textSelected
              : SystemMonitor.overheating || NotificationCenter.hasCritical ? SystemMonitor.hotColor
              : Theme.textActive
-        tooltip: root.owner.expanded ? "Ocultar los ajustes"
-               : "Mostrar los ajustes"                  // Sin las actualizaciones: van en el tooltip del logo de Reddots (Reddots.qml)
-                 + (SystemMonitor.overheating ? "\nTemperatura alta: " + SystemMonitor.warning : "")
-                 + (NotificationCenter.hasCritical ? "\nHay una notificación crítica" : "")
+        tooltip: root.owner.expanded ? Lang.tr("Ocultar los ajustes")
+               : Lang.tr("Mostrar los ajustes")                  // Sin las actualizaciones: van en el tooltip del logo de Reddots (Reddots.qml)
+                 + (SystemMonitor.overheating ? "\n" + Lang.tr("Temperatura alta: %1", SystemMonitor.warning) : "")
+                 + (NotificationCenter.hasCritical ? "\n" + Lang.tr("Hay una notificación crítica") : "")
         onClicked: root.owner.expanded = !root.owner.expanded               // Muestra/oculta el grupo
     }
 }

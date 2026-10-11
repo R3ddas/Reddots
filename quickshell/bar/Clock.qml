@@ -14,7 +14,6 @@ import qs.services
 ColumnLayout{
     id: root
     property bool showDate: false   // Se alterna con clic derecho sobre la hora
-    readonly property var spanish: Qt.locale("es_ES")    // Nombres de días y meses en español, sea cual sea el idioma del sistema
 
     onShowDateChanged: if (!showDate) menu.visible = false   // Si se oculta la fecha, el calendario también
 
@@ -28,7 +27,7 @@ ColumnLayout{
         Layout.alignment: Qt.AlignHCenter
 
         TooltipArea {                                           // "jueves, 25 de septiembre de 2026" al dejar el ratón encima de la hora
-            tooltip: root.spanish.toString(clock.date, "dddd, d 'de' MMMM 'de' yyyy")
+            tooltip: Lang.locale.toString(clock.date, Lang.tr("dddd, d 'de' MMMM 'de' yyyy"))
             popup: menu
             acceptedButtons: Qt.RightButton
             onClicked: root.showDate = !root.showDate
@@ -127,7 +126,7 @@ ColumnLayout{
                         Layout.fillWidth: true
                         horizontalAlignment: Text.AlignHCenter
                         text: {
-                            const name = root.spanish.standaloneMonthName(menu.viewMonth)
+                            const name = Lang.locale.standaloneMonthName(menu.viewMonth)
                             return name.charAt(0).toUpperCase() + name.slice(1) + " " + menu.viewYear
                         }
                         color: Theme.textSelected
@@ -183,7 +182,7 @@ ColumnLayout{
                         rowSpacing: 2
 
                         Repeater {                              // Iniciales de los días, empezando en lunes
-                            model: ["L", "M", "X", "J", "V", "S", "D"]
+                            model: [1, 2, 3, 4, 5, 6, 0].map(d => Lang.locale.dayName(d, Locale.NarrowFormat))     // De lunes a domingo: "L M X J V S D", "M T W T F S S"
                             delegate: Text {
                                 required property string modelData
                                 text: modelData

@@ -44,6 +44,24 @@ if pacman -Qq hyprpolkitagent &>/dev/null; then
     sudo pacman -Rns --noconfirm hyprpolkitagent
 fi
 
+echo "Idiomas"
+
+# Los dos idiomas entre los que se cambia desde el menú de Reddots la interfaz y, con ella,
+# los textos del sistema (ver quickshell/services/Lang.qml). Tienen que estar generados: si
+# no, los programas avisan de que no pueden usar el que se les pide. Solo se tocan
+# /etc/locale.gen y locale-gen si falta alguno.
+localeGen=/etc/locale.gen
+regenerate=false
+for loc in en_US.UTF-8 es_ES.UTF-8; do
+    re="${loc//./\\.} UTF-8"         # El punto, literal en la expresión regular
+    if ! grep -qE "^$re" "$localeGen"; then
+        sudo sed -i -E "s/^#[[:space:]]*($re)/\1/" "$localeGen"     # Normalmente ya está, comentada
+        if ! grep -qE "^$re" "$localeGen"; then echo "$loc UTF-8" | sudo tee -a "$localeGen" > /dev/null; fi
+        regenerate=true
+    fi
+done
+if $regenerate; then sudo locale-gen; fi
+
 echo "Sistema de archivos"
 
 # Enlaza "$1" (del repo) en "$2", creando antes la carpeta que lo contiene si aún no existe

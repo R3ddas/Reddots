@@ -72,7 +72,7 @@ Singleton {
     }))
     readonly property var hot: temps.filter(t => t.hot)
     readonly property bool overheating: hot.length > 0
-    readonly property string warning: hot.map(t => t.name + " a " + t.celsius + " °C").join(", ")   // "Procesador a 91 °C"
+    readonly property string warning: hot.map(t => Lang.tr("%1 a %2 °C", Lang.tr(t.name), t.celsius)).join(", ")   // "Procesador a 91 °C"
 
     // Primera línea de /proc/stat: "cpu  <user> <nice> <system> <idle> <iowait> <irq> <softirq> <steal> <guest> <guest_nice>".
     // Solo se suman los ocho primeros: guest y guest_nice ya van incluidos en user y nice.

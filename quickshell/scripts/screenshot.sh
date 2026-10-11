@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# Capturas de pantalla para Screenshot.qml. Uso: screenshot.sh region|ventana|pantalla|carpeta
+# Capturas de pantalla para Screenshot.qml. Uso: screenshot.sh region|ventana|pantalla|carpeta [app] [aviso]
 #   region   -> se arrastra un rectángulo con el ratón
 #   ventana  -> se hace clic en una de las ventanas visibles
 #   pantalla -> el monitor entero en el que está el ratón
 #   carpeta  -> abre la carpeta de las capturas
 # Cada captura se guarda en <carpeta de imágenes>/Capturas, se copia al portapapeles
 # y se avisa con una notificación. Esc durante la selección la cancela sin guardar nada.
+# "app" y "aviso" son el nombre y el título de esa notificación, ya en el idioma de la
+# interfaz (los pasa Screenshot.qml con Lang.tr); sin ellos, en español.
 
 mode="$1"
 
@@ -60,4 +62,4 @@ case "$mode" in
 esac
 
 wl-copy --type image/png < "$file"
-notify-send -a "Captura" -i "$file" "Captura guardada y copiada" "${file/#$HOME/\~}"
+notify-send -a "${2:-Captura}" -i "$file" "${3:-Captura guardada y copiada}" "${file/#$HOME/\~}"

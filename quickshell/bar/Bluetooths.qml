@@ -47,10 +47,10 @@ ColumnLayout {
         id: iconText
         text: root.icon
         color: root.powered ? Theme.textActive : Theme.textDisabled
-        tooltip: !root.adapter ? "Sin Bluetooth"
-               : !root.powered ? "Bluetooth apagado"
-               : !root.active ? "Bluetooth: nada conectado"
-               : root.active.name + (root.active.batteryAvailable ? " · batería " + Math.round(root.active.battery * 100) + " %" : "")
+        tooltip: !root.adapter ? Lang.tr("Sin Bluetooth")
+               : !root.powered ? Lang.tr("Bluetooth apagado")
+               : !root.active ? Lang.tr("Bluetooth: nada conectado")
+               : root.active.name + (root.active.batteryAvailable ? " · " + Lang.tr("batería %1 %", Math.round(root.active.battery * 100)) : "")
         popup: menu                                                                     // Clic izquierdo: abre o cierra el menú de dispositivos
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: event => {
@@ -69,14 +69,14 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             visible: root.visibleDevices.length === 0   // Solo si no queda ninguno en la lista (ya filtrada)
-            text: root.powered ? (root.adapter?.discovering ? "Buscando…" : "Sin dispositivos") : "Bluetooth apagado"
+            text: root.powered ? (root.adapter?.discovering ? Lang.tr("Buscando…") : Lang.tr("Sin dispositivos")) : Lang.tr("Bluetooth apagado")
             color: Theme.textDisabled
         }
 
         Text {
             Layout.fillWidth: true
             visible: BluetoothMonitor.unbondedAddrs.length > 0   // Solo si hay algún emparejamiento sin clave guardada
-            text: String.fromCodePoint(0xF0026) + " Hay dispositivos emparejados sin clave guardada: olvídalos y vuelve a emparejarlos"
+            text: String.fromCodePoint(0xF0026) + " " + Lang.tr("Hay dispositivos emparejados sin clave guardada: olvídalos y vuelve a emparejarlos")
             wrapMode: Text.WordWrap
             color: Theme.error
         }
@@ -109,7 +109,7 @@ ColumnLayout {
                             : modelData.pairing ? 0xF051F           // timer-sand: emparejando (antes un emoji ⏳)
                             : modelData.paired ? 0xF00AF            // bluetooth: emparejado pero desconectado
                             : 0xF00B2                               // bluetooth-off: dispositivo nuevo, sin emparejar
-                        const suffix = modelData.paired ? "" : "  (nuevo)"
+                        const suffix = modelData.paired ? "" : "  (" + Lang.tr("nuevo") + ")"
                         return String.fromCodePoint(icon) + "  " + modelData.name + suffix
                     }
                     color: modelData.connected ? Theme.textActive : Theme.textDisabled
@@ -123,7 +123,7 @@ ColumnLayout {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
                     anchors.rightMargin: 6
-                    text: deviceRow.repairing ? "reparando…" : "reparar"
+                    text: deviceRow.repairing ? Lang.tr("reparando…") : Lang.tr("reparar")
                     font.underline: !deviceRow.repairing   // Subrayado: se puede pulsar; sin subrayar mientras repara
                     onClicked: BluetoothMonitor.repairDevice(modelData.address)
                 }
