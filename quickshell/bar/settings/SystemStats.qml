@@ -63,7 +63,6 @@ ColumnLayout {
                  + (SystemMonitor.overheating ? "\n" + Lang.tr("Temperatura alta: %1", SystemMonitor.warning) : "")
                  + (root.notificationCount === 1 ? "\n" + Lang.tr("1 notificación sin descartar")
                     : root.notificationCount > 1 ? "\n" + Lang.tr("%1 notificaciones sin descartar", root.notificationCount) : "")
-        hint: Lang.tr("Clic: abrir el menú")
         popup: menu
     }
 

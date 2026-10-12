@@ -21,7 +21,6 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xF195A)  // palette-swatch-variant
         tooltip: Lang.tr("Tema: %1", Theme.activeTheme)
-        hint: Lang.tr("Clic: abrir el menú")
         popup: menu
     }
 

@@ -29,7 +29,6 @@ ColumnLayout {
         id: iconText
         text: String.fromCodePoint(0xEEB0)   // shapes (de Font Awesome)
         tooltip: Lang.tr("Medidas de la barra y las ventanas")
-        hint: Lang.tr("Clic: abrir el menú")
         popup: menu
     }
 
