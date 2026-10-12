@@ -127,6 +127,7 @@ vscodeExtensions=(
     bbenoist.QML                # QML
     James-Yu.latex-workshop     # LaTeX
     ms-python.python            # Python
+    hoovercj.vscode-settings-cycler # Para alternar ajustes con un atajo (el invertir colores del PDF, ver apps/vscode/keybindings.json)
 )
 vscodeArgs=()
 for ext in "${vscodeExtensions[@]}"; do vscodeArgs+=(--install-extension "$ext"); done

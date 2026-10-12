@@ -1,0 +1,18 @@
+// Atajos de teclado de Visual Studio Code (se suman a los de serie)
+[
+    {
+        // Invierte (o deja normales) los colores del visor de PDF de LaTeX Workshop: cada
+        // pulsación pasa latex-workshop.view.pdf.invert al siguiente valor de la lista.
+        // Necesita la extensión Settings Cycler (la instala install.sh). Sin "when" a
+        // propósito: con el foco en el visor de PDF, "editorTextFocus" y similares son falsos
+        "key": "ctrl+alt+i",
+        "command": "settings.cycle",
+        "args": {
+            "id": "latexPdfInvert",
+            "values": [
+                { "latex-workshop.view.pdf.invert": 1 },
+                { "latex-workshop.view.pdf.invert": 0 }
+            ]
+        }
+    }
+]

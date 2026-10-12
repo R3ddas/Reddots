@@ -84,6 +84,7 @@ link "$DOTS/apps/fish/config.fish"           ~/.config/fish/config.fish
 link "$DOTS/apps/alacritty/alacritty.toml"   ~/.config/alacritty/alacritty.toml
 link "$DOTS/apps/fastfetch/config.jsonc"     ~/.config/fastfetch/config.jsonc
 link "$DOTS/apps/vscode/settings.json"       ~/.config/Code/User/settings.json  # Ajustes de Visual Studio Code
+link "$DOTS/apps/vscode/keybindings.json"    ~/.config/Code/User/keybindings.json  # Y sus atajos de teclado
 
 # Restos de una config de Hyprland anterior (la que trae CachyOS, o archivos que
 # ya no están en el repo): se apartan a una copia para que no se mezclen con la
