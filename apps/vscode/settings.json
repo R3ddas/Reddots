@@ -22,7 +22,9 @@
         "scminput": false,
         "latex-package": false
     },
-    "latex-workshop.view.pdf.invert": 0         // Colores del visor de PDF de LaTeX invertidos (1) o normales (0); se cambia con ctrl+alt+i (ver keybindings.json)
+    // Ojo: el atajo ctrl+alt+i (ver keybindings.json) cambia este valor escribiendo en este mismo archivo,
+    // que es el del repo (update.sh lo enlaza), así que cada vez que se usa sale como cambio en git
+    "latex-workshop.view.pdf.invert": 0         // Colores del visor de PDF de LaTeX invertidos (1) o normales (0)
     //"[markdown]": { "editor.wordWrap": "on" },    // Puedo hacer las cosas por lenguaje si quisiera
     //"[latex]": { "editor.wordWrap": "on" }
 }

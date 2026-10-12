@@ -5,6 +5,11 @@
         // pulsación pasa latex-workshop.view.pdf.invert al siguiente valor de la lista.
         // Necesita la extensión Settings Cycler (la instala install.sh). Sin "when" a
         // propósito: con el foco en el visor de PDF, "editorTextFocus" y similares son falsos
+        // Ojo: Settings Cycler guarda el valor en los ajustes de usuario, que son
+        // apps/vscode/settings.json del repo (enlazado por update.sh): cada vez que se pulsa,
+        // ese archivo sale como modificado en git. El visor de PDF no tiene un botón propio
+        // para invertir ni otro sitio donde guardarlo, así que no hay forma de evitarlo
+        // (salvo ponerlo por proyecto, en el .vscode/settings.json de cada uno)
         "key": "ctrl+alt+i",
         "command": "settings.cycle",
         "args": {
