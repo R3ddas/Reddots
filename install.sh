@@ -2,7 +2,7 @@
 # Instalación completa de Reddots: lo mismo que update.sh (que se ejecuta primero) y, además,
 # lo que es solo de la primera vez y no se repite al actualizar: preguntar por las apps de
 # packages_opt.txt, quitar las que sobran (Firefox, Kitty...), el inicio de sesión
-# automático, las extensiones de VS Code, el reloj para el dual boot y el arranque sin texto.
+# automático, el reloj para el dual boot y el arranque sin texto.
 # Se puede volver a lanzar (también desde la barra, con "Instalar"): pregunta otra vez por
 # los opcionales que no estén instalados y vuelve a quitar los que sobran.
 set -euo pipefail
@@ -24,11 +24,23 @@ optList() {
          !NF   { group = ""; next }     # Una línea vacía lo termina
          { sub(/#.*/, "") } NF { print group "|" $1 }' packages_opt.txt
 }
+# Los del grupo VSCode son extensiones de Visual Studio Code, no paquetes: si ya están se mira
+# con "code --list-extensions" (que las saca en minúsculas, de ahí el grep -i), y se instalan
+# con code. Si VS Code aún no está, no hay ninguna instalada: faltan todas.
+vscodeGroup=VSCode
+vscodePkg=visual-studio-code-bin
+installedExts=""
+if command -v code &>/dev/null; then installedExts=$(code --list-extensions); fi
+declare -A isExt=()     # Las extensiones que faltan, para separarlas de los paquetes al instalar
+
 optional=()     # Todos los que faltan, para "todos"
 units=()        # Por lo que se pregunta uno a uno: un paquete, o los de un grupo separados por espacios
 groups=()       # El grupo de cada uno de units (vacío si es un paquete suelto)
 while IFS='|' read -r group pkg; do
-    if pacman -Qq "$pkg" &>/dev/null; then continue; fi
+    if [[ "$group" == "$vscodeGroup" ]]; then
+        if grep -qixF "$pkg" <<< "$installedExts"; then continue; fi
+        isExt[$pkg]=1
+    elif pacman -Qq "$pkg" &>/dev/null; then continue; fi
     optional+=("$pkg")
     if [[ -n "$group" ]] && (( ${#groups[@]} )) && [[ "${groups[-1]}" == "$group" ]]; then
         units[-1]+=" $pkg"      # Otro del mismo grupo: va con los anteriores
@@ -59,6 +71,10 @@ else
             [nN]|"") break ;;
             [uU])
                 for i in "${!units[@]}"; do
+                    # Las extensiones de VS Code, solo si está o se acaba de decir que sí (va
+                    # antes en packages_opt.txt): sin él no hay dónde instalarlas
+                    if [[ "${groups[i]}" == "$vscodeGroup" ]] && ! command -v code &>/dev/null \
+                        && [[ " ${chosen[*]} " != *" $vscodePkg "* ]]; then continue; fi
                     read -r -p "¿Instalar ${labels[i]}? [s/N] " answer
                     # Con if y no con "[[ ]] && ...": con set -e, un "no" en el último paquete
                     # dejaría el bucle con código 1 y cortaría el script. read -a separa los
@@ -71,9 +87,25 @@ else
     done
 fi
 
-# Con paru y no con pacman: así un opcional puede ser tanto de los repos como de AUR
-if (( ${#chosen[@]} > 0 )); then
-    paru -S --needed --noconfirm "${chosen[@]}"
+# Lo elegido se separa: los paquetes van con paru y no con pacman (así un opcional puede ser
+# tanto de los repos como de AUR), y las extensiones después, con code, cuando VS Code ya
+# está instalado. Todas en una sola llamada a code (cada una tarda en arrancar)
+chosenPkgs=(); chosenExts=()
+for pkg in "${chosen[@]}"; do
+    if [[ -n "${isExt[$pkg]:-}" ]]; then chosenExts+=("$pkg"); else chosenPkgs+=("$pkg"); fi
+done
+if (( ${#chosenPkgs[@]} > 0 )); then
+    paru -S --needed --noconfirm "${chosenPkgs[@]}"
+fi
+if (( ${#chosenExts[@]} > 0 )); then
+    if command -v code &>/dev/null; then
+        vscodeArgs=()
+        for ext in "${chosenExts[@]}"; do vscodeArgs+=(--install-extension "$ext"); done
+        code "${vscodeArgs[@]}"
+    else
+        # Con "todos" se eligen aunque VS Code no se instale (si paru falla, set -e ya corta antes)
+        echo "Sin Visual Studio Code: no se instalan sus extensiones (${chosenExts[*]})"
+    fi
 fi
 
 echo "Paquetes no utilizados"
@@ -115,24 +147,6 @@ if [[ "$(cat "$autologinConf" 2>/dev/null)" != "$autologinText" ]]; then
     sudo mkdir -p "$(dirname "$autologinConf")"
     printf '%s\n' "$autologinText" | sudo tee "$autologinConf" > /dev/null
     sudo systemctl daemon-reload
-fi
-
-echo "Otras configuraciones"
-
-# Extensiones de Visual Studio Code, todas en una sola llamada a "code" (cada una tarda en
-# arrancar). No hace falta mirar antes si ya están: las que lo están solo dan un aviso
-# ("already installed") y no se reinstalan ni se actualizan. Solo si está instalado: es
-# opcional (packages_opt.txt).
-vscodeExtensions=(
-    bbenoist.QML                # QML
-    James-Yu.latex-workshop     # LaTeX
-    ms-python.python            # Python
-    hoovercj.vscode-settings-cycler # Para alternar ajustes con un atajo (el invertir colores del PDF, ver apps/vscode/keybindings.json)
-)
-vscodeArgs=()
-for ext in "${vscodeExtensions[@]}"; do vscodeArgs+=(--install-extension "$ext"); done
-if command -v code &>/dev/null; then
-    code "${vscodeArgs[@]}"
 fi
 
 echo "Reloj (dual boot con Windows)"
