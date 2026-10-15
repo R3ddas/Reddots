@@ -262,6 +262,7 @@
         "Multimedia: Siguiente canción": "Media: Next track",
         "Multimedia: Reproducir / pausar": "Media: Play / pause",
         "Multimedia: Canción anterior": "Media: Previous track",
-        "Sesión: Bloquear la pantalla": "Session: Lock the screen"
+        "Sesión: Bloquear la pantalla": "Session: Lock the screen",
+        "Sesión: Abrir / cerrar el menú de apagado": "Session: Open / close the power menu"
     }
 }

@@ -1,6 +1,8 @@
 // Fila de un menú de la barra (Power, Screenshot, Reddots, Tray, Volume): icono, texto y,
 // si hace falta, una flecha de submenú y una explicación al dejar el ratón encima
-// ("tooltip"). Resalta con el ratón encima y avisa con clicked().
+// ("tooltip"). Resalta con el ratón encima y avisa con clicked(). En los menús que se
+// manejan también con el teclado (ActionMenu.qml) es el menú quien dice qué fila se resalta
+// ("highlighted"), para que el ratón y las flechas no resalten dos filas a la vez.
 import Quickshell
 import Quickshell.Widgets           // Para el IconImage
 import QtQuick
@@ -17,13 +19,16 @@ Rectangle {
     property bool arrow: false          // Tiene submenú: flecha a la derecha
     property bool active: true          // false = en gris y sin reaccionar al ratón
     property bool selected: false       // La opción en uso (la salida de audio de Volume.qml...): icono y texto con el color de acento
+    property bool highlighted: hovered  // Con el fondo resaltado (y su etiqueta, si tiene): por defecto, con el ratón encima
+    readonly property bool hovered: rowMouse.containsMouse
     signal clicked()
 
     Layout.fillWidth: true
     implicitWidth: label.implicitWidth + 28 + 16 + (arrow ? 20 : 0)    // Lo que pide el texto: para los menús que se ajustan a él (Tray)
     implicitHeight: 28
     radius: 4
-    color: rowMouse.containsMouse && active ? Theme.surfaceHover : "transparent"
+    color: highlighted && active ? Theme.surfaceHover : "transparent"
+    onHighlightedChanged: tooltipLoader.active = highlighted && tooltip !== ""     // También al llegar con las flechas
 
     ColumnLayout {
         id: col
@@ -82,14 +87,13 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         enabled: row.active
-        onContainsMouseChanged: tooltipLoader.active = containsMouse && row.tooltip !== ""
         onClicked: {
             tooltipLoader.active = false        // Como en TooltipArea.qml: al pulsar se quita (y el menú suele cerrarse)
             row.clicked()
         }
     }
 
-    LazyLoader {                                // Solo existe mientras el ratón está encima
+    LazyLoader {                                // Solo existe mientras la fila está resaltada
         id: tooltipLoader
         active: false
         BarTooltip {

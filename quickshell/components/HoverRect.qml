@@ -13,10 +13,14 @@ Rectangle {
     property color idleColor: "transparent"                 // Fondo sin el ratón encima
     property alias acceptedButtons: area.acceptedButtons    // Por defecto solo el izquierdo
     readonly property bool hovered: area.containsMouse
+    // Con el fondo resaltado: por defecto, con el ratón encima. Las listas que se manejan también
+    // con el teclado (los temas de ThemeSettings.qml) dicen ellas qué fila se resalta, para que
+    // el ratón y las flechas no resalten dos a la vez (como MenuRow.qml en ActionMenu.qml)
+    property bool highlighted: hovered
     signal clicked(var mouse)
 
     radius: 4
-    color: hovered ? Theme.surfaceHover : idleColor
+    color: highlighted ? Theme.surfaceHover : idleColor
 
     MouseArea {
         id: area

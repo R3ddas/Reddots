@@ -66,5 +66,9 @@ hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("qs ipc call clipboard toggle"), { de
 -- Bloquear la pantalla (quickshell/windows/Lock.qml)
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("qs ipc call lock lock"), { description = "Sesión: Bloquear la pantalla" })
 
+-- Menú de apagado de la barra (quickshell/bar/Power.qml). Ojo: Alt + F4 es de Hyprland, así que
+-- ya no les llega a las apps que lo usan para cerrar su ventana (para eso está Super + Q)
+hl.bind("ALT + F4", hl.dsp.exec_cmd("qs ipc call power toggle"), { description = "Sesión: Abrir / cerrar el menú de apagado" })
+
 -- Super + M (duplicar las pantallas) no está aquí sino en hyprland.lua, justo después del
 -- require("keybinds"): necesita saber cuál es el panel del portátil (ver MONITORES allí).

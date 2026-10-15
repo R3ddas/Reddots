@@ -20,6 +20,7 @@ Singleton {
 
     signal launcherToggled()            // windows/Launcher.qml
     signal clipboardToggled()           // windows/Clipboard.qml
+    signal powerMenuToggled()           // bar/Power.qml: su menú (Alt + F4)
     signal osdRequested(string mode)    // windows/Osd.qml: "volume", "mic" o "brightness"
     // windows/Lock.qml. Como Lock.qml no está en el Variants de la pantalla, el handler podría
     // vivir allí, pero va aquí con los demás: así el menú de apagado de la barra (Power.qml)
@@ -35,6 +36,13 @@ Singleton {
     IpcHandler {
         target: "clipboard"
         function toggle(): void { root.clipboardToggled() }
+    }
+
+    // El menú de apagado de la barra. Su icono vive en la barra, que también se destruye y se
+    // vuelve a crear con la pantalla (como las ventanas): por eso el handler va aquí
+    IpcHandler {
+        target: "power"
+        function toggle(): void { root.powerMenuToggled() }
     }
 
     IpcHandler {

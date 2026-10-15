@@ -1,6 +1,7 @@
 // Icono de apagado: abre un menú para apagar o reiniciar el equipo, bloquear la pantalla
 // (windows/Lock.qml), suspender, o lanzar el salvapantallas (cmatrix a pantalla completa
-// en cada monitor, ver launchScreensaver()).
+// en cada monitor, ver launchScreensaver()). El menú también se abre y se cierra con Alt + F4
+// (hypr/keybinds.lua, "qs ipc call power toggle", ver ShellIpc.qml).
 
 import Quickshell          // También para lanzar systemctl (execDetached)
 import Quickshell.Hyprland
@@ -20,6 +21,11 @@ ColumnLayout {
         tooltip: Lang.tr("Apagar, reiniciar, bloquear o suspender")
         hint: Lang.tr("Clic: abrir el menú")
         popup: menu
+    }
+
+    Connections {                       // Alt + F4: el IpcHandler está en services/ShellIpc.qml
+        target: ShellIpc
+        function onPowerMenuToggled() { menu.toggle() }
     }
 
     ActionMenu {

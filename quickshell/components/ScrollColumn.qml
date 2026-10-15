@@ -21,6 +21,14 @@ Flickable {
     contentHeight: column.implicitHeight
     boundsBehavior: Flickable.StopAtBounds
 
+    // Desplaza lo justo para que "item" (algo de dentro) se vea entero: para seguir con el
+    // teclado una fila elegida con las flechas (ThemeSettings.qml). Si ya se ve, no se mueve
+    function ensureVisible(item) {
+        const y = item.mapToItem(column, 0, 0).y            // La columna empieza en lo alto del contenido
+        if (y < contentY) contentY = y
+        else if (y + item.height > contentY + height) contentY = y + item.height - height
+    }
+
     ColumnLayout {
         id: column
         width: root.width

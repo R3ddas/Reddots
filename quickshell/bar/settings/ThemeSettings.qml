@@ -7,6 +7,10 @@
 // donde está el brillo (las teclas de brillo del portátil van aparte, en hypr/keybinds.lua).
 // Debajo, el botón para crear el tema Wallpaper a partir del fondo de pantalla
 // (services/WallpaperTheme.qml), que sale el primero de su sección (Claros u Oscuros).
+// Los temas también se eligen con el teclado, como en los menús de ActionMenu.qml:
+//   ↑ ↓     elegir un tema (la primera pulsación sale del activo; dan la vuelta)
+//   Intro   aplicarlo (el menú sigue abierto, como al hacer clic, para probar otros)
+//   Esc     cerrar
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
@@ -16,6 +20,37 @@ import qs.services
 ColumnLayout {
     id: root
     spacing: 6
+
+    // Los temas de cada sección (Claros u Oscuros, según su fondo: ver Theme.isLight()), en el
+    // orden de services/themes.js, salvo el tema Wallpaper (si existe), que va el primero de la
+    // suya: es el que se crea desde el botón de arriba, y así no hay que bajar a buscarlo al final
+    function sectionThemes(light) {
+        const list = Theme.themes.filter(t => Theme.isLight(t) === light)
+        const isWallpaper = t => t.name === WallpaperTheme.themeName
+        return list.filter(isWallpaper).concat(list.filter(t => !isWallpaper(t)))
+    }
+    readonly property var lightThemes: sectionThemes(true)
+    readonly property var darkThemes: sectionThemes(false)
+    readonly property var orderedThemes: lightThemes.concat(darkThemes)     // Todos, en el orden en que se ven: el de las flechas
+
+    // Tema elegido con las flechas o el ratón (su puesto en orderedThemes; -1 = ninguno, como al
+    // abrir). El ratón y las flechas mueven el mismo, así que nunca hay dos filas resaltadas
+    property int currentIndex: -1
+    property bool followCurrent: false      // El elegido ha cambiado con las flechas: la lista se desplaza para que se vea
+
+    function move(step) {
+        const count = orderedThemes.length
+        if (count === 0) return
+        let from = currentIndex
+        if (from < 0) from = orderedThemes.findIndex(t => t.name === Theme.activeTheme)   // La primera pulsación sale del tema activo
+        followCurrent = true
+        currentIndex = from < 0 ? (step > 0 ? 0 : count - 1) : (from + step + count) % count
+    }
+
+    function apply(index) {
+        const theme = orderedThemes[index]
+        if (theme) Theme.activeTheme = theme.name           // Intro sin ninguno elegido: no hace nada
+    }
 
     BarIcon {
         id: iconText
@@ -29,7 +64,12 @@ ColumnLayout {
         anchorItem: iconText
         implicitWidth: 220
 
-        onVisibleChanged: if (visible) BrightnessMonitor.refresh()     // Relee el brillo real al abrir
+        onVisibleChanged: {
+            if (!visible) return
+            BrightnessMonitor.refresh()                 // Relee el brillo real al abrir
+            root.currentIndex = -1                      // Sin ninguno elegido (el activo ya se distingue por su borde y su ✓)
+            themeList.forceActiveFocus()                // Para las flechas (el teclado le llega a la ventana con el grab de BarPopup)
+        }
 
         // Fuera de la lista de temas (con scroll): así se quedan siempre arriba, aunque se baje
         // con la rueda para ver más temas
@@ -63,13 +103,21 @@ ColumnLayout {
         // cabrían en pantalla, así que se recorta a 360px (con los márgenes del popup) y se
         // puede hacer scroll con la rueda del ratón.
         ScrollColumn {
+            id: themeList
             maxHeight: 360 - menu.padding * 2
             spacing: 2
 
-            // Dos secciones, Claros y Oscuros (según el fondo del tema, ver Theme.isLight()),
-            // cada una con los temas en el orden de services/themes.js
+            Keys.onUpPressed: root.move(-1)
+            Keys.onDownPressed: root.move(1)
+            Keys.onReturnPressed: root.apply(root.currentIndex)
+            Keys.onEnterPressed: root.apply(root.currentIndex)     // El Intro del teclado numérico
+            Keys.onEscapePressed: menu.visible = false
+
+            // Dos secciones, Claros y Oscuros (ver sectionThemes()). "offset": dónde empieza la
+            // sección en orderedThemes, para saber el puesto de cada fila
             Repeater {
-                model: [{ title: "Claros", light: true }, { title: "Oscuros", light: false }]
+                model: [{ title: "Claros", themes: root.lightThemes, offset: 0 },
+                        { title: "Oscuros", themes: root.darkThemes, offset: root.lightThemes.length }]
 
                 delegate: ColumnLayout {
                     id: section
@@ -88,20 +136,21 @@ ColumnLayout {
                     }
 
                     Repeater {
-                        // El tema Wallpaper (si existe), el primero de su sección: es el que se
-                        // crea desde aquí arriba, y así no hay que bajar a buscarlo al final
-                        model: {
-                            const list = Theme.themes.filter(t => Theme.isLight(t) === section.modelData.light)
-                            const isWallpaper = t => t.name === WallpaperTheme.themeName
-                            return list.filter(isWallpaper).concat(list.filter(t => !isWallpaper(t)))
-                        }
+                        model: section.modelData.themes
 
                         delegate: HoverRect {
                             id: themeRow
                             required property var modelData
+                            required property int index
+                            readonly property int position: section.modelData.offset + index     // Su puesto en orderedThemes
 
                             Layout.fillWidth: true
                             implicitHeight: 30
+                            highlighted: position === root.currentIndex
+                            onHoveredChanged: if (hovered) { root.followCurrent = false; root.currentIndex = position }
+                            // Elegido con las flechas: que se vea. Con el ratón no hace falta (ya está
+                            // debajo), y desplazar la lista lo movería y elegiría otra fila
+                            onHighlightedChanged: if (highlighted && root.followCurrent) themeList.ensureVisible(themeRow)
                             onClicked: Theme.activeTheme = themeRow.modelData.name
                             border.width: themeRow.modelData.name === Theme.activeTheme ? 1 : 0
                             border.color: Theme.textSelected
