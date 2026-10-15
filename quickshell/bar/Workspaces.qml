@@ -39,7 +39,7 @@ Item{
         anchors.fill: parent
 
         Repeater{               // Repite algo N veces
-            model:6
+            model:5
             Text{
                 id: wsText
                 property var ws: Hyprland.workspaces.values.find(w => w.id === index + 1)
