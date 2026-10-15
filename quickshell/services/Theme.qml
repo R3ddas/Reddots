@@ -22,13 +22,67 @@ Singleton {
     // de arranque de hypr/hyprland.lua (col y background_color), que son los suyos.
     readonly property string defaultTheme: "Original"
 
+    // TEMPORAL (2026-10-15): los temas se llamaban en español ("Gruvbox Claro"...) y ahora
+    // llevan su nombre original. Si theme.json tiene un nombre de antes, al cargarlo se cambia
+    // por el de ahora, para no volver al tema por defecto. Quitar (y lo de onLoaded) cuando los
+    // dos equipos hayan arrancado Quickshell con esto.
+    readonly property var oldNames: ({
+        "Gruvbox Claro": "Gruvbox Light",
+        "Gruvbox Oscuro": "Gruvbox Dark",
+        "Everforest Claro": "Everforest Light",
+        "Everforest Oscuro": "Everforest Dark",
+        "Rosé Pine Claro": "Rosé Pine Dawn",
+        "Rosé Pine Oscuro": "Rosé Pine",
+        "Catppuccin Claro": "Catppuccin Latte",
+        "Catppuccin Oscuro": "Catppuccin Mocha",
+        "Nord Oscuro": "Nord",
+        "Dracula Oscuro": "Dracula",
+        "Solarized Claro": "Solarized Light",
+        "Solarized Oscuro": "Solarized Dark",
+        "Tokyo Night Oscuro": "Tokyo Night Dark",
+        "One Dark Oscuro": "One Dark",
+        "Everblush Oscuro": "Everblush",
+        "Old World Oscuro": "Old World",
+        "Shado Theme Oscuro": "Shado Theme",
+        "Dark Green Oscuro": "Dark Green",
+        "Caelestia Claro": "Caelestia Light",
+        "Caelestia Oscuro": "Caelestia Dark",
+        "Monokai Oscuro": "Monokai",
+        "Kanagawa Oscuro": "Kanagawa",
+        "Ayu Claro": "Ayu Light",
+        "Ayu Oscuro": "Ayu Dark",
+        "Nightfox Claro": "Dayfox",
+        "Nightfox Oscuro": "Nightfox",
+        "Oxocarbon Claro": "Oxocarbon Light",
+        "Oxocarbon Oscuro": "Oxocarbon Dark",
+        "GitHub Claro": "GitHub Light",
+        "GitHub Oscuro": "GitHub Dark",
+        "Zenburn Oscuro": "Zenburn",
+        "Sonokai Oscuro": "Sonokai",
+        "Horizon Oscuro": "Horizon Dark",
+        "Flexoki Claro": "Flexoki Light",
+        "Flexoki Oscuro": "Flexoki Dark",
+        "Pastelón de Amarillos Claro": "Pastelón de Amarillos",
+        "Selenized Oscuro": "Selenized Dark",
+        "Paraíso Oscuro": "Paraiso",
+        "Brasa Oscuro": "Brasa",
+        "Apprentice Oscuro": "Apprentice",
+        "Deep Oceanic Next Oscuro": "Deep Oceanic Next",
+        "Outrun Oscuro": "Outrun Dark",
+        "Evenok Oscuro": "Evenok Dark"
+    })
+
     // Tema activo: se elige desde el icono de la paleta en la barra
     // (ThemeSettings.qml) y se guarda solo, gracias al StateFile de más abajo.
     property alias activeTheme: adapter.activeTheme
 
     StateFile {
         name: "theme.json"
-        onLoaded: syncAll()             // Al arrancar, cuando ya se sabe el tema guardado (antes activeTheme aún vale el de por defecto)
+        onLoaded: {                     // Al arrancar, cuando ya se sabe el tema guardado (antes activeTheme aún vale el de por defecto)
+            const renamed = root.oldNames[root.activeTheme]
+            if (renamed) root.activeTheme = renamed     // Se guarda solo (StateFile) y se aplica (onActiveThemeChanged)
+            root.syncAll()
+        }
         onLoadFailed: syncAll()         // Si theme.json aún no existe (instalación nueva), con el tema por defecto
 
         JsonAdapter {
