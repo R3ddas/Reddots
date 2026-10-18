@@ -234,7 +234,7 @@ hl.config({
         allow_tearing = false,    -- Antes de activarlo, ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/
 
         -- Colocación automática de ventanas
-        -- dwindle: cada vez que abrís una ventana nueva, divide el espacio de la última ventana enfocada en dos (alternando entre división horizontal y vertical)
+        -- dwindle: cada vez que abres una ventana nueva, divide el espacio de la última ventana enfocada en dos (alternando entre división horizontal y vertical)
         -- master: mantiene una ventana "maestra" grande a un lado y apila el resto en una columna secundaria.
         layout = "dwindle",
     },

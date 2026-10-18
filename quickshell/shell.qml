@@ -71,13 +71,13 @@ ShellRoot {
             id: screenScope
             required property var modelData     // La pantalla en la que se crean las ventanas
 
-            Border { screen: screenScope.modelData }   // Marco alrededor de la pantalla, del color de la barra
-            Launcher{screen: screenScope.modelData}    // Widget que se abre/cierra con Super, abajo-derecha
-            Notifications{screen: screenScope.modelData}   // Tarjetas emergentes arriba a la derecha (todas, en el popup de SystemStats)
-            Osd{screen: screenScope.modelData}         // Indicador de volumen/brillo al usar las teclas multimedia
-            Keybinds{id: keybinds; screen: screenScope.modelData}   // Chuleta de atajos, se abre desde el menú de Reddots
-            Clipboard{screen: screenScope.modelData}   // Historial del portapapeles, se abre con Super + V
-            PolkitDialog{screen: screenScope.modelData; agent: polkitAgent}   // Pide la contraseña cuando una app necesita permisos
+            Border { screen: screenScope.modelData }                                    // Marco alrededor de la pantalla, del color de la barra
+            Launcher { screen: screenScope.modelData }                                  // Widget que se abre/cierra con Super, abajo-derecha
+            Notifications { screen: screenScope.modelData }                             // Tarjetas emergentes arriba a la derecha (todas, en el popup de SystemStats)
+            Osd { screen: screenScope.modelData }                                       // Indicador de volumen/brillo al usar las teclas multimedia
+            Keybinds { id: keybinds; screen: screenScope.modelData }                    // Chuleta de atajos, se abre desde el menú de Reddots
+            Clipboard { screen: screenScope.modelData }                                 // Historial del portapapeles, se abre con Super + V
+            PolkitDialog { screen: screenScope.modelData; agent: polkitAgent }          // Pide la contraseña cuando una app necesita permisos
             Bar {                                      // La barra lateral (bar/Bar.qml)
                 screen: screenScope.modelData
                 onKeybindsRequested: keybinds.visible = true

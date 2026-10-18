@@ -10,6 +10,8 @@
 # NetworkManager la guarda en el perfil al conectar (como cuando la pide un applet), así que las
 # siguientes veces conecta solo.
 
+# Sin "set -e": la salida la decide cada paso a mano (0, 1 o 2, ver arriba) y, si nmcli falla al
+# conectar, antes de salir hay que borrar el perfil y mirar el log para distinguir el 2 del 1.
 ssid=$1 identity=$2
 IFS= read -r password
 exec </dev/null                 # Ya leída: que nmcli no se quede esperando nada por aquí

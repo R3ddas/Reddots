@@ -34,7 +34,8 @@ Singleton {
     // Unos segundos de margen: al arrancar Hyprland aún está configurando los monitores, y una
     // consulta DDC en mitad de un cambio de modo puede fallar (el monitor se omitiría de la lista
     // hasta la siguiente búsqueda). Tampoco compite así con el resto del arranque.
-    // Esto no me gusta nada, pero no tengo una alternativa mejor para que no tarde tanto el widget de brightness la primera vez que lo abro (se ejecuta 1 vez, a los 3s de lanzar quickshell)
+    // Es un retraso fijo y no la espera a un evento porque no hay una señal sencilla que diga
+    // "los monitores ya han terminado de configurarse". Se ejecuta una sola vez, a los 3 s de lanzar Quickshell.
     Timer {
         interval: 3000
         running: true

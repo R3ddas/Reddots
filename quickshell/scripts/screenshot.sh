@@ -9,6 +9,8 @@
 # "app" y "aviso" son el nombre y el título de esa notificación, ya en el idioma de la
 # interfaz (los pasa Screenshot.qml con Lang.tr); sin ellos, en español.
 
+# Sin "set -e": cada paso decide su salida (0 si se cancela con Esc, 1 si grim falla, 2 si el
+# modo no existe), y la limpieza va en el trap de más abajo, que se ejecuta pase lo que pase.
 mode="$1"
 
 dir="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")/Capturas"   # ~/Imágenes/Capturas con el sistema en español
