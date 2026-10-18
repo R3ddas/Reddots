@@ -102,12 +102,27 @@ Singleton {
             if (dev.paired) {
                 dev.trusted = true                                          // Emparejado desde el menú: de confianza
                 root.pendingTrust = root.pendingTrust.filter(a => a !== dev.address)
+                connectAfterPair.address = dev.address                      // Algunos dispositivos (los mandos de Xbox) se desconectan al acabar de emparejar: hay que conectarlos aparte
+                connectAfterPair.restart()
             } else if (m.prevPairing && !dev.pairing) {
                 pendingCheck.restart()                                      // El emparejamiento ha terminado sin emparejar... de momento (ver pendingCheck)
             }
         }
         m.prevPairing = dev.pairing
         unbondedCheck.restart()
+    }
+
+    // Tras emparejar desde el menú, se espera un momento (a que el dispositivo suelte la
+    // conexión del emparejamiento, si la suelta) y se conecta, si no lo está ya. Sin esto el
+    // mando se quedaba emparejado pero desconectado, y parecía que el emparejamiento había fallado.
+    Timer {
+        id: connectAfterPair
+        interval: 1500
+        property string address: ""
+        onTriggered: {
+            const dev = root.deviceByAddress(address)
+            if (dev && dev.paired && !dev.connected) dev.connect()
+        }
     }
 
     // Al terminar un emparejamiento, "pairing" y "paired" pueden llegar por separado: si llega

@@ -1,7 +1,7 @@
 // Icono de Bluetooth en la barra: apagado, encendido o con algo conectado.
 //   Clic izquierdo: menú con los dispositivos (busca mientras está abierto). Pulsar uno
 //   lo conecta o desconecta, empareja uno nuevo o cancela un emparejamiento en curso;
-//   "reparar" sale en los que han perdido la clave
+//   "reparar" sale en los que han perdido la clave; "olvidar" en todos los emparejados
 //   Clic derecho: enciende/apaga la radio
 // El estado y los avisos los lleva services/BluetoothMonitor.qml; aquí solo se pinta.
 import Quickshell
@@ -104,7 +104,9 @@ ColumnLayout {
                     id: deviceLabel
                     x: 6
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width - 12 - (deviceRow.needsRepair || deviceRow.repairing ? repairLabel.width + 6 : 0)  // Deja hueco al botón "reparar" si se ve
+                    width: parent.width - 12                                            // Deja hueco a los botones "olvidar" y "reparar" si se ven
+                           - (forgetLabel.visible ? forgetLabel.width + 6 : 0)
+                           - (repairLabel.visible ? repairLabel.width + 6 : 0)
                     text: {
                         const icon = modelData.connected ? 0xF00B1  // bluetooth-connect: conectado
                             : modelData.pairing ? 0xF051F           // timer-sand: emparejando (antes un emoji ⏳)
@@ -122,11 +124,26 @@ ColumnLayout {
                     visible: deviceRow.needsRepair || deviceRow.repairing   // Solo sale cuando hace falta
                     enabled: !deviceRow.repairing          // Que no se lance otra reparación mientras ya hay una en marcha
                     anchors.verticalCenter: parent.verticalCenter
-                    anchors.right: parent.right
-                    anchors.rightMargin: 6
+                    anchors.right: forgetLabel.visible ? forgetLabel.left : parent.right   // A la izquierda de "olvidar" si está
+                    anchors.rightMargin: forgetLabel.visible ? 8 : 6
                     text: deviceRow.repairing ? Lang.tr("reparando…") : Lang.tr("reparar")
                     font.underline: !deviceRow.repairing   // Subrayado: se puede pulsar; sin subrayar mientras repara
                     onClicked: BluetoothMonitor.repairDevice(modelData.address)
+                }
+
+                // Borra el emparejamiento (la clave y la confianza) para poder volver a emparejarlo
+                // desde cero. Solo en los ya emparejados, y no mientras se empareja o se repara
+                // (la reparación ya olvida el dispositivo por su cuenta).
+                TextButton {
+                    id: forgetLabel
+                    visible: modelData.paired && !modelData.pairing && !deviceRow.repairing
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: parent.right
+                    anchors.rightMargin: 6
+                    text: Lang.tr("olvidar")
+                    color: hovered ? Theme.error : Theme.textDisabled   // Rojo al pasar el ratón: es una acción destructiva
+                    font.underline: true
+                    onClicked: modelData.forget()
                 }
             }
         }

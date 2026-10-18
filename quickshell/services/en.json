@@ -23,6 +23,7 @@
         "nuevo": "new",
         "reparando…": "repairing…",
         "reparar": "repair",
+        "olvidar": "forget",
         "Bluetooth: hay que volver a emparejarlo": "Bluetooth: it needs to be paired again",
         "%1 ha perdido la clave de emparejamiento. Ponlo en modo de emparejamiento y pulsa \"reparar\" en el menú de Bluetooth.": "%1 has lost its pairing key. Put it in pairing mode and click \"repair\" in the Bluetooth menu.",
         "Bluetooth: emparejamiento no guardado": "Bluetooth: pairing not saved",
