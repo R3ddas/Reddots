@@ -203,6 +203,7 @@ ColumnLayout{
 
         // --- Salida ---
         RowLayout {                             // Título + interruptor del aumento (en la misma línea: no ocupa espacio extra)
+            id: outputTitle
             Layout.fillWidth: true
             PartTitle { text: Lang.tr("Salida") }
             TextButton {                        // Resaltado cuando está activo; pasar de 100 % solo se puede con él
@@ -211,6 +212,18 @@ ColumnLayout{
                 font.bold: Audio.boost
                 color: Audio.boost ? Theme.textSelected : (hovered ? Theme.textActive : Theme.textDisabled)
                 onClicked: Audio.setBoost(!Audio.boost)
+
+                // Solo para la etiqueta: sin botones, así el clic lo sigue recogiendo el TextButton
+                // (y su color al pasar el ratón). Por eso la etiqueta no se quita al pulsar: se
+                // queda y cambia al nuevo límite. Sale a la derecha del menú, como la de MenuRow.qml
+                TooltipArea {
+                    acceptedButtons: Qt.NoButton
+                    target: outputTitle
+                    besideItem: true
+                    offsetX: outputTitle.width + 14     // Fuera del menú: el padding de BarPopup (8), su borde y algo de aire
+                    tooltip: Audio.boost ? Lang.tr("Volumen máximo: 150 %") : Lang.tr("Volumen máximo: 100 %")
+                    hint: Audio.boost ? Lang.tr("Clic: limitar al 100 %") : Lang.tr("Clic: permitir hasta el 150 %")
+                }
             }
         }
 

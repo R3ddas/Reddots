@@ -8,6 +8,7 @@
 // dos: el de aquí y el suyo).
 import Quickshell                   // Para el LazyLoader y PopupWindow
 import QtQuick
+import qs.services
 
 MouseArea {
     id: root
@@ -15,6 +16,11 @@ MouseArea {
     property string tooltip: ""         // Vacío = sin etiqueta
     property string hint: ""            // Qué hace cada botón o la rueda, debajo del tooltip (ver BarTooltip.qml)
     property Item target: parent        // Junto a qué sale la etiqueta
+    // Para controles dentro de un menú (ver MenuRow.qml): la etiqueta sale a la derecha del
+    // menú, centrada con "target", en vez de pegada a la barra. offsetX es la distancia desde
+    // el borde izquierdo de "target" (target.width + algo de aire, si target ocupa el ancho del menú)
+    property bool besideItem: false
+    property real offsetX: Geometry.sidebarWidth
     property PopupWindow popup: null    // Desplegable que abre el icono: mientras está abierto no sale la etiqueta (lo taparía)
 
     anchors.fill: parent
@@ -29,6 +35,8 @@ MouseArea {
         active: false
         BarTooltip {
             anchorItem: root.target
+            offsetX: root.offsetX
+            besideItem: root.besideItem
             text: root.popup && root.popup.visible ? "" : root.tooltip
             hint: root.popup && root.popup.visible ? "" : root.hint
         }
