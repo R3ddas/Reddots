@@ -2,8 +2,8 @@
 // emergentes (windows/Notifications.qml) y la lista del popup de SystemStats
 // (bar/settings/NotificationList.qml, con compact: true: más pequeña, con la app y la hora
 // encima y una ✕ para cerrarla).
-//   Clic izquierdo: la acción principal de la app ("default", p.ej. abrir el chat de Teams):
-//     avisa con activated() y la lanza; si no tiene, pide cerrarla. En las del historial
+//   Clic izquierdo: lleva a la ventana de la app (NotificationCenter.focusApp) y lanza su acción
+//     principal ("default", p.ej. abrir el chat de Teams): avisa con activated(); si no tiene, pide cerrarla. En las del historial
 //     (sin "notification") no hace nada: ya no tienen acciones.
 //   Clic derecho o la ✕: pide cerrarla con closeRequested(). Cerrarla de verdad lo decide
 //     quien la usa (descartar una activa o quitarla del historial).
@@ -53,6 +53,7 @@ Rectangle {
         onClicked: event => {
             if (event.button === Qt.RightButton) { root.closeRequested(); return }
             if (!root.notification) return
+            NotificationCenter.focusApp(root.notification)     // Al workspace de la app, con o sin acción propia
             const action = root.notification.actions.find(a => a.identifier === "default")
             if (action) {
                 root.activated()            // Suele abrir o traer al frente una ventana: quien la contiene puede cerrarse para no taparla

@@ -1,5 +1,6 @@
 pragma Singleton
 import Quickshell
+import Quickshell.Hyprland              // Para llevar al usuario a la ventana de la app (focusApp)
 import Quickshell.Services.Notifications
 import QtQuick
 
@@ -72,6 +73,24 @@ Singleton {
     }
 
     function clearHistory() { history = [] }
+
+    // Lleva el foco a la ventana de la app que ha mandado la notificación (y con él, a su
+    // workspace). La notificación no dice qué ventana es, así que se busca por el app_id
+    // de las ventanas (lo mismo que la clase de Hyprland; no se usa lastIpcObject, que llega
+    // vacío): es el id del .desktop ("com.anthropic.Claude"), que
+    // coincide con el hint desktop-entry de la notificación o, si la app no lo manda, con su
+    // nombre (appName), a veces solo como final de la clase. Si hay varias ventanas de la app,
+    // gana la que pide atención (la del workspace que parpadea en la barra). Sin ninguna
+    // coincidencia no hace nada: ni se mueve de workspace ni se rompe el clic.
+    function focusApp(n) {
+        const names = [n.desktopEntry, n.appName].map(s => (s || "").toLowerCase()).filter(s => s.length >= 3)
+        const matches = Hyprland.toplevels.values.filter(t => {
+            const cls = (t.wayland?.appId ?? "").toLowerCase()
+            return cls !== "" && names.some(name => cls === name || cls.endsWith("." + name))
+        })
+        const target = matches.find(t => t.workspace?.urgent) ?? matches[0]
+        if (target) Hyprland.dispatch("hl.dsp.focus({ window = \"address:0x" + String(target.address).replace(/^0x/, "") + "\" })")
+    }
 
     // La app la ha sustituido por otra nueva (notify-send -r, Spotify al cambiar de canción...):
     // Quickshell reutiliza el mismo objeto y no avisa con onNotification, así que si ya estaba
