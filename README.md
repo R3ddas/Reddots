@@ -45,6 +45,8 @@ git pull
   hyprctl --instance 0 dispatch 'hl.dsp.exec_cmd("quickshell")'
   ```
 
+- **Secure Boot (por ejemplo para el anticheat de Windows en dual boot).** `install.sh` no lo activa: registrar las claves exige poner la BIOS en Setup Mode a mano y, si algo sale mal, el equipo no arranca. Se hace una vez con `sbctl` (crear claves, firmar GRUB y los kernels, `sbctl enroll-keys -m` para conservar las de Microsoft) y se activa después en la BIOS. Cuando ya está activo, `install.sh` instala `/etc/pacman.d/hooks/95-grub-secureboot.hook`, que repite `grub-install` y vuelve a firmar GRUB cada vez que se actualiza el paquete `grub`. Si no quieres el hook, borra ese archivo.
+
 - **Prefieres que la TTY1 vuelva a pedir usuario y contraseña.** Quita el inicio automático (solo lo vuelve a poner `install.sh`, no las actualizaciones; la pantalla de bloqueo saldría igual después de entrar):
 
   ```bash

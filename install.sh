@@ -2,8 +2,8 @@
 # Instalación completa de Reddots: lo mismo que update.sh (que se ejecuta primero) y, además,
 # lo que es solo de la primera vez y no se repite al actualizar: preguntar por las apps de
 # packages_opt.txt, instalar las extensiones de VS Code (sin preguntar), quitar las que sobran
-# (Firefox, Kitty...), el inicio de sesión automático, el reloj para el dual boot y el arranque
-# sin texto.
+# (Firefox, Kitty...), el inicio de sesión automático, el reloj para el dual boot, el arranque
+# sin texto y, si Secure Boot ya está activo, el hook que mantiene GRUB firmado.
 # Se puede volver a lanzar (también desde la barra, con "Instalar"): pregunta otra vez por
 # los opcionales que no estén instalados y vuelve a quitar los que sobran.
 set -euo pipefail
@@ -154,6 +154,56 @@ if [[ -f "$grubConf" ]] && ! grep -qE '^GRUB_CMDLINE_LINUX_DEFAULT=.*\bquiet\b' 
         sudo grub-mkconfig -o /boot/grub/grub.cfg
     else
         echo "Aviso: no se pudo añadir quiet a GRUB_CMDLINE_LINUX_DEFAULT en $grubConf (¿sin comillas?)"
+    fi
+fi
+
+echo "Arranque seguro (Secure Boot)"
+
+# Esto NO activa Secure Boot: crear y registrar las claves exige poner la BIOS en Setup Mode
+# a mano y, si sale mal, el equipo no arranca. Se hace una vez, a mano y en el equipo que lo
+# necesite (ver README). Aquí solo se deja el mantenimiento: si Secure Boot ya está activo y
+# se arranca con GRUB, un hook de pacman que, al actualizar grub, repite el grub-install (con
+# las mismas opciones que se usaron al configurarlo) y vuelve a firmar el resultado. Sin él,
+# GRUB nuevo = binario sin firmar = la BIOS lo rechaza y el equipo no arranca. Los kernels no
+# hacen falta: el hook que trae sbctl (zz-sbctl) ya vuelve a firmar los registrados con "-s".
+# En un equipo sin Secure Boot (o sin GRUB) no se toca nada.
+secureBootVar=/sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c
+secureBootOn=false
+# La variable son 4 bytes de atributos y uno de valor: 1 = activado. No se usa "sbctl status"
+# porque su salida está pensada para leerla una persona, no para comparar texto
+if [[ -r "$secureBootVar" && "$(od -An -t u1 "$secureBootVar" | awk '{ print $NF }')" == 1 ]]; then
+    secureBootOn=true
+fi
+if $secureBootOn && command -v sbctl &>/dev/null && [[ -f /etc/default/grub ]]; then
+    # La ESP y la carpeta donde está grubx64.efi (que no es la de BOOT, el respaldo) salen del
+    # propio equipo, no se fijan aquí: cambian de una instalación a otra. La ESP solo la lee
+    # root, de ahí el sudo
+    esp=$(sudo bootctl --print-esp-path 2>/dev/null || true)
+    grubDir=$(sudo find "$esp/EFI" -mindepth 2 -maxdepth 2 -iname grubx64.efi ! -ipath '*/EFI/BOOT/*' \
+        -printf '%h\n' 2>/dev/null | head -n 1 || true)
+    if [[ -z "$esp" || -z "$grubDir" ]]; then
+        echo "Aviso: Secure Boot está activo, pero no encuentro grubx64.efi en la ESP: no se instala el hook de GRUB"
+    else
+        # Se registra en la base de datos de sbctl (-s) para que "sign-all" del hook lo
+        # encuentre; si ya estaba, no hace nada
+        sudo sbctl sign -s "$grubDir/grubx64.efi" > /dev/null
+        hookFile=/etc/pacman.d/hooks/95-grub-secureboot.hook
+        # --modules=tpm y --disable-shim-lock porque no se usa shim; es lo que se ejecutó al
+        # configurar Secure Boot. Va con 95 para que corra antes que zz-sbctl
+        hookText="[Trigger]
+Operation = Upgrade
+Type = Package
+Target = grub
+
+[Action]
+Description = Reinstalando GRUB y firmandolo para Secure Boot
+When = PostTransaction
+Depends = sbctl
+Exec = /bin/sh -c 'grub-install --target=x86_64-efi --efi-directory=$esp --bootloader-id=${grubDir##*/} --modules=tpm --disable-shim-lock && /usr/bin/sbctl sign-all'"
+        if [[ "$(cat "$hookFile" 2>/dev/null)" != "$hookText" ]]; then
+            sudo mkdir -p "$(dirname "$hookFile")"
+            printf '%s\n' "$hookText" | sudo tee "$hookFile" > /dev/null
+        fi
     fi
 fi
 
