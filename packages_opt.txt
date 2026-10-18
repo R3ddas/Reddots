@@ -3,8 +3,8 @@
 # no vuelve. Van con paru, así que pueden ser de los repos o de AUR.
 # Uno a uno pregunta por cada paquete, salvo los de un grupo: los que van tras una cabecera
 # "## Nombre" (con dos #), hasta la siguiente línea vacía, se preguntan todos juntos.
-# El grupo VSCode es especial: no son paquetes sino extensiones de Visual Studio Code (se
-# instalan con "code", no con paru), y solo se ofrecen si VS Code está o se acaba de elegir.
+# Las extensiones de Visual Studio Code no van aquí sino en apps/vscode/extensions.txt: si VS Code
+# está instalado, install.sh las instala todas sin preguntar.
 
 # Apps
 kate            # Editor de texto estilo notepad
@@ -16,7 +16,7 @@ zip             # Paquete zip para que file-roller comprima zip
 imv             # Visor de imagenes minimalista
 noto-fonts-emoji        # Emojis de color para las apps (Chrome, Zen, Teams, Kate...). La barra ya no los usa: solo glifos de la Nerd Font
 
-## LaTeX (con la extensión LaTeX Workshop de Visual Studio Code, en el grupo VSCode)
+## LaTeX (con la extensión LaTeX Workshop de Visual Studio Code, ver apps/vscode/extensions.txt)
 texlive-basic             # Lo básico de LaTeX (antes se llamaba texlive-core)
 texlive-latexextra        # Paquetes de LaTeX adicionales
 texlive-binextra          # Programas auxiliares (latexmk, que usa LaTeX Workshop para compilar)
@@ -26,16 +26,10 @@ texlive-fontsrecommended  # Fuentes recomendadas (las Type 1 de las fuentes est�
 texlive-plaingeneric      # Paquetes genéricos (válidos para LaTeX y plain TeX) que piden otros paquetes
 
 # Apps de AUR
-visual-studio-code-bin  # Visual Studio Code (sus extensiones, en el grupo VSCode de abajo)
+visual-studio-code-bin  # Visual Studio Code (sus extensiones, en apps/vscode/extensions.txt)
 claude-desktop          # Claude
 google-chrome           # Chrome
 zen-browser-bin         # Zen
-
-## VSCode (extensiones de Visual Studio Code; después de visual-studio-code-bin, que se pregunta antes)
-bbenoist.QML                    # QML
-James-Yu.latex-workshop         # LaTeX
-ms-python.python                # Python
-hoovercj.vscode-settings-cycler # Alternar ajustes con un atajo (invertir colores del PDF, ver apps/vscode/keybindings.json)
 
 # Otras
 steam           # Juegos (repo multilib)

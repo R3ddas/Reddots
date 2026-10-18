@@ -42,7 +42,7 @@ echo "pkg|$pkg"
 # La carpeta de Quickshell es un enlace al repo (lo crea update.sh): siguiéndolo se llega
 # a las listas de paquetes, dos carpetas por encima de este script
 dots="$(dirname "$(realpath "$0")")/../.."
-listFile() { sed 's/#.*//' "$1" | awk 'NF { print $1 }'; }     # Igual que en update.sh
+source "$dots/lib.sh"     # listFile, la misma que usa update.sh
 listFile "$dots/packages.txt"     | grep -qxF "$pkg" && echo "repo|packages.txt"
 listFile "$dots/packages_opt.txt" | grep -qxF "$pkg" && echo "repo|packages_opt.txt"
 

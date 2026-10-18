@@ -10,26 +10,21 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 DOTS="$PWD" # Guardo la ruta en una variable para no acceder todo el rato
 
-# Los nombres de una de las listas del repo (packages*.txt; también lo usa install.sh),
-# uno por línea: sin comentarios (lo que va tras #), sin líneas vacías y sin espacios
-listFile() { sed 's/#.*//' "$1" | awk 'NF { print $1 }'; }
+source ./lib.sh     # listFile (también la usan install.sh y uninstall-check.sh)
 
 echo "Instalando paru"
 
 sudo pacman -S --needed  --noconfirm paru   # El descargador de paquetes (aquí y no en packages.txt: hace falta ya para instalarlo y para el "paru -Syu" de abajo)
 
-echo "Actualizando el sistema"
-
-paru -Syu --noconfirm   # Actualiza el sistema por completo antes de instalar (repos oficiales + AUR)
-
-
-echo "Instalando paquetes"
+echo "Actualizando el sistema e instalando paquetes"
 
 # Con paru y no con pacman: así packages.txt puede tener tanto paquetes de los repos como de
-# AUR (los de los repos, paru se los pasa a pacman). En una sola llamada y no con xargs, para
-# que paru siga teniendo el terminal (sudo pide ahí la contraseña al instalar los de AUR)
+# AUR (los de los repos, paru se los pasa a pacman). Una sola transacción: -Syu actualiza el
+# sistema por completo (repos oficiales + AUR) y --needed instala solo los de packages.txt que
+# faltan. En una sola llamada y no con xargs, para que paru siga teniendo el terminal (sudo
+# pide ahí la contraseña al instalar los de AUR)
 mapfile -t packages < <(listFile packages.txt)
-paru -S --needed --noconfirm "${packages[@]}"
+paru -Syu --needed --noconfirm "${packages[@]}"
 
 echo "Servicios"
 

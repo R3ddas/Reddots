@@ -67,8 +67,9 @@ git pull
   - `components/`: piezas comunes con las que se montan las demás (icono de la barra, desplegable, slider...).
   - `scripts/`: los scripts que lanza la interfaz.
   - `assets/`: el icono de Reddots y la configuración de PAM con la que la pantalla de bloqueo comprueba la contraseña (`assets/pam/lock`).
-- `apps/`: configuración de cada programa, una carpeta por programa (`alacritty/`, `fish/`, `fastfetch/`, `vscode/`).
+- `apps/`: configuración de cada programa, una carpeta por programa (`alacritty/`, `fish/`, `fastfetch/`, `vscode/`). En `vscode/extensions.txt` están sus extensiones: si VS Code está instalado, `install.sh` las instala todas sin preguntar.
 - `wallpapers/`: los fondos de pantalla.
+- `lib.sh`: funciones que comparten `update.sh`, `install.sh` y los scripts de la barra.
 - `packages.txt`: los paquetes que necesita Reddots; los instala `update.sh`, así que vuelven en cada actualización.
 - `packages_opt.txt`: las apps (Chrome, VS Code, LaTeX, Steam...); solo las ofrece `install.sh`, que pregunta antes de instalarlas.
 - `packages_remove.txt`: los que sobran (Firefox, Kitty, Dolphin...); solo los quita `install.sh`. Las apps que no salen en el lanzador se eligen desde él, con la rueda junto al buscador.

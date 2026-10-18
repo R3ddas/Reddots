@@ -1,0 +1,7 @@
+# Extensiones de Visual Studio Code, una por línea (lo que va tras # es un comentario).
+# Si VS Code está instalado, install.sh las instala todas sin preguntar (code --install-extension
+# no hace nada con las que ya están). Son extensiones y no paquetes, por eso no van en packages_opt.txt.
+bbenoist.QML                     # QML
+James-Yu.latex-workshop          # LaTeX
+ms-python.python                 # Python
+hoovercj.vscode-settings-cycler  # Alternar ajustes con un atajo (invertir colores del PDF, ver keybindings.json)

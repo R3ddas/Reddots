@@ -313,13 +313,15 @@ end
 loadIfExists("shellOverrides")   -- gaps_in/gaps_out/border_size (general) y rounding + active/inactive/fullscreen_opacity (decoration), desde el panel GeometrySettings.qml (quickshell/services/Geometry.qml)
 loadIfExists("shellTheme")       -- col.active_border/inactive_border (general) y background_color (misc), según el tema elegido (quickshell/services/Theme.qml)
 
--- Curvas y animaciones por defecto, ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
+-- Curvas y animaciones. Son las de la config de ejemplo de Hyprland, pero NO se pueden quitar:
+-- sin ellas Hyprland usa sus valores internos (global a 8 en vez de 10, y las demás hojas
+-- heredan de ahí en vez de llevar su velocidad y su curva), y se nota. Ver https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
 hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1}    } })
 hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}       } })
 hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1}    } })
 hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}     } })
 
--- Muelles (springs) por defecto
+-- Muelles (springs)
 hl.curve("easy",           { type = "spring", mass = 1, stiffness = 238.1191, dampening = 24.21279333 })
 
 hl.animation({ leaf = "global",        enabled = true,  speed = 10,   bezier = "default" })
