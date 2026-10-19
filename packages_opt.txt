@@ -14,6 +14,8 @@ nemo-fileroller # Extensión para que nemo pueda comprimir/descomprimir
 unzip           # Paquete unzip para que file-roller descomprima zip
 zip             # Paquete zip para que file-roller comprima zip
 imv             # Visor de imagenes minimalista
+vlc             # Reproductor de vídeo y audio que abre casi cualquier formato
+vlc-plugins-all # Todos los plugins y códecs opcionales de VLC (sin él, algunos formatos no se reproducen)
 noto-fonts-emoji        # Emojis de color para las apps (Chrome, Zen, Teams, Kate...). La barra ya no los usa: solo glifos de la Nerd Font
 
 ## LaTeX (con la extensión LaTeX Workshop de Visual Studio Code, ver apps/vscode/extensions.txt)
