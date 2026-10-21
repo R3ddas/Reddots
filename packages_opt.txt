@@ -32,6 +32,7 @@ visual-studio-code-bin  # Visual Studio Code (sus extensiones, en apps/vscode/ex
 claude-desktop          # Claude
 google-chrome           # Chrome
 zen-browser-bin         # Zen
+euro-office-bin         # Euro-Office: suite ofimática (fork de ONLYOFFICE) para documentos, hojas de cálculo y presentaciones
 
 # Otras
 steam           # Juegos (repo multilib)
