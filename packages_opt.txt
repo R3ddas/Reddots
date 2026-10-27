@@ -26,6 +26,7 @@ texlive-bibtexextra       # Estilos y paquetes extra de bibliografía (biblatex.
 biber                     # Procesa la bibliografía de biblatex (el sustituto de bibtex)
 texlive-fontsrecommended  # Fuentes recomendadas (las Type 1 de las fuentes estándar, para el PDF)
 texlive-plaingeneric      # Paquetes genéricos (válidos para LaTeX y plain TeX) que piden otros paquetes
+texlive-science           # Paquete para usar Siunitx
 
 # Apps de AUR
 visual-studio-code-bin  # Visual Studio Code (sus extensiones, en apps/vscode/extensions.txt)
