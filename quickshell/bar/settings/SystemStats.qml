@@ -3,7 +3,7 @@
 // procesador, la gráfica y el disco. Los datos los lee SystemMonitor.qml
 // (cada 15 s, y cada 2 s mientras este popup está abierto). Si alguna temperatura pasa
 // de su umbral, el icono se pone en rojo (y el engranaje, ver SettingsToggle.qml).
-// Debajo, las notificaciones: las activas y las últimas descartadas
+// Debajo, una fila que abre btop en un terminal y las notificaciones: las activas y las últimas descartadas
 // (NotificationList.qml). Van aquí para no añadir otro icono a la barra. Bajo
 // el chip sale cuántas activas hay, y si alguna es crítica se pone en rojo, como con una
 // temperatura alta.
@@ -124,7 +124,20 @@ ColumnLayout {
             }
         }
 
-        Separator { Layout.topMargin: 6; Layout.bottomMargin: 4 }    // Antes de las notificaciones
+        Separator { Layout.topMargin: 6; Layout.bottomMargin: 2 }    // Antes del monitor de recursos
+
+        // Abre btop (packages.txt) en un terminal, con el título traducido para distinguir su ventana
+        MenuRow {
+            icon: String.fromCodePoint(0xF029A)                         // gauge
+            text: Lang.tr("Monitor de recursos")
+            tooltip: Lang.tr("Abre btop en un terminal")
+            onClicked: {
+                menu.visible = false                                    // Que el popup no tape la ventana nueva
+                Quickshell.execDetached(["alacritty", "--title", Lang.tr("Monitor de recursos"), "-e", "btop"])
+            }
+        }
+
+        Separator { Layout.topMargin: 2; Layout.bottomMargin: 4 }    // Antes de las notificaciones
 
         // Las notificaciones, con su propio desplazamiento: crecen hasta un máximo y a partir
         // de ahí se mueven con la rueda, sin que el uso del sistema se salga de la vista

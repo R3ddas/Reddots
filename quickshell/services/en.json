@@ -61,6 +61,8 @@
         "Sin título": "Untitled",
         "Silenciado": "Muted",
         "Volumen %1 %": "Volume %1 %",
+        "Monitor de recursos": "Resource monitor",
+        "Abre btop en un terminal": "Opens btop in a terminal",
         "Volumen máximo: 100 %": "Maximum volume: 100 %",
         "Volumen máximo: 150 %": "Maximum volume: 150 %",
         "Clic: limitar al 100 %": "Click: limit to 100 %",
