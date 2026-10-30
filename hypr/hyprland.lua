@@ -181,7 +181,13 @@ hl.on("hyprland.start",  monitorsSoon)
 -- Ver https://wiki.hypr.land/Configuring/Basics/Autostart/
 
 hl.on("hyprland.start", function ()
-    hl.exec_cmd("quickshell")   -- La barra, las ventanas de la shell, el agente de polkit y el fondo de pantalla (quickshell/windows/Background.qml)
+    -- La barra, las ventanas de la shell, el agente de polkit y el fondo de pantalla (quickshell/windows/Background.qml).
+    -- En bucle porque al subir el MSI a su frecuencia máxima (bestModes, 200 ms después de
+    -- arrancar) el monitor se desconecta y vuelve un instante: con cero salidas Quickshell
+    -- muere ("Could not create EGL surface") y la barra no volvía. Con Hyprland 0.57 pasa
+    -- siempre. El bucle lo relanza hasta que el monitor reaparece; si se sale a propósito
+    -- (código 0, p. ej. "qs kill") no lo vuelve a lanzar.
+    hl.exec_cmd("sh -c 'until quickshell; do sleep 0.5; done'")
 
     hl.exec_cmd("wl-paste --watch cliphist store")             -- Guarda en el historial todo lo que se copia (texto e imágenes); se ve con Super + V (quickshell/windows/Clipboard.qml)
 
