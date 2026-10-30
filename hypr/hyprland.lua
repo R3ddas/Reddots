@@ -273,6 +273,14 @@ hl.config({
         enabled = true,
     },
 
+    render = {
+        -- Desde Hyprland 0.57 un vídeo en pantalla completa puede pasar el monitor a HDR
+        -- (10 bits) por sí solo (1 = automático). A 165 Hz por DisplayPort el enlace no
+        -- siempre lo aguanta y la pantalla se queda en negro con un aviso de los bits de
+        -- color. 0 = siempre SDR de 8 bits.
+        cm_auto_hdr = 0,
+    },
+
     -- Todo lo de "misc" va aquí, también lo que no es de aspecto: tiene que ir antes del
     -- loadIfExists("shellTheme") de más abajo, para que background_color se pueda sobrescribir
     misc = {
