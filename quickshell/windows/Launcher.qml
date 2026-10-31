@@ -18,7 +18,9 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
     anchors { bottom: true; right: true }
 
     implicitWidth: 320
-    implicitHeight: 480
+    // Solo lo alto que hace falta: con pocas apps (o al filtrar) se encoge, y con muchas se
+    // queda en 480 y la lista hace scroll. +24: los márgenes de arriba y abajo de "content"
+    implicitHeight: Math.min(480, content.implicitHeight + 24)
 
     WlrLayershell.namespace: "reddots:launcher"
 
@@ -134,6 +136,7 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
         clip: true
 
         ColumnLayout {
+            id: content
             anchors.fill: parent
             anchors.margins: 12
             anchors.rightMargin: 12 + background.border.width   // Compensa el borde que queda fuera de la ventana
@@ -187,6 +190,9 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
             SelectionList {
                 id: list
                 model: root.filteredApps
+                // Lo que miden sus filas, para que la ventana sepa cuánto crecer (ver implicitHeight).
+                // Como mínimo una fila: sin resultados queda sitio para el "Sin resultados"
+                Layout.preferredHeight: Math.max(contentHeight, 44)
                 onActivated: index => root.activate(root.filteredApps[index])
 
                 delegate: Item {

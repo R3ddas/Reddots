@@ -51,8 +51,7 @@ hl.monitor({
 -- del panel apagado si la tapa está cerrada, y la de la mejor frecuencia (bestModes).
 -- Así Hyprland ve que no cambia nada y no toca los monitores.
 -- Al ARRANCAR Hyprland todavía no hay monitores (los crea después de leer la config), así
--- que esta lista está vacía y todo funciona como siempre, con los eventos de más abajo.
-local activeMonitors = hl.get_monitors()   -- Solo los activos (no el panel con la tapa cerrada)
+-- que panelState no ve ninguno y todo funciona como siempre, con los eventos de más abajo.
 
 -- El panel del portátil, si lo hay, siempre a la izquierda (0x0), con los externos a
 -- su derecha. También cuando se vuelve a encender al abrir la tapa (ver más abajo).
@@ -76,19 +75,21 @@ local function logindLidClosed()
 end
 local lidClosed = internalPanel ~= nil and logindLidClosed()
 
--- Si el panel está encendido y si hay algún monitor externo, en una lista de monitores
--- activos (hl.get_monitors() no lista el panel con la tapa cerrada). Lo usan la carga
--- de la config (aquí abajo) y applyLid (ver "Tapa del portátil").
-local function panelState(monitors)
+-- Si el panel está encendido y si hay algún monitor externo encendido. Con "all" (desde
+-- Hyprland 0.57) salen también los desactivados, como el panel con la tapa cerrada, y cada
+-- uno dice si lo está ("enabled"): sin él, el panel apagado no salía en la lista y había que
+-- deducirlo. Lo usan la carga de la config (aquí abajo) y applyLid (ver "Tapa del portátil").
+local function panelState()
     local panelOn, hasExternal = false, false
-    for _, mon in ipairs(monitors) do
-        if mon.name == internalPanel then panelOn = true else hasExternal = true end
+    for _, mon in ipairs(hl.get_monitors({ all = true })) do
+        if mon.name == internalPanel then panelOn = mon.enabled
+        elseif mon.enabled then hasExternal = true end
     end
     return panelOn, hasExternal
 end
 
 if internalPanel then
-    local _, hasExternal = panelState(activeMonitors)
+    local _, hasExternal = panelState()
     if lidClosed and hasExternal then
         hl.monitor({ output = internalPanel, disabled = true })     -- Recarga con la tapa cerrada: la misma regla que pone applyLid
     else
@@ -143,7 +144,7 @@ bestModes(true)                     -- Solo hace algo al recargar (al arrancar a
 local applyLid                      -- nil en un sobremesa (sin panel no hay tapa)
 if internalPanel then
     applyLid = function()
-        local panelOn, hasExternal = panelState(hl.get_monitors())
+        local panelOn, hasExternal = panelState()
         if lidClosed and hasExternal then
             if panelOn then hl.monitor({ output = internalPanel, disabled = true }) end
         else
@@ -336,7 +337,7 @@ hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1}
 hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}     } })
 
 -- Muelles (springs)
-hl.curve("easy",           { type = "spring", mass = 1, stiffness = 238.1191, dampening = 24.21279333 })
+hl.curve("easy",           { type = "spring", mass = 1, stiffness = 238.1191, damping = 24.21279333 })   -- "damping" desde Hyprland 0.57 (antes "dampening", que aún acepta)
 
 hl.animation({ leaf = "global",        enabled = true,  speed = 10,   bezier = "default" })
 hl.animation({ leaf = "border",        enabled = true,  speed = 5.39, bezier = "easeOutQuint" })
@@ -408,16 +409,17 @@ require("keybinds")
 -- En vez de llevar la cuenta en una variable, se mira el estado real cada vez: así acierta
 -- aunque el mirror se haya activado desde otro sitio.
 local function isMirroring()
-    for _, mon in ipairs(hl.get_monitors()) do
-        if mon.is_mirror or #mon.mirrors > 0 then return true end  -- Vale tanto el que copia como el copiado (por si get_monitors() no lista al que copia)
+    for _, mon in ipairs(hl.get_monitors({ all = true })) do   -- "all": también los desactivados
+        if mon.is_mirror or #mon.mirrors > 0 then return true end  -- Vale tanto el que copia como el copiado (por si la lista no incluye al que copia)
     end
     return false
 end
 
--- Monitor que copian los demás: el panel del portátil si lo hay; si no (sobremesa
--- con varios monitores), el que tiene el foco.
+-- Monitor que copian los demás: el panel del portátil si está encendido; si no (sobremesa
+-- con varios monitores, o tapa cerrada con dos externos), el que tiene el foco.
 local function mirrorSource()
-    if internalPanel then return internalPanel end
+    local panelOn = internalPanel and panelState()
+    if panelOn then return internalPanel end
     for _, mon in ipairs(hl.get_monitors()) do
         if mon.focused then return mon.name end
     end
