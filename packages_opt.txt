@@ -28,6 +28,12 @@ texlive-fontsrecommended  # Fuentes recomendadas (las Type 1 de las fuentes est�
 texlive-plaingeneric      # Paquetes genéricos (válidos para LaTeX y plain TeX) que piden otros paquetes
 texlive-science           # Paquete para usar Siunitx
 
+## Impresoras (install.sh activa cups.socket). Sirven las que imprimen sin driver (IPP Everywhere / AirPrint, casi todas las modernas);
+# para una más antigua hace falta además el driver de su marca (hplip para HP, gutenprint para Epson y Canon...)
+cups                      # El sistema de impresión. Encuentra las impresoras de red con avahi, que ya está instalado
+ipp-usb                   # Las de USB, también sin driver. No hay que activar nada: arranca solo al enchufar la impresora
+system-config-printer     # Para añadir y configurar impresoras ("Configuración de impresión" en el launcher)
+
 # Apps de AUR
 visual-studio-code-bin  # Visual Studio Code (sus extensiones, en apps/vscode/extensions.txt)
 claude-desktop          # Claude

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Instalación completa de Reddots: lo mismo que update.sh (que se ejecuta primero) y, además,
 # lo que es solo de la primera vez y no se repite al actualizar: preguntar por las apps de
-# packages_opt.txt, instalar las extensiones de VS Code (sin preguntar), quitar las que sobran
-# (Firefox, Kitty...), el inicio de sesión automático, el reloj para el dual boot, el arranque
-# sin texto y, si Secure Boot ya está activo, el hook que mantiene GRUB firmado.
+# packages_opt.txt, instalar las extensiones de VS Code (sin preguntar), activar CUPS si está
+# (impresoras), quitar las que sobran (Firefox, Kitty...), el inicio de sesión automático, el
+# reloj para el dual boot, el arranque sin texto y, si Secure Boot ya está activo, el hook que mantiene GRUB firmado.
 # Se puede volver a lanzar (también desde la barra, con "Instalar"): pregunta otra vez por
 # los opcionales que no estén instalados y vuelve a quitar los que sobran.
 set -euo pipefail
@@ -87,6 +87,15 @@ if command -v code &>/dev/null; then
     vscodeArgs=()
     for ext in "${extensions[@]}"; do vscodeArgs+=(--install-extension "$ext"); done
     code "${vscodeArgs[@]}"
+fi
+
+echo "Impresoras"
+
+# Si CUPS está (ya lo estaba o se acaba de instalar con el grupo Impresoras de packages_opt.txt),
+# se activa su socket: así CUPS no se queda siempre en marcha, solo arranca cuando algo lo usa
+# (imprimir, system-config-printer...). Si ya estaba activado no se toca
+if pacman -Qq cups &>/dev/null && ! systemctl is-enabled --quiet cups.socket; then
+    sudo systemctl enable --now cups.socket
 fi
 
 echo "Paquetes no utilizados"
