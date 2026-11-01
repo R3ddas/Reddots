@@ -96,6 +96,17 @@ ColumnLayout {
                     || modelData.state === BluetoothDeviceState.Connecting
                     || BluetoothMonitor.connectingAddrs.includes(modelData.address)
 
+                // Batería del dispositivo (" · 󰁾 50 %"), solo si está conectado y la manda por
+                // Bluetooth; vacío si no. Los iconos son los mismos que en bar/Battery.qml.
+                readonly property string batteryText: {
+                    if (!modelData.connected || !modelData.batteryAvailable) return ""
+                    const level = Math.round(modelData.battery * 100)
+                    const icon = level >= 100 ? 0xF0079              // battery (llena)
+                        : level < 10 ? 0xF0083                       // battery-alert
+                        : 0xF007A + Math.floor(level / 10) - 1       // battery-10 … battery-90: van seguidos, uno por cada 10 %
+                    return "  ·  " + String.fromCodePoint(icon) + " " + level + " %"
+                }
+
                 Layout.fillWidth: true
                 implicitHeight: 26
                 onClicked: {
@@ -120,7 +131,8 @@ ColumnLayout {
                             : 0xF00B2                               // bluetooth-off: dispositivo nuevo, sin emparejar
                         const suffix = deviceRow.disconnecting ? "  (" + Lang.tr("desconectando…") + ")"
                             : deviceRow.busy ? "  (" + Lang.tr("conectando…") + ")"
-                            : modelData.paired ? "" : "  (" + Lang.tr("nuevo") + ")"
+                            : modelData.paired ? deviceRow.batteryText   // Conectado y en reposo: su batería (si la manda)
+                            : "  (" + Lang.tr("nuevo") + ")"
                         return String.fromCodePoint(icon) + "  " + modelData.name + suffix
                     }
                     color: modelData.connected ? Theme.textActive : Theme.textDisabled
