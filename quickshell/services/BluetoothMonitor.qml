@@ -1,10 +1,11 @@
 pragma Singleton
 import Quickshell
 import Quickshell.Bluetooth
+import Quickshell.Io
 import QtQuick
 
-// Vigilancia de los dispositivos Bluetooth: emparejar y marcar de confianza, avisar de
-// los que se han quedado sin clave y repararlos. Lo usa el icono de la barra
+// Vigilancia de los dispositivos Bluetooth: conectar, emparejar y marcar de confianza,
+// avisar de los que se han quedado sin clave y repararlos. Lo usa el icono de la barra
 // (bar/Bluetooths.qml), que solo pinta y llama a estas funciones. Está aquí y no en el
 // icono porque la barra se destruye y se vuelve a crear al cerrar la tapa o cambiar de
 // monitor: con todo esto dentro se perdía el historial de cada dispositivo y se cortaba
@@ -17,9 +18,9 @@ Singleton {
 
     readonly property var adapter: Bluetooth.defaultAdapter               // null si el equipo no tiene Bluetooth
     readonly property bool powered: adapter ? adapter.enabled : false     // Radio encendida o apagada
-    property bool menuOpen: false       // El menú de Bluetooth de la barra está abierto (y buscando); lo pone bar/Bluetooths.qml
+    property bool menuOpen: false       // El menú de Bluetooth de la barra está abierto; lo pone bar/Bluetooths.qml
 
-    // Historial de cada dispositivo (dirección -> { prevState, prevPairing, lastNotify, warnedUnbonded }):
+    // Historial de cada dispositivo (dirección -> { prevPairing, lastNotify, warnedUnbonded }):
     // el estado anterior, para saber de dónde viene cada cambio
     property var deviceMonitor: ({})
 
@@ -31,27 +32,101 @@ Singleton {
     function monitorFor(dev) {
         let m = root.deviceMonitor[dev.address]
         if (!m) {
-            m = { prevState: dev.state, prevPairing: dev.pairing, lastNotify: 0 }   // Primera vez que se ve este dispositivo desde que arrancó Quickshell
+            m = { prevPairing: dev.pairing, lastNotify: 0 }   // Primera vez que se ve este dispositivo desde que arrancó Quickshell
             root.deviceMonitor[dev.address] = m
         }
         return m
     }
 
+    // --- Búsqueda de dispositivos ---
+    // Se busca mientras el menú está abierto, pero no mientras se conecta algo: el adaptador
+    // (una Intel AX201, que además comparte radio con el wifi) tiene que repartir el tiempo
+    // entre buscar y conectar, y con la búsqueda en marcha la conexión falla mucho más. Una
+    // reparación sí necesita buscar (para volver a ver el dispositivo tras olvidarlo), así
+    // que manda sobre todo lo demás. Todo cambio de la búsqueda pasa por aquí.
+    function updateDiscovery() {
+        if (!root.adapter || !root.adapter.enabled) return
+        const want = root.repairingAddrs.length > 0
+            || (root.menuOpen && root.connectingAddrs.length === 0)
+        if (root.adapter.discovering !== want) root.adapter.discovering = want   // Solo si cambia, para no mandar a BlueZ peticiones de más
+    }
+
+    onMenuOpenChanged: updateDiscovery()
+
+    // --- Conexión ---
+    // Se conecta con busctl en vez de con dev.connect() de Quickshell porque Quickshell no
+    // cuenta por qué ha fallado una conexión (solo lo deja en su log). Con el error real
+    // se puede distinguir "ha perdido la clave" (br-connection-key-missing, que se arregla
+    // con "reparar") de "no responde" (apagado, en el estuche o lejos), que antes se
+    // confundían y llevaban a olvidar dispositivos que no tenían nada roto.
+    property var connectingAddrs: []   // Direcciones con una conexión lanzada desde aquí y sin respuesta todavía
+
+    function connectDevice(dev) {
+        if (!dev || root.connectingAddrs.includes(dev.address)) return   // Ya hay una conexión en marcha para este dispositivo
+        const wasDiscovering = root.adapter?.discovering ?? false
+        root.connectingAddrs = [...root.connectingAddrs, dev.address]
+        root.updateDiscovery()            // Para la búsqueda mientras conecta
+        const job = connectJob.createObject(root, { address: dev.address, name: dev.name })
+        job.exec(["sh", "-c",
+            '[ "$2" = 1 ] && sleep 0.3; '                                               // Margen para que BlueZ pare la búsqueda antes de conectar
+            + 'busctl call --timeout=60 org.bluez "$1" org.bluez.Device1 Connect 2>&1; '  // Si falla escribe "Call failed: <motivo>"
+            + 'echo "exit|$?"',
+            "sh", dev.dbusPath, wasDiscovering ? "1" : "0"])
+    }
+
+    // Ha terminado una conexión lanzada desde connectDevice(); output es la salida de busctl
+    function connectFinished(address, name, output) {
+        root.connectingAddrs = root.connectingAddrs.filter(a => a !== address)
+        root.updateDiscovery()            // Vuelve a buscar si el menú sigue abierto
+        if (parseInt(Utils.parseLines(output, "exit")[0] ?? "-1") === 0) return   // Conectado
+        const reason = output.split("\n").find(l => l.startsWith("Call failed: "))?.slice(13).trim() ?? ""
+        const dev = root.deviceByAddress(address)
+        if (reason.includes("key-missing")) {
+            if (dev && dev.paired) root.flagRepairNeeded(dev)
+        } else {
+            NotificationCenter.notify("Bluetooth", "", Lang.tr("Bluetooth: no se ha podido conectar"),
+                reason.includes("page-timeout") || reason.includes("Host is down")
+                    ? Lang.tr("%1 no responde: comprueba que está encendido, fuera del estuche y cerca.", name)
+                    : name + ": " + (reason || Lang.tr("error desconocido")))
+        }
+    }
+
+    // Una conexión en marcha: un Process por cada una, que se destruye al terminar
+    Component {
+        id: connectJob
+        Process {
+            id: job
+            property string address: ""
+            property string name: ""
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    root.connectFinished(job.address, job.name, text)
+                    job.destroy()
+                }
+            }
+        }
+    }
+
     // --- Aviso y reparación a mano de los dispositivos que han perdido la clave ---
-    // Si un dispositivo ya emparejado falla al conectar (pasa a Connecting y vuelve a
-    // Disconnected sin llegar a Connected), es la señal típica de "br-connection-key-missing":
-    // la clave de emparejamiento que guarda el equipo ya no coincide con la del dispositivo.
-    // El único arreglo es olvidarlo y volver a emparejarlo, y eso solo funciona si el
-    // dispositivo se está anunciando (en modo de emparejamiento) justo en ese momento. Como
-    // no se puede saber cuándo lo habrá puesto así el usuario, en vez de reintentar a ciegas
-    // en segundo plano se avisa con una notificación y se deja un botón "reparar" en el menú
-    // para lanzarlo en el momento justo.
+    // Si al conectar un dispositivo ya emparejado BlueZ responde "br-connection-key-missing",
+    // la clave de emparejamiento que guarda el equipo ya no coincide con la del dispositivo
+    // (pasa, por ejemplo, al emparejarlo desde otro sistema del mismo ordenador: Windows o
+    // Zorin usan el mismo adaptador y su clave nueva pisa a esta). El único arreglo es
+    // olvidarlo y volver a emparejarlo, y eso solo funciona si el dispositivo se está
+    // anunciando (en modo de emparejamiento) justo en ese momento. Como no se puede saber
+    // cuándo lo habrá puesto así el usuario, en vez de reintentar a ciegas en segundo plano
+    // se avisa con una notificación y se deja un botón "reparar" en el menú para lanzarlo
+    // en el momento justo.
     property var repairNeeded: []      // Direcciones con el botón "reparar" a la vista
     property var repairingAddrs: []    // Direcciones con una reparación en marcha
 
     function flagRepairNeeded(dev) {
         if (!root.repairNeeded.includes(dev.address))          // Sin repetidos en la lista
             root.repairNeeded = [...root.repairNeeded, dev.address]  // Lista nueva: si se cambia por dentro, QML no se entera
+        const m = root.monitorFor(dev)
+        const now = Date.now()
+        if (now - m.lastNotify < 5 * 60 * 1000) return          // Como mucho un aviso cada 5 min, para no llenar la pantalla de notificaciones
+        m.lastNotify = now
         NotificationCenter.notify("Bluetooth", "", Lang.tr("Bluetooth: hay que volver a emparejarlo"),
             Lang.tr("%1 ha perdido la clave de emparejamiento. Ponlo en modo de emparejamiento y pulsa \"reparar\" en el menú de Bluetooth.", dev.name))
     }
@@ -61,21 +136,9 @@ Singleton {
             root.repairNeeded = root.repairNeeded.filter(a => a !== address)  // También lista nueva, por lo mismo
     }
 
-    // Ha cambiado el estado de conexión de un dispositivo. Como llega cada cambio (no una
-    // foto cada 2 s, como antes), tampoco se escapa un intento fallido que dure muy poco.
+    // Ha cambiado el estado de conexión de un dispositivo
     function stateChanged(dev) {
-        const m = root.monitorFor(dev)
-        if (m.prevState === BluetoothDeviceState.Connecting                  // Intentó conectar...
-            && dev.state === BluetoothDeviceState.Disconnected               // ...y volvió a desconectado sin pasar por Connected
-            && dev.paired) {                                                 // Solo si ya estaba emparejado (clave vieja)
-            const now = Date.now()
-            if (now - m.lastNotify > 5 * 60 * 1000) {                         // Como mucho un aviso cada 5 min, para no llenar la pantalla de notificaciones
-                m.lastNotify = now
-                root.flagRepairNeeded(dev)
-            }
-        }
         if (dev.state === BluetoothDeviceState.Connected) root.clearRepairNeeded(dev.address)  // Se ha arreglado solo (o ya no hace falta avisar)
-        m.prevState = dev.state
     }
 
     // --- De confianza al emparejar desde el menú ---
@@ -108,6 +171,8 @@ Singleton {
                 pendingCheck.restart()                                      // El emparejamiento ha terminado sin emparejar... de momento (ver pendingCheck)
             }
         }
+        if (dev.paired && root.repairingAddrs.includes(dev.address))
+            root.finishRepair(dev.address)                                  // Reparado: connectAfterPair se encarga de conectarlo
         m.prevPairing = dev.pairing
         unbondedCheck.restart()
     }
@@ -121,7 +186,7 @@ Singleton {
         property string address: ""
         onTriggered: {
             const dev = root.deviceByAddress(address)
-            if (dev && dev.paired && !dev.connected) dev.connect()
+            if (dev && dev.paired && !dev.connected) root.connectDevice(dev)
         }
     }
 
@@ -157,7 +222,10 @@ Singleton {
     onAdapterChanged: ensurePairable()              // Aparece el adaptador (al arrancar, o al reiniciar el servicio de Bluetooth)
     Connections {
         target: root.adapter
-        function onEnabledChanged() { root.ensurePairable() }      // Se enciende la radio
+        function onEnabledChanged() {                               // Se enciende la radio
+            root.ensurePairable()
+            root.updateDiscovery()                                  // Si el menú está abierto, que se ponga a buscar
+        }
         function onPairableChanged() { root.ensurePairable() }     // BlueZ lo ha quitado
     }
 
@@ -191,42 +259,46 @@ Singleton {
     }
 
     // --- Reparación ---
-    // Se lanza a mano desde el botón "reparar": olvida el dispositivo y lo vuelve a
-    // emparejar. Solo sale bien si el dispositivo ya se está anunciando (por eso hay que
-    // ponerlo antes en modo de emparejamiento).
+    // Se lanza a mano desde el botón "reparar": olvida el dispositivo, busca hasta que vuelve
+    // a aparecer (BlueZ lo borra al olvidarlo y tarda unos segundos en volver a verlo) y en
+    // cuanto aparece lo empareja (ver deviceAppeared). Solo sale bien si el dispositivo está
+    // en modo de emparejamiento; si en repairTimeout no se ha emparejado, se da por fallida.
     function repairDevice(address) {
         if (root.repairingAddrs.includes(address)) return   // Ya hay una reparación en marcha para este dispositivo
         const dev = root.deviceByAddress(address)
         if (!dev) return
         root.repairingAddrs = [...root.repairingAddrs, address]
-        root.adapter.discovering = true   // Hace falta buscar para volver a ver el dispositivo anunciándose tras el forget()
-        dev.forget()                      // Borra la clave vieja; repairTimer vuelve a intentar el emparejamiento
-        repairTimer.address = address
-        repairTimer.restart()
+        root.updateDiscovery()            // Busca para volver a ver el dispositivo tras el forget()
+        dev.forget()                      // Borra la clave vieja
+        repairTimeout.address = address
+        repairTimeout.restart()
+    }
+
+    function finishRepair(address) {
+        root.repairingAddrs = root.repairingAddrs.filter(a => a !== address)
+        root.clearRepairNeeded(address)   // Ya se ha intentado; si vuelve a fallar al conectar, connectFinished() lo volverá a marcar
+        root.updateDiscovery()            // Deja la búsqueda como diga el menú
+    }
+
+    // Ha aparecido un dispositivo (o todos, al arrancar)
+    function deviceAppeared(dev) {
+        root.monitorFor(dev)
+        unbondedCheck.restart()
+        if (root.repairingAddrs.includes(dev.address) && !dev.paired && !dev.pairing)
+            root.pairAndTrust(dev)        // Es el que se está reparando, ya olvidado: a emparejarlo de nuevo
     }
 
     Timer {
-        id: repairTimer
-        interval: 800   // Un poco de margen tras el forget() antes de intentar volver a emparejar
+        id: repairTimeout
+        interval: 30000   // Tiempo que se le da a la reparación (volver a verlo, emparejar y confirmar el código)
         property string address: ""
         onTriggered: {
+            if (!root.repairingAddrs.includes(address)) return       // Ya ha terminado bien
             const dev = root.deviceByAddress(address)
-            if (dev) root.pairAndTrust(dev)   // Solo sale bien si el dispositivo sigue anunciándose (en modo de emparejamiento)
-            pairWatch.address = address
-            pairWatch.restart()
-        }
-    }
-
-    Timer {
-        id: pairWatch
-        interval: 8000   // Tiempo que se le da al emparejamiento (incluida la confirmación del código) antes de mirar cómo ha ido
-        property string address: ""
-        onTriggered: {
-            const dev = root.deviceByAddress(pairWatch.address)
-            if (dev && dev.paired) dev.connect()                 // Se ha emparejado: ya se puede conectar
-            if (root.adapter) root.adapter.discovering = root.menuOpen  // Deja la búsqueda como diga el menú (abierto: buscando)
-            root.repairingAddrs = root.repairingAddrs.filter(a => a !== pairWatch.address)
-            root.clearRepairNeeded(pairWatch.address)   // Ya se ha intentado; si ha fallado, stateChanged() lo volverá a marcar
+            if (dev && dev.pairing) { restart(); return }             // Sigue emparejándose (p.ej. esperando a confirmar el código): más tiempo
+            root.finishRepair(address)
+            NotificationCenter.notify("Bluetooth", "", Lang.tr("Bluetooth: no se ha podido reparar"),
+                Lang.tr("No se ha podido volver a emparejar el dispositivo. Ponlo en modo de emparejamiento y emparéjalo desde el menú de Bluetooth."))
         }
     }
 
@@ -240,10 +312,7 @@ Singleton {
             required property BluetoothDevice modelData
             target: modelData
 
-            Component.onCompleted: {                    // Dispositivo nuevo (o todos, al arrancar)
-                root.monitorFor(modelData)
-                unbondedCheck.restart()
-            }
+            Component.onCompleted: root.deviceAppeared(modelData)   // Dispositivo nuevo (o todos, al arrancar)
             function onStateChanged() { root.stateChanged(modelData) }
             function onPairedChanged() { root.pairingChanged(modelData) }
             function onPairingChanged() { root.pairingChanged(modelData) }

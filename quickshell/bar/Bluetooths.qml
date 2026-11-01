@@ -5,6 +5,7 @@
 //   Clic derecho: enciende/apaga la radio
 // El estado y los avisos los lleva services/BluetoothMonitor.qml; aquí solo se pinta.
 import Quickshell
+import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
 import qs.components
@@ -37,7 +38,7 @@ ColumnLayout {
 
     // El estado de los dispositivos (reparaciones, emparejamientos pendientes, avisos) está
     // en services/BluetoothMonitor.qml, que no se destruye con la barra. Aquí solo se pinta.
-    Binding {                           // Para que, tras una reparación, la búsqueda quede como diga el menú
+    Binding {                           // Con el menú abierto se busca (lo decide BluetoothMonitor.updateDiscovery)
         target: BluetoothMonitor
         property: "menuOpen"
         value: menu.visible
@@ -64,8 +65,8 @@ ColumnLayout {
         anchorItem: iconText
         implicitWidth: 240
 
-        // Busca dispositivos mientras el menú está abierto; al cerrarlo para, para no gastar batería
-        onVisibleChanged: if (root.adapter) root.adapter.discovering = visible
+        // La búsqueda mientras el menú está abierto la lleva BluetoothMonitor (con el Binding
+        // de menuOpen de arriba): así puede pararla mientras conecta algo
 
         Text {
             Layout.fillWidth: true
@@ -90,13 +91,18 @@ ColumnLayout {
                 required property var modelData
                 readonly property bool needsRepair: BluetoothMonitor.repairNeeded.includes(modelData.address)   // Enseña el botón "reparar"
                 readonly property bool repairing: BluetoothMonitor.repairingAddrs.includes(modelData.address)   // Reparación en marcha: el botón no responde
+                readonly property bool disconnecting: modelData.state === BluetoothDeviceState.Disconnecting
+                readonly property bool busy: disconnecting                                                      // Conectando o desconectando: el clic no hace nada
+                    || modelData.state === BluetoothDeviceState.Connecting
+                    || BluetoothMonitor.connectingAddrs.includes(modelData.address)
 
                 Layout.fillWidth: true
                 implicitHeight: 26
                 onClicked: {
                     if (modelData.pairing) modelData.cancelPair()           // Clic mientras se empareja: lo cancela
+                    else if (deviceRow.busy) return                         // Un segundo clic mientras conecta solo daba error ("already connecting")
                     else if (modelData.connected) modelData.disconnect()
-                    else if (modelData.paired) modelData.connect()          // Ya conocido: solo volver a conectar
+                    else if (modelData.paired) BluetoothMonitor.connectDevice(modelData)   // Ya conocido: solo volver a conectar
                     else BluetoothMonitor.pairAndTrust(modelData)           // Nuevo: emparejarlo por primera vez (y marcarlo de confianza)
                 }
 
@@ -108,11 +114,13 @@ ColumnLayout {
                            - (forgetLabel.visible ? forgetLabel.width + 6 : 0)
                            - (repairLabel.visible ? repairLabel.width + 6 : 0)
                     text: {
-                        const icon = modelData.connected ? 0xF00B1  // bluetooth-connect: conectado
-                            : modelData.pairing ? 0xF051F           // timer-sand: emparejando (antes un emoji ⏳)
+                        const icon = (modelData.pairing || deviceRow.busy) ? 0xF051F   // timer-sand: emparejando, conectando o desconectando (antes un emoji ⏳)
+                            : modelData.connected ? 0xF00B1         // bluetooth-connect: conectado
                             : modelData.paired ? 0xF00AF            // bluetooth: emparejado pero desconectado
                             : 0xF00B2                               // bluetooth-off: dispositivo nuevo, sin emparejar
-                        const suffix = modelData.paired ? "" : "  (" + Lang.tr("nuevo") + ")"
+                        const suffix = deviceRow.disconnecting ? "  (" + Lang.tr("desconectando…") + ")"
+                            : deviceRow.busy ? "  (" + Lang.tr("conectando…") + ")"
+                            : modelData.paired ? "" : "  (" + Lang.tr("nuevo") + ")"
                         return String.fromCodePoint(icon) + "  " + modelData.name + suffix
                     }
                     color: modelData.connected ? Theme.textActive : Theme.textDisabled
