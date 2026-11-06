@@ -478,10 +478,12 @@ hl.window_rule({
 })
 
 -- Imágenes, vídeos y juegos de Steam siempre opacos, con o sin pantalla completa
--- (el resto de ventanas usa la transparencia de "opacity", ver ASPECTO)
+-- (el resto de ventanas usa la transparencia de "opacity", ver ASPECTO).
+-- Las reglas se aplican al crearse la ventana, así que el vídeo ya se abre opaco.
+-- Un reproductor nuevo se añade a la lista con su clase (la da "hyprctl clients").
 hl.window_rule({
     name  = "opaque-media",
-    match = { class = "^(imv|mpv|steam_app_.*)$" },    -- Los juegos de Steam tienen clase "steam_app_<número>"
+    match = { class = "^(imv|mpv|vlc|ffplay|steam_app_.*)$" },    -- Los juegos de Steam tienen clase "steam_app_<número>"
 
     opaque = true,
 })
