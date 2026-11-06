@@ -1,6 +1,6 @@
 // Icono en la barra + popup para editar en caliente las medidas de Geometry.qml: las de
 // Quickshell (ancho de la barra lateral; grosor, redondeo y sombra del borde; desplegables)
-// y las de las ventanas, que vive Hyprland (gaps, borde, redondeo y opacidad). Las primeras
+// y las de las ventanas, que vive Hyprland (gaps, borde, redondeo, opacidad y wobble). Las primeras
 // se aplican al momento (Border.qml, Bar.qml y los desplegables están enlazados a Geometry)
 // y las de Hyprland en caliente con "hyprctl eval". Todas se guardan solas en disco.
 // Las opciones salen agrupadas por lo que tocan (barra lateral, borde de la pantalla,

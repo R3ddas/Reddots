@@ -452,6 +452,17 @@ hl.window_rule({
 })
 
 hl.window_rule({
+    -- El wobble (casilla "Wobble al mover" del panel GeometrySettings.qml, que es quien activa
+    -- decoration.wobble.enabled) solo debe afectar a las ventanas flotantes: en las de mosaico
+    -- se vería raro al recolocarse. Esta regla se lo quita a todas las que no flotan y,
+    -- como "float" se reevalúa, al pasar una ventana a flotante (Super + Espacio) lo recupera
+    name  = "wobble-solo-flotantes",
+    match = { float = false },
+
+    no_wobble = true,
+})
+
+hl.window_rule({
     -- Arregla algunos problemas al arrastrar en apps XWayland (ventanas flotantes sin clase ni título)
     name  = "fix-xwayland-drags",
     match = {

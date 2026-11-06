@@ -33,6 +33,7 @@ Singleton {
     property alias borderSize: hyprAdapter.borderSize
     property alias rounding: hyprAdapter.rounding
     property alias windowOpacity: hyprAdapter.windowOpacity
+    property alias wobbleLevel: hyprAdapter.wobbleLevel
 
     // Registro de propiedades editables: GeometrySettings.qml construye su panel
     // iterando esta lista, así que añadir aquí una entrada es lo único que hace falta para
@@ -55,7 +56,12 @@ Singleton {
         { group: "Ventanas",             key: "rounding",            label: "Redondeo",               min: 0,  max: 40,  step: 1 },
         // Mínimo 10 %: por debajo las ventanas son prácticamente invisibles y
         // costaría encontrar el panel para volver a subirla
-        { group: "Ventanas",             key: "windowOpacity",       label: "Opacidad",               min: 10, max: 100, step: 5, unit: "%" }
+        { group: "Ventanas",             key: "windowOpacity",       label: "Opacidad",               min: 10, max: 100, step: 5, unit: "%" },
+        // Grupo "Flotantes": el wobble de Hyprland deforma la ventana como un muelle al moverla o
+        // redimensionarla. Un solo selector, de 0 (sin wobble) a 10 (mucho): de él salen los
+        // parámetros del muelle (ver wobbleConfig). Una regla de hyprland.lua
+        // (wobble-solo-flotantes) lo limita a las ventanas flotantes
+        { group: "Flotantes",            key: "wobbleLevel",         label: "Wobble (0 = apagado)",   min: 0,  max: 10,  step: 1, unit: "" }
     ]
 
     // "anchor.rect.y" (relativo a "item") para un popup de altura "popupHeight"
@@ -102,6 +108,25 @@ Singleton {
     // Hyprland la quiere de 0 a 1. 90/100 se imprime "0.9", no 0.9000001.
     readonly property real opacity: windowOpacity / 100
 
+    // Parámetros del muelle del wobble a partir del selector (1..10). Solo cambian dos, que
+    // son los que hacen que se note más o menos; el resto se queda en los de Hyprland:
+    //   - intensity (cuánto se deforma la ventana al moverla): level / 10, de 0.1 a 1.0
+    //     (Hyprland admite hasta 2, pero a 1.0 ya es mucho).
+    //   - damping (lo rápido que se calma el muelle): de 20 en el nivel 1 (apenas rebota, se
+    //     queda quieta enseguida) a 3 en el nivel 10 (rebota varias veces). Baja linealmente.
+    // La rigidez (200) y la masa (1) se dejan en los valores por defecto: cambiarlas con el nivel
+    // solo alargaría o acortaría la animación. La malla (mesh) es fija en 32, su máximo (Hyprland usa 12):
+    // con pocos vértices los bordes se ven quebrados, con aristas, al moverla. Con 0 solo se apaga: no se
+    // tocan los demás (no se usan).
+    function wobbleConfig() {
+        if (root.wobbleLevel <= 0) return "{ enabled = false }"
+        const level = root.wobbleLevel
+        const damping = Math.round((20 - (level - 1) * 17 / 9) * 10) / 10      // Un decimal: se imprime "18.1" y no "18.111111"
+        return "{ enabled = true, stiffness = 200, mass = 1, mesh = 32"
+             + ", intensity = " + level / 10
+             + ", damping = " + damping + " }"
+    }
+
     // Tablas de hl.config() para HyprConfigFile.qml. Se regenera todo cada vez (no un
     // patch incremental tipo regex): como solo hay unas pocas claves y se conocen
     // siempre, es más simple y no deja líneas huérfanas si algún día se quita una.
@@ -112,7 +137,8 @@ Singleton {
              + " }, decoration = { rounding = " + root.rounding
              + ", active_opacity = " + root.opacity                 // Las tres iguales, como el "local opacity" de hyprland.lua
              + ", inactive_opacity = " + root.opacity
-             + ", fullscreen_opacity = " + root.opacity + " }"
+             + ", fullscreen_opacity = " + root.opacity
+             + ", wobble = " + root.wobbleConfig() + " }"
     }
 
     function syncHyprland() { overridesFile.sync(root.hyprConfigText()) }
@@ -137,6 +163,7 @@ Singleton {
             property int borderSize: 2    // hypr/hyprland.lua: general.border_size
             property int rounding: 16     // hypr/hyprland.lua: decoration.rounding
             property int windowOpacity: 90 // hypr/hyprland.lua: "local opacity" (active/inactive/fullscreen_opacity), en %
+            property int wobbleLevel: 0    // 0 = sin wobble (decoration.wobble.enabled apagado, que es lo normal en Hyprland); 1..10 = de poco a mucho. Solo se nota en ventanas flotantes
         }
     }
 

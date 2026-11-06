@@ -195,7 +195,9 @@
         "Ventanas": "Windows",
         "Espacio entre ventanas": "Gap between windows",
         "Espacio con el borde": "Gap to the border",
-        "Opacidad": "Opacity"
+        "Opacidad": "Opacity",
+        "Flotantes": "Floating",
+        "Wobble (0 = apagado)": "Wobble (0 = off)"
     },
     "Lanzador y portapapeles (Launcher.qml, Clipboard.qml, SelectionList.qml)": {
         "Sin resultados": "No results",
