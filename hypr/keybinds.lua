@@ -62,6 +62,16 @@ hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }),     
 -- Solo actúa sobre ventanas en mosaico (no flotantes) y cada pulsación invierte la orientación
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"), { description = "Ventanas: Cambiar entre apiladas y una al lado de otra" })
 
+-- Pasa la ventana con el foco de mosaico a flotante y al revés (útil para diálogos o una calculadora)
+hl.bind(mainMod .. " + SPACE", hl.dsp.window.float({ action = "toggle" }), { description = "Ventanas: Flotante / en mosaico" })
+
+-- Cambia de sitio la ventana con el foco dentro del mosaico, sin ratón. Si hay una ventana en esa
+-- dirección, intercambian sitios; si no, la ventana se mueve al borde de esa dirección
+hl.bind(mainMod .. " + SHIFT + left",  hl.dsp.window.move({ direction = "left" }),  { description = "Ventanas: Mover la ventana en el mosaico" })
+hl.bind(mainMod .. " + SHIFT + right", hl.dsp.window.move({ direction = "right" }), { description = "Ventanas: Mover la ventana en el mosaico" })
+hl.bind(mainMod .. " + SHIFT + up",    hl.dsp.window.move({ direction = "up" }),    { description = "Ventanas: Mover la ventana en el mosaico" })
+hl.bind(mainMod .. " + SHIFT + down",  hl.dsp.window.move({ direction = "down" }),  { description = "Ventanas: Mover la ventana en el mosaico" })
+
 -- Al pulsar y soltar solo la tecla Super (sin combinar con otra), abro/cierro el lanzador (quickshell/windows/Launcher.qml)
 hl.bind(mainMod .. " + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { release = true, description = "Aplicaciones: Abrir / cerrar el lanzador" })
 

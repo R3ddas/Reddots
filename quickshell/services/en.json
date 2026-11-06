@@ -264,6 +264,8 @@
         "Ventanas: Quitar / poner la transparencia": "Windows: Toggle transparency",
         "Ventanas: Pantalla completa": "Windows: Fullscreen",
         "Ventanas: Cambiar entre apiladas y una al lado de otra": "Windows: Switch between stacked and side by side",
+        "Ventanas: Flotante / en mosaico": "Windows: Floating / tiled",
+        "Ventanas: Mover la ventana en el mosaico": "Windows: Move the window in the layout",
         "Workspaces: Ir a ese workspace": "Workspaces: Go to that workspace",
         "Workspaces: Mover la ventana a ese workspace": "Workspaces: Move the window to that workspace",
         "Workspaces: Siguiente workspace": "Workspaces: Next workspace",
