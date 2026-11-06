@@ -44,7 +44,9 @@ local osdMic        = " && qs ipc call osd mic"
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("qs ipc call volume up"),   { locked = true, repeating = true, description = "Multimedia: Subir el volumen" })
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("qs ipc call volume down"), { locked = true, repeating = true, description = "Multimedia: Bajar el volumen" })
 hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle" .. osdVolume),     { locked = true, description = "Multimedia: Silenciar el sonido" })  -- Sin repeating: al mantenerla pulsada alternaría en bucle
-hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle" .. osdMic),      { locked = true, description = "Multimedia: Silenciar el micrófono" })
+-- Super + M hace lo mismo que la tecla de silencio, para teclados sin teclas multimedia. Comparte descripción con ella, así que en la chuleta salen juntas y no necesita línea nueva en en.json
+hl.bind(mainMod .. " + M",      hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle" .. osdVolume),     { description = "Multimedia: Silenciar el sonido" })
+hl.bind("XF86AudioMicMute",   hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle" .. osdMic),      { locked = true, description = "Multimedia: Silenciar el micrófono" })
 hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+" .. osdBrightness),              { locked = true, repeating = true, description = "Multimedia: Subir el brillo" })
 hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-" .. osdBrightness),              { locked = true, repeating = true, description = "Multimedia: Bajar el brillo" })
 
@@ -73,5 +75,5 @@ hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("qs ipc call lock lock"), { descripti
 -- ya no les llega a las apps que lo usan para cerrar su ventana (para eso está Super + Q)
 hl.bind("ALT + F4", hl.dsp.exec_cmd("qs ipc call power toggle"), { description = "Sesión: Abrir / cerrar el menú de apagado" })
 
--- Super + M (duplicar las pantallas) no está aquí sino en hyprland.lua, justo después del
+-- Super + P (duplicar las pantallas) no está aquí sino en hyprland.lua, justo después del
 -- require("keybinds"): necesita saber cuál es el panel del portátil (ver MONITORES allí).

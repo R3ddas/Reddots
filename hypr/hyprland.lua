@@ -400,7 +400,7 @@ hl.gesture({                            -- Puedo cambiar entre workspaces con 3 
 ---------------------------
 require("keybinds")
 
--- Super + M: duplicar las pantallas. Está aquí y no en keybinds.lua porque usa
+-- Super + P: duplicar las pantallas. Está aquí y no en keybinds.lua porque usa
 -- internalPanel (ver MONITORES). Va justo después del require() para que en la chuleta
 -- de atajos (quickshell/windows/Keybinds.qml, que los pinta en el orden en que se
 -- definen) la sección "Monitores" siga saliendo después de las de keybinds.lua.
@@ -426,7 +426,7 @@ local function mirrorSource()
     return ""
 end
 
-hl.bind("SUPER + M", function()       -- "SUPER" a mano: mainMod es de keybinds.lua
+hl.bind("SUPER + P", function()       -- "SUPER" a mano: mainMod es de keybinds.lua
     local mirroring = isMirroring()
     if not mirroring and #hl.get_monitors() < 2 then return end      -- Con un solo monitor no hay nada que copiar (se copiaría a sí mismo)
     hl.monitor({
