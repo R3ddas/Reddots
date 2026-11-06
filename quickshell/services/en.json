@@ -263,6 +263,7 @@
         "Ventanas: Cambiar el tamaño de la ventana (arrastrando)": "Windows: Resize the window (dragging)",
         "Ventanas: Quitar / poner la transparencia": "Windows: Toggle transparency",
         "Ventanas: Pantalla completa": "Windows: Fullscreen",
+        "Ventanas: Cambiar entre apiladas y una al lado de otra": "Windows: Switch between stacked and side by side",
         "Workspaces: Ir a ese workspace": "Workspaces: Go to that workspace",
         "Workspaces: Mover la ventana a ese workspace": "Workspaces: Move the window to that workspace",
         "Workspaces: Siguiente workspace": "Workspaces: Next workspace",

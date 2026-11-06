@@ -56,6 +56,9 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = tr
 
 hl.bind(mainMod .. " + O", hl.dsp.window.set_prop({ prop = "opaque", value = "toggle" }), { dont_inhibit = true, description = "Ventanas: Quitar / poner la transparencia" })  -- dont_inhibit: el atajo funciona aunque la ventana con el foco pida los atajos para ella (p.ej. un navegador o una máquina virtual en pantalla completa); sin él, Super + O no haría nada ahí
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }),               { description = "Ventanas: Pantalla completa" })
+-- Alterna cómo se reparten dos ventanas hermanas del layout dwindle: una encima de otra o una al lado de otra.
+-- Solo actúa sobre ventanas en mosaico (no flotantes) y cada pulsación invierte la orientación
+hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"), { description = "Ventanas: Cambiar entre apiladas y una al lado de otra" })
 
 -- Al pulsar y soltar solo la tecla Super (sin combinar con otra), abro/cierro el lanzador (quickshell/windows/Launcher.qml)
 hl.bind(mainMod .. " + SUPER_L", hl.dsp.exec_cmd("qs ipc call launcher toggle"), { release = true, description = "Aplicaciones: Abrir / cerrar el lanzador" })
