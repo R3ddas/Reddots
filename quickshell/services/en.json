@@ -105,7 +105,7 @@
         "Caracteres cayendo estilo Matrix en todas las pantallas. Se quita con cualquier tecla.": "Matrix-style falling characters on every screen. Press any key to exit."
     },
     "Menú de Reddots (Reddots.qml, Updates.qml)": {
-        "Reddots: atajos de teclado, actualizar, instalar, idioma y GitHub": "Reddots: keyboard shortcuts, update, install, language and GitHub",
+        "Reddots: actualizar, instalar, atajos de teclado, idioma y GitHub": "Reddots: update, install, keyboard shortcuts, language and GitHub",
         "Atajos de teclado": "Keyboard shortcuts",
         "Actualizar Reddots": "Update Reddots",
         "Baja los cambios del repo y actualiza el sistema. No instala ni quita otras apps.": "Pulls the repo changes and updates the system. Doesn't install or remove other apps.",
