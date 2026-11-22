@@ -18,7 +18,6 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Shapes
 import qs.services
 
 PopupWindow {
@@ -79,48 +78,11 @@ PopupWindow {
         visible: !root.attached
     }
 
-    // Fondo unido. Coordenadas: x = 0 es el borde interior del marco y la ventana mide
-    // "ear" de más por arriba y por abajo. Se recorre así: oreja de arriba (curva hacia dentro
-    // desde el marco hasta el borde de arriba del menú), esquinas redondeadas de la derecha,
-    // oreja de abajo, y se vuelve por el borde del marco
-    Shape {
-        id: attachedShape
+    // Fondo unido (el mismo que las etiquetas de la barra, BarTooltip.qml)
+    AttachedBackground {
         anchors.fill: parent
         visible: root.attached
-        preferredRendererType: Shape.CurveRenderer
-
-        readonly property real ear: root.attachedEar
-        readonly property real corner: Math.min(Geometry.popupRounding, (height - ear * 2) / 2, width - ear)   // Esquinas de la derecha, sin pasarse en un menú pequeño
-
-        ShapePath {
-            fillColor: Theme.background             // El de la barra y el marco: así no se ve dónde acaba uno y empieza el otro
-            strokeWidth: 0
-            strokeColor: "transparent"
-            startX: 0; startY: 0
-
-            PathArc {                               // Oreja de arriba
-                x: attachedShape.ear; y: attachedShape.ear
-                radiusX: attachedShape.ear; radiusY: attachedShape.ear
-                direction: PathArc.Counterclockwise
-            }
-            PathLine { x: attachedShape.width - attachedShape.corner; y: attachedShape.ear }
-            PathArc {                               // Esquina de arriba a la derecha
-                x: attachedShape.width; y: attachedShape.ear + attachedShape.corner
-                radiusX: attachedShape.corner; radiusY: attachedShape.corner
-            }
-            PathLine { x: attachedShape.width; y: attachedShape.height - attachedShape.ear - attachedShape.corner }
-            PathArc {                               // Esquina de abajo a la derecha
-                x: attachedShape.width - attachedShape.corner; y: attachedShape.height - attachedShape.ear
-                radiusX: attachedShape.corner; radiusY: attachedShape.corner
-            }
-            PathLine { x: attachedShape.ear; y: attachedShape.height - attachedShape.ear }
-            PathArc {                               // Oreja de abajo
-                x: 0; y: attachedShape.height
-                radiusX: attachedShape.ear; radiusY: attachedShape.ear
-                direction: PathArc.Counterclockwise
-            }
-            PathLine { x: 0; y: 0 }                 // Por el borde del marco, de vuelta arriba
-        }
+        ear: root.attachedEar
     }
 
     ColumnLayout {
