@@ -26,6 +26,7 @@ Singleton {
     property alias borderShadowOpacity: adapter.borderShadowOpacity
     property alias popupRounding: adapter.popupRounding
     property alias popupBorderWidth: adapter.popupBorderWidth
+    property alias popupAttached: adapter.popupAttached
 
     // --- Las que vive Hyprland ---
     property alias gapsIn: hyprAdapter.gapsIn
@@ -40,14 +41,18 @@ Singleton {
     // que aparezca un nuevo control en el panel. "key" es el nombre de la propiedad de
     // este singleton. "group" es la sección del panel en la que sale (las secciones van
     // en el orden en que aparecen aquí; con un nombre nuevo, sale una sección nueva).
-    // "unit" es opcional: lo que se muestra tras el número (si falta, "px"). "group" y
-    // "label" van en español: GeometrySettings.qml los pasa por Lang.tr() (ver en.json).
+    // "unit" es opcional: lo que se muestra tras el número (si falta, "px"). Con "toggle: true"
+    // la propiedad es un sí/no y sale un botón en vez del stepper (no lleva min, max ni step).
+    // "group" y "label" van en español: GeometrySettings.qml los pasa por Lang.tr() (ver en.json).
     readonly property var editable: [
         { group: "Barra lateral",        key: "sidebarWidth",        label: "Ancho",                  min: 16, max: 80,  step: 1 },
         { group: "Borde de la pantalla", key: "borderThickness",     label: "Grosor",                 min: 0,  max: 20,  step: 1 },
         { group: "Borde de la pantalla", key: "borderRounding",      label: "Redondeo de esquinas",   min: 0,  max: 40,  step: 1 },
         { group: "Borde de la pantalla", key: "borderShadow",        label: "Sombra",                 min: 0,  max: 40,  step: 1 },
         { group: "Borde de la pantalla", key: "borderShadowOpacity", label: "Opacidad de la sombra",  min: 0,  max: 100, step: 5, unit: "%" },
+        // Unidos: pegados al borde de la pantalla, del color de la barra y sin borde de color, con
+        // dos curvas hacia dentro donde se juntan con él (ver BarPopup.qml). Su tamaño es el redondeo
+        { group: "Desplegables",         key: "popupAttached",       label: "Unidos a la barra",      toggle: true },
         { group: "Desplegables",         key: "popupRounding",       label: "Redondeo",               min: 0,  max: 40,  step: 1 },
         { group: "Desplegables",         key: "popupBorderWidth",    label: "Grosor del borde",       min: 0,  max: 10,  step: 1 },
         { group: "Ventanas",             key: "gapsIn",              label: "Espacio entre ventanas", min: 0,  max: 40,  step: 1 },
@@ -99,6 +104,7 @@ Singleton {
             property int borderShadowOpacity: 80  // Opacidad máxima de esa sombra, en % (entero para que el stepper del panel sume/reste sin decimales sueltos)
             property int popupRounding: 16     // Radio de las esquinas de los desplegables de la barra
             property int popupBorderWidth: 2   // Grosor del borde de color de los desplegables y del lanzador (0 = sin borde)
+            property bool popupAttached: false // Desplegables sueltos (false) o unidos a la barra (true, ver BarPopup.qml)
         }
     }
 

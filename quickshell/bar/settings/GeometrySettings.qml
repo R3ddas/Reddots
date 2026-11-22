@@ -73,6 +73,7 @@ ColumnLayout {
                     delegate: RowLayout {
                         id: row
                         required property var modelData
+                        readonly property bool isToggle: modelData.toggle === true
 
                         Layout.fillWidth: true
                         spacing: 6
@@ -85,16 +86,30 @@ ColumnLayout {
                             elide: Text.ElideRight              // Por si una etiqueta nueva no cabe: que no empuje al stepper
                         }
 
-                        StepButton { text: "−"; delta: -row.modelData.step; entry: row.modelData }
+                        StepButton { visible: !row.isToggle; text: "−"; delta: -(row.modelData.step ?? 0); entry: row.modelData }
 
                         Text {
+                            visible: !row.isToggle
                             Layout.preferredWidth: 40           // Ancho fijo (cabe "100%"): así los steppers de todas las filas quedan en columna
                             horizontalAlignment: Text.AlignHCenter
                             text: Geometry[row.modelData.key] + (row.modelData.unit ?? "px")   // Unidad opcional de la entrada (p.ej. "%")
                             color: Theme.textActive
                         }
 
-                        StepButton { text: "+"; delta: row.modelData.step; entry: row.modelData }
+                        StepButton { visible: !row.isToggle; text: "+"; delta: row.modelData.step ?? 0; entry: row.modelData }
+
+                        // Entradas sí/no ("toggle" en Geometry.editable): un botón que la cambia,
+                        // del ancho del stepper (− 22, valor 40, + 22 y los dos huecos) para que
+                        // quede en la misma columna. Resaltado cuando está en "sí"
+                        Button {
+                            visible: row.isToggle
+                            Layout.preferredWidth: 22 * 2 + 40 + 6 * 2
+                            implicitHeight: 22
+                            radius: 4
+                            accent: !!Geometry[row.modelData.key]
+                            text: Lang.tr(Geometry[row.modelData.key] ? "Sí" : "No")
+                            onClicked: Geometry[row.modelData.key] = !Geometry[row.modelData.key]
+                        }
                     }
                 }
             }
