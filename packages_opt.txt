@@ -41,6 +41,7 @@ claude-desktop          # Claude
 google-chrome           # Chrome
 zen-browser-bin         # Zen
 euro-office-bin         # Euro-Office: suite ofimática (fork de ONLYOFFICE) para documentos, hojas de cálculo y presentaciones
+aseprite                # Editor de pixel art y sprites (se compila desde el código fuente: tarda un rato)
 
 # Otras
 steam           # Juegos (repo multilib)
