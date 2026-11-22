@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io                // FileView para leer /proc y los sensores; Process para buscar los sensores
 import QtQuick
 
-// Uso del sistema (procesador, memoria, swap, gráfica y temperaturas), para el panel de
+// Uso del sistema (procesador, memoria, swap, gráfica, discos y temperaturas), para el panel de
 // SystemStats.qml y para el aviso de temperatura alta, que pone en rojo el icono del
 // chip y, con el grupo plegado, el engranaje (SettingsToggle.qml). Se lee cada 15 s, y
 // cada 2 s mientras el panel está abierto ("fast").
@@ -57,6 +57,18 @@ Singleton {
     property real vramTotal: 0      // kB, como la memoria (para que SystemStats.qml la escriba igual)
     property real vramUsed: 0
 
+    // Lo lleno de los discos: / y /home (si /home está en otra partición; si es la misma
+    // solo sale una). No hay archivo en /proc que lo dé, así que se lanza df, pero solo
+    // con el panel abierto: es lo único que no se usa para avisar con el panel cerrado.
+    property var disks: []          // [{ target, size, used, avail }] en kB, como la memoria
+
+    function parseDisks(text) {
+        const seen = {}
+        root.disks = text.trim().split("\n").slice(1).map(l => l.trim().split(/\s+/))   // source size used avail target
+            .filter(f => f.length >= 5 && !seen[f[0]] && (seen[f[0]] = true))
+            .map(f => ({ target: f[4], size: Number(f[1]), used: Number(f[2]), avail: Number(f[3]) }))
+    }
+
     // Grados a partir de los que se avisa: cada pieza aguanta distinto. El orden de
     // aquí es también el orden en el que salen en el panel.
     readonly property var limits: ({ "Procesador": 85, "Gráfica": 90, "Disco": 70 })
@@ -99,6 +111,13 @@ Singleton {
         memFile.reload()
         for (let i = 0; i < sensorFiles.count; i++) sensorFiles.objectAt(i).reload()
         for (const f of [gpuBusyFile, vramUsedFile, vramTotalFile]) if (f.path !== "") f.reload()
+        if (root.fast) diskProc.running = true
+    }
+
+    Process {
+        id: diskProc
+        command: ["df", "-k", "--output=source,size,used,avail,target", "/", "/home"]
+        stdout: StdioCollector { onStreamFinished: root.parseDisks(text) }
     }
 
     // Se leen solos una vez al crearse: esa primera lectura del procesador solo sirve de

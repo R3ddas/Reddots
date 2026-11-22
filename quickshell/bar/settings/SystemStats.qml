@@ -1,5 +1,5 @@
 // Icono en la barra + popup con el uso del sistema: procesador, memoria (y swap), gráfica
-// (uso y memoria de vídeo, solo con una AMD: ver SystemMonitor.qml) y las temperaturas del
+// (uso y memoria de vídeo, solo con una AMD: ver SystemMonitor.qml), discos y las temperaturas del
 // procesador, la gráfica y el disco. Los datos los lee SystemMonitor.qml
 // (cada 15 s, y cada 2 s mientras este popup está abierto). Si alguna temperatura pasa
 // de su umbral, el icono se pone en rojo (y el engranaje, ver SettingsToggle.qml).
@@ -106,6 +106,19 @@ ColumnLayout {
             label: Lang.tr("Memoria de vídeo")
             value: root.gib(SystemMonitor.vramUsed) + " / " + root.gib(SystemMonitor.vramTotal) + " GiB"
             fraction: SystemMonitor.vramTotal ? SystemMonitor.vramUsed / SystemMonitor.vramTotal : 0
+        }
+
+        // Los discos (/ y /home si está aparte). Con uno solo no hace falta decir cuál.
+        // La barra es como el "Use%" de df: usado / (usado + libre), sin el espacio reservado
+        Repeater {
+            model: SystemMonitor.disks
+            delegate: StatBar {
+                required property var modelData
+                Layout.topMargin: 4
+                label: Lang.tr("Disco") + (SystemMonitor.disks.length > 1 ? " " + modelData.target : "")
+                value: root.gib(modelData.used) + " / " + root.gib(modelData.size) + " GiB"
+                fraction: modelData.used + modelData.avail ? modelData.used / (modelData.used + modelData.avail) : 0
+            }
         }
 
         Separator {                                     // Antes de las temperaturas
