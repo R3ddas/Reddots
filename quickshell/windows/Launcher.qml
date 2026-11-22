@@ -2,6 +2,7 @@
 // Lista las aplicaciones instaladas (con icono) y las lanza al hacer clic
 // Al abrirse ya se puede escribir para filtrar: flechas para moverse, Intro para lanzar, Esc para cerrar
 // La rueda junto al buscador pasa a elegir qué apps se ocultan (ver "editing") o se desinstalan (UninstallPanel.qml)
+// Con los desplegables "unidos a la barra" (Geometry.popupAttached) se dibuja igual que ellos: ver "attached"
 
 import Quickshell
 import Quickshell.Io        // Para el JsonAdapter (cuántas veces se ha abierto cada app y cuáles se ocultan) y el Process de launch()
@@ -9,6 +10,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets  // Para el IconImage
 import QtQuick
 import QtQuick.Layouts     // Para RowLayout
+import QtQuick.Shapes      // Para el fondo del estilo unido
 import qs.components
 import qs.services
 
@@ -17,10 +19,23 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
 
     anchors { bottom: true; right: true }
 
-    implicitWidth: 320
+    // Estilo unido (el mismo ajuste que los desplegables de la barra, ver BarPopup.qml): en vez de
+    // tapar el marco de la pantalla, empieza en su borde interior, con el color de la barra y sin
+    // borde de color, y donde se junta con él hace dos curvas hacia dentro ("orejas"): una que sube
+    // por el marco derecho y otra que sigue hacia la izquierda por el de abajo. La ventana es
+    // "ear" px más ancha y más alta que el lanzador para que quepan
+    readonly property bool attached: Geometry.popupAttached
+    readonly property int ear: attached ? Geometry.popupRounding : 0
+    readonly property int cornerRadius: 24      // La esquina de arriba a la izquierda, en los dos estilos
+    margins {
+        right: attached ? Geometry.borderThickness : 0
+        bottom: attached ? Geometry.borderThickness : 0
+    }
+
+    implicitWidth: 320 + ear
     // Solo lo alto que hace falta: con pocas apps (o al filtrar) se encoge, y con muchas se
     // queda en 480 y la lista hace scroll. +24: los márgenes de arriba y abajo de "content"
-    implicitHeight: Math.min(480, content.implicitHeight + 24)
+    implicitHeight: Math.min(480, content.implicitHeight + 24) + ear
 
     WlrLayershell.namespace: "reddots:launcher"
 
@@ -126,21 +141,69 @@ OverlayWindow {             // Se cierra al hacer clic fuera (ver OverlayWindow.
 
     Process { id: appProc }                     // Para lanzar las apps con otro LC_MESSAGES (ver launch())
 
-    Frame {                                     // Como los desplegables de la barra, pero solo con la esquina superior izquierda redondeada:
+    Frame {                                     // Suelto: como los desplegables de la barra, pero solo con la esquina superior izquierda redondeada:
         id: background                          // el resto llega al borde de la pantalla
+        visible: !root.attached
         anchors.fill: parent
         anchors.rightMargin: -border.width      // Los bordes derecho e inferior quedan fuera de la ventana: solo se ve el borde
         anchors.bottomMargin: -border.width     // de arriba y el de la izquierda, no una línea pegada al filo de la pantalla
         radius: 0
-        topLeftRadius: 24
+        topLeftRadius: root.cornerRadius
+    }
+
+    // Unido. Coordenadas de la ventana: a la derecha (x = width) y abajo (y = height) está el
+    // borde interior del marco; el lanzador en sí empieza en (ear, ear). Se recorre así: oreja
+    // de arriba (curva hacia dentro desde el marco derecho hasta el borde de arriba del
+    // lanzador), esquina redondeada de arriba a la izquierda, oreja de abajo (del borde
+    // izquierdo del lanzador al marco de abajo) y vuelta por el marco
+    Shape {
+        id: attachedShape
+        anchors.fill: parent
+        visible: root.attached
+        preferredRendererType: Shape.CurveRenderer
+
+        readonly property real ear: root.ear
+        readonly property real corner: root.cornerRadius
+
+        ShapePath {
+            fillColor: Theme.background             // El de la barra y el marco: así no se ve la junta
+            strokeWidth: 0
+            strokeColor: "transparent"
+            startX: attachedShape.width; startY: 0
+
+            PathArc {                               // Oreja de arriba
+                x: attachedShape.width - attachedShape.ear; y: attachedShape.ear
+                radiusX: attachedShape.ear; radiusY: attachedShape.ear
+            }
+            PathLine { x: attachedShape.ear + attachedShape.corner; y: attachedShape.ear }
+            PathArc {                               // Esquina de arriba a la izquierda
+                x: attachedShape.ear; y: attachedShape.ear + attachedShape.corner
+                radiusX: attachedShape.corner; radiusY: attachedShape.corner
+                direction: PathArc.Counterclockwise
+            }
+            PathLine { x: attachedShape.ear; y: attachedShape.height - attachedShape.ear }
+            PathArc {                               // Oreja de abajo
+                x: 0; y: attachedShape.height
+                radiusX: attachedShape.ear; radiusY: attachedShape.ear
+            }
+            PathLine { x: attachedShape.width; y: attachedShape.height }
+            PathLine { x: attachedShape.width; y: 0 }   // Por el marco derecho, de vuelta arriba
+        }
+    }
+
+    Item {                                      // Lo de dentro, recortado al lanzador (como hacía el Frame con clip)
+        anchors.fill: parent
+        anchors.leftMargin: root.ear            // Unido, no se mete en las orejas
+        anchors.topMargin: root.ear
         clip: true
 
         ColumnLayout {
             id: content
             anchors.fill: parent
             anchors.margins: 12
-            anchors.rightMargin: 12 + background.border.width   // Compensa el borde que queda fuera de la ventana
-            anchors.bottomMargin: 12 + background.border.width
+            // Suelto, compensa el borde que queda fuera de la ventana (unido no hay borde)
+            anchors.rightMargin: 12 + (root.attached ? 0 : background.border.width)
+            anchors.bottomMargin: 12 + (root.attached ? 0 : background.border.width)
             spacing: 8
 
             RowLayout {

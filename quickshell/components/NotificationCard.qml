@@ -22,6 +22,7 @@ Rectangle {
     property var entry: notification
     property bool compact: false
     property bool dimmed: false             // Del historial: en gris, que se vea que ya no está activa
+    property bool flat: false               // Tarjeta sin fondo ni borde (el fondo lo pone quien la usa: las notificaciones unidas a la barra); las críticas, con el título en rojo
     property real time: 0                   // Hora de llegada (ms), para la cabecera de la lista
     readonly property bool hovered: hover.hovered
     readonly property bool critical: entry ? entry.urgency === NotificationUrgency.Critical : false
@@ -40,8 +41,8 @@ Rectangle {
     radius: compact ? 6 : 8
     // Tarjeta: con el fondo del tema y un borde de 2 px (rojo si es crítica). En la lista:
     // transparente, resaltada con el ratón encima, y con borde solo si es crítica
-    color: compact ? (hovered ? Theme.surfaceHover : "transparent") : Theme.background
-    border.width: compact ? (critical && !dimmed ? 1 : 0) : 2
+    color: compact ? (hovered ? Theme.surfaceHover : "transparent") : flat ? "transparent" : Theme.background
+    border.width: compact ? (critical && !dimmed ? 1 : 0) : flat ? 0 : 2
     border.color: critical ? Theme.error : Theme.textSelected
 
     HoverHandler { id: hover }              // HoverHandler y no MouseArea: se entera también con el ratón sobre los botones
@@ -113,7 +114,7 @@ Rectangle {
                 visible: text !== ""
                 text: root.entry.summary
                 textFormat: Text.PlainText
-                color: root.dimmed ? Theme.textDisabled : Theme.textSelected
+                color: root.dimmed ? Theme.textDisabled : root.flat && root.critical ? Theme.error : Theme.textSelected
                 font.bold: true
                 wrapMode: Text.WordWrap
             }
