@@ -35,6 +35,10 @@ cups                      # El sistema de impresión. Encuentra las impresoras d
 ipp-usb                   # Las de USB, también sin driver. No hay que activar nada: arranca solo al enchufar la impresora
 system-config-printer     # Para añadir y configurar impresoras ("Configuración de impresión" en el launcher)
 
+## Desarrollo de juegos (los sprites, con aseprite, más abajo en las apps de AUR)
+godot                     # Motor de videojuegos
+nodejs                    # Para ejecutar scripts de JavaScript (sin npm: si hace falta, pacman -S npm)
+
 # Apps de AUR
 visual-studio-code-bin  # Visual Studio Code (sus extensiones, en apps/vscode/extensions.txt)
 claude-desktop          # Claude
