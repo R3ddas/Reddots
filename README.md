@@ -59,6 +59,25 @@ git pull
   rm ~/.local/state/reddots/lc_messages
   ```
 
+## IA de imágenes
+
+Es el grupo **IA** de `packages_opt.txt` (Krita y Stability Matrix), igual en un equipo con NVIDIA que con AMD: la gráfica solo cambia lo que instala Stability Matrix (CUDA o ROCm). Con Krita instalado, `install.sh` le añade el plugin [Krita AI Diffusion](https://github.com/Acly/krita-ai-diffusion), en la versión hecha para el Krita que haya (y lo actualiza si vuelves a pasarlo).
+
+La primera vez, a mano:
+
+1. **Stability Matrix** (en el lanzador). Al arrancar, elige una carpeta de biblioteca en tu home (por ejemplo `~/StabilityMatrix`), no el modo portable: ahí van ComfyUI y los modelos, decenas de GB. Luego **Paquetes > Añadir paquete > ComfyUI**: detecta la gráfica y pone PyTorch con CUDA o ROCm.
+2. **Modelos.** En **Model Browser** buscas en CivitAI y Hugging Face los modelos que otros han entrenado para cada estilo (fotorrealista, anime, ilustración...) y los LoRA para afinarlos, y Stability Matrix los deja en su sitio. Fíjate en el modelo base de cada uno (SDXL, Illustrious, Pony, Flux...): los LoRA tienen que ser del mismo. Para empezar, SDXL o Illustrious van bien en 16 GB de VRAM y en la gráfica del portátil (con menos de 8 GB, mejor los `.gguf`).
+3. **Generar.** Arranca ComfyUI con **Launch** y abre la web que da (`http://127.0.0.1:8188`). Stability Matrix también tiene su propia pestaña **Inference**, más sencilla, que usa ese mismo ComfyUI.
+4. **Editar en Krita.** Para que el plugin use ese ComfyUI (y sus modelos) en vez de montar el suyo, con ComfyUI parado:
+
+   ```bash
+   ~/Reddots/apps/krita/comfyui-krita.sh
+   ```
+
+   Instala los nodos que pide el plugin y baja sus modelos auxiliares de SDXL (para otros modelos base, mira las opciones al principio del script). Después arranca ComfyUI, abre Krita, **Configuración > Paneles > AI Image Generation**, y en su configuración, **Conexión > Custom Server** con `http://127.0.0.1:8188`. Si falta algo, el plugin dice qué al conectar.
+
+Si ComfyUI no arranca en la AMD con un error de HIP o de `gfx1101`, añade en Stability Matrix (rueda del paquete > Variables de entorno) `HSA_OVERRIDE_GFX_VERSION=11.0.0`.
+
 ## Qué hay en cada carpeta
 
 - `hypr/`: configuración de Hyprland (en Lua: `hyprland.lua` y los atajos en `keybinds.lua`).
@@ -69,7 +88,7 @@ git pull
   - `components/`: piezas comunes con las que se montan las demás (icono de la barra, desplegable, slider...).
   - `scripts/`: los scripts que lanza la interfaz.
   - `assets/`: el icono de Reddots y la configuración de PAM con la que la pantalla de bloqueo comprueba la contraseña (`assets/pam/lock`).
-- `apps/`: configuración de cada programa, una carpeta por programa (`alacritty/`, `fish/`, `fastfetch/`, `vscode/`). En `vscode/extensions.txt` están sus extensiones: si VS Code está instalado, `install.sh` las instala todas sin preguntar.
+- `apps/`: configuración de cada programa, una carpeta por programa (`alacritty/`, `fish/`, `fastfetch/`, `krita/`, `vscode/`). En `krita/comfyui-krita.sh`, lo que conecta el plugin de IA de Krita al ComfyUI de Stability Matrix. En `vscode/extensions.txt` están sus extensiones: si VS Code está instalado, `install.sh` las instala todas sin preguntar.
 - `wallpapers/`: los fondos de pantalla.
 - `lib.sh`: funciones que comparten `update.sh`, `install.sh` y los scripts de la barra.
 - `packages.txt`: los paquetes que necesita Reddots; los instala `update.sh`, así que vuelven en cada actualización.

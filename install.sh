@@ -89,6 +89,61 @@ if command -v code &>/dev/null; then
     code "${vscodeArgs[@]}"
 fi
 
+echo "Plugin de IA de Krita"
+
+# Si Krita está (grupo IA de packages_opt.txt), el plugin Krita AI Diffusion. No va en packages_opt.txt
+# porque no hay paquete que valga: el de AUR lo compila y en el check() descarga modelos y pasa tests.
+# Se baja la release de GitHub hecha para la versión de Krita que hay instalada (cada release dice
+# "For Krita 5" o "For Krita 6" en sus notas; puede ser una prerelease si es la única para esa
+# versión) y se deja en ~/.local/share/krita/pykrita, que es donde Krita busca los plugins del
+# usuario. La release instalada se apunta en .reddots-release: si es la misma, no se baja otra vez.
+# Si no hay red o GitHub falla, se avisa y se sigue: no merece la pena cortar la instalación
+if pacman -Qq krita &>/dev/null; then
+    pykrita=~/.local/share/krita/pykrita
+    kritaMajor=$(pacman -Q krita | awk '{ sub(/^[0-9]+:/, "", $2); split($2, v, "."); print v[1] }')
+    # "tag url" de la release más reciente para esta versión de Krita (vacío si no hay)
+    release=$(curl -fsSL 'https://api.github.com/repos/Acly/krita-ai-diffusion/releases?per_page=20' 2>/dev/null |
+        python3 -I -c '
+import json, sys
+for r in json.load(sys.stdin):
+    zips = [a["browser_download_url"] for a in r["assets"] if a["name"].endswith(".zip")]
+    if zips and f"For Krita {sys.argv[1]}" in (r["body"] or ""):
+        print(r["tag_name"], zips[0]); break' "$kritaMajor" 2>/dev/null || true)
+    if [[ -z "$release" ]]; then
+        echo "Aviso: no he podido encontrar el plugin de IA para Krita $kritaMajor (¿sin red?)"
+    else
+        read -r tag url <<< "$release"
+        if [[ "$(cat "$pykrita/ai_diffusion/.reddots-release" 2>/dev/null)" == "$tag" ]]; then
+            echo "Plugin de IA de Krita ya al día ($tag)"
+        else
+            tmp=$(mktemp -d)
+            if curl -fsSL -o "$tmp/plugin.zip" "$url" && bsdtar -xf "$tmp/plugin.zip" -C "$tmp"; then
+                # Se quita el anterior entero (no se mezcla con el nuevo). Lo suyo (ajustes, logs,
+                # servidor gestionado) lo guarda en ~/.local/share/krita/ai_diffusion, que no se toca
+                mkdir -p "$pykrita"
+                rm -rf "$pykrita/ai_diffusion" "$pykrita/ai_diffusion.desktop"
+                mv "$tmp/ai_diffusion" "$tmp/ai_diffusion.desktop" "$pykrita/"
+                echo "$tag" > "$pykrita/ai_diffusion/.reddots-release"
+                echo "Plugin de IA de Krita instalado ($tag)"
+            else
+                echo "Aviso: no se ha podido bajar el plugin de IA de Krita ($url)"
+            fi
+            rm -rf "$tmp"
+        fi
+        # Activado en el gestor de plugins de Python de Krita (enable_ai_diffusion=true en la
+        # sección [python] de kritarc): si no, hay que marcarlo a mano y reiniciar Krita. Solo se
+        # añade si no está la línea: si lo has desactivado tú (=false), se queda así
+        kritarc=~/.config/kritarc
+        if ! grep -q '^enable_ai_diffusion=' "$kritarc" 2>/dev/null; then
+            if grep -q '^\[python\]' "$kritarc" 2>/dev/null; then
+                sed -i '/^\[python\]/a enable_ai_diffusion=true' "$kritarc"
+            else
+                printf '\n[python]\nenable_ai_diffusion=true\n' >> "$kritarc"
+            fi
+        fi
+    fi
+fi
+
 echo "Impresoras"
 
 # Si CUPS está (ya lo estaba o se acaba de instalar con el grupo Impresoras de packages_opt.txt),
